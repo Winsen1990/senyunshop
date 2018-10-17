@@ -25,7 +25,12 @@
             {if $category_list}
             {foreach from=$category_list item=category}
             <tr>
-                <td>{$category.name}</td>
+                <td>
+                    <span style="vertical-align: middle;">{$category.name}</span>
+                    {if !empty($category.icon)}
+                    <img src="{$category.icon}" width="40px" style="vertical-align: middle;"/>
+                    {/if}
+                </td>
                 <!--
                 <td>{$category.price_filter}</td>
                 <td><em class="icon">&#x{$category.icon};</em></td>

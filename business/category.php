@@ -8,6 +8,7 @@
  */
 
 include 'library/init.inc.php';
+global $db, $log, $config, $smarty;
 
 //商户管理后台初始化
 business_base_init();
@@ -40,32 +41,24 @@ if( 'add' == $opera ) {
     }
     $name = $db->escape($name);
 
+    $img = trim(getPOST('img'));
+    $img = $db->escape($img);
+
     $parent_id = intval($parent_id);
     if( 0 > $parent_id ) {
         show_system_message('参数错误', array());
         exit;
     }
-    //产品分类分配到商家主营分类下
-    if( 0 == $parent_id ) {
-        $get_category_id = 'select `category_id` from '.$db->table('business');
-        $get_category_id .= ' where `business_account` = \''.$_SESSION['business_account'].'\' limit 1';
-        $category_id = $db->fetchOne($get_category_id);
-        $path = '';
-        if( 0 >= $category_id ) {
-            $parent_id = 0;
-        } else {
-            $parent_id = $category_id;
-            $path .= $category_id.',';
-        }
-    }
 
     //限制自定义分类层数
-    $get_parent = 'select `parent_id`,`path` from '.$db->table('category').' where `id`='.$parent_id;
-    if( $parent = $db->fetchRow($get_parent) ) {
-        $count = count(explode(',', $parent['path']));
-        if( $count >= ( intval($config['category_depth']) + 2 ) ) {
-            show_system_message('产品分类不能超过'.$config['category_depth'].'级', array());
-            exit;
+    if($parent_id > 0) {
+        $get_parent = 'select `parent_id`,`path` from ' . $db->table('category') . ' where `id`=' . $parent_id;
+        if ($parent = $db->fetchRow($get_parent)) {
+            $count = count(explode(',', $parent['path']));
+            if ($count >= (intval($config['category_depth']) + 2)) {
+                show_system_message('产品分类不能超过' . $config['category_depth'] . '级', array());
+                exit;
+            }
         }
     }
 
@@ -74,22 +67,16 @@ if( 'add' == $opera ) {
         $price_filter = 3;
     }
 
-    if( '' == $icon ) {
-        $icon = 'e607';
-    } else {
-        $icon = $db->escape($icon);
-    }
-
     $search_brand = intval($search_brand);
     $search_brand = ( $search_brand == 1 ) ? 1 : 0;
 
     $data = array(
         'name' => $name,
-        'business_account' => $_SESSION['business_account'],
+        'business_account' => '',
         'parent_id' => $parent_id,
         'price_filter' => $price_filter,
         'path' => '',
-        'icon' => $icon,
+        'icon' => $img,
         'search_brand' => $search_brand,
     );
 
@@ -142,15 +129,12 @@ if( 'edit' == $opera ) {
         show_system_message('产品分类不存在', array());
         exit;
     }
-    if( $category['business_account'] != $_SESSION['business_account'] ) {
-        show_system_message('产品分类不存在', array());
-        exit;
-    }
 
     $name = trim(getPOST('category_name'));
     $parent_id = trim(getPOST('parent_id'));
     $price_filter = trim(getPOST('price_filter'));
-    $icon = trim(getPOST('icon'));
+    $img = trim(getPOST('img'));
+    $img = $db->escape($img);
     $search_brand = trim(getPOST('search_brand'));
 
     if( '' == $name ) {
@@ -166,12 +150,14 @@ if( 'edit' == $opera ) {
     }
 
     //限制自定义分类层数
-    $get_parent = 'select `parent_id`,`path` from '.$db->table('category').' where `id`='.$parent_id;
-    if( $parent = $db->fetchRow($get_parent) ) {
-        $count = count(explode(',', $parent['path']));
-        if( $count >= ( intval($config['category_depth']) + 2 ) ) {
-            show_system_message('产品分类不能超过'.$config['category_depth'].'级', array());
-            exit;
+    if($parent_id > 0) {
+        $get_parent = 'select `parent_id`,`path` from ' . $db->table('category') . ' where `id`=' . $parent_id;
+        if ($parent = $db->fetchRow($get_parent)) {
+            $count = count(explode(',', $parent['path']));
+            if ($count >= (intval($config['category_depth']) + 2)) {
+                show_system_message('产品分类不能超过' . $config['category_depth'] . '级', array());
+                exit;
+            }
         }
     }
 
@@ -180,26 +166,11 @@ if( 'edit' == $opera ) {
         $price_filter = 3;
     }
 
-    if( '' == $icon ) {
-        $icon = 'e607';
-    } else {
-        $icon = $db->escape($icon);
-    }
-
     $search_brand = intval($search_brand);
     $search_brand = ( $search_brand == 1 ) ? 1 : 0;
+    $path = $id.',';
 
-    if( $parent_id == 0 ) {
-        $get_category_id = 'select `category_id` from '.$db->table('business');
-        $get_category_id .= ' where `business_account` = \''.$_SESSION['business_account'].'\' limit 1';
-        $category_id = $db->fetchOne($get_category_id);
-
-        $get_category_path = 'select `path` from '.$db->table('category').' where `id`='.$category_id;
-        $category_path = $db->fetchOne($get_category_path);
-
-        $path = $category_path.$id.',';
-        $parent_id = $category_id;
-    } else {
+    if( $parent_id > 0 ) {
         $get_parent_path = 'select `path` from '.$db->table('category').' where id = '.$parent_id.' limit 1';
         $parent_path = $db->fetchOne($get_parent_path);
         $path = $parent_path.$id.',';
@@ -208,11 +179,11 @@ if( 'edit' == $opera ) {
 
     $data = array(
         'name' => $name,
-        'business_account' => $_SESSION['business_account'],
+        'business_account' => '',
         'parent_id' => $parent_id,
         'price_filter' => $price_filter,
         'path' => $path,
-        'icon' => $icon,
+        'icon' => $img,
         'search_brand' => $search_brand,
     );
 
@@ -222,7 +193,7 @@ if( 'edit' == $opera ) {
     $limit = '1';
 
     if( $db->autoUpdate($table, $data, $where, $order, $limit) ) {
-        $get_offspring_list = 'select * from '.$db->table('category').' where `business_account` = \''.$_SESSION['business_account'].'\' `path` like \''.$category['path'].'%\'';
+        $get_offspring_list = 'select * from '.$db->table('category').' where `path` like \''.$category['path'].'%\'';
         $offspring_list = $db->fetchAll($get_offspring_list);
         if( $offspring_list ) {
             foreach ($offspring_list as $offspring) {
@@ -249,20 +220,12 @@ if( 'view' == $act ) {
         exit;
     }
 
-    $get_business_category = 'select `category_id` from '.$db->table('business');
-    $get_business_category .= ' where business_account = \''.$_SESSION['business_account'].'\' limit 1';
-    $business_category = $db->fetchOne($get_business_category);
-
-    $get_prefix_path = 'select `path` from '.$db->table('category').' where `id` = \''.$business_category.'\'';
-    $prefix_path = $db->fetchOne($get_prefix_path);
-
     $get_category_list = 'select * from '.$db->table('category');
-    $get_category_list .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_category_list .= ' where 1 ';
     $get_category_list .= ' order by `path` ASC';
     $category_list = $db->fetchAll($get_category_list);
     if( $category_list ) {
         foreach ($category_list as $key => $category) {
-            $category['path'] = str_replace($prefix_path, '', $category['path']);
             $count = count(explode(',', $category['path']));
             if ($count > 1) {
                 $temp = '|--' . $category['name'];
@@ -286,20 +249,12 @@ if( 'add' == $act ) {
         exit;
     }
 
-    $get_business_category = 'select `category_id` from '.$db->table('business');
-    $get_business_category .= ' where business_account = \''.$_SESSION['business_account'].'\' limit 1';
-    $business_category = $db->fetchOne($get_business_category);
-
-    $get_prefix_path = 'select `path` from '.$db->table('category').' where `id` = \''.$business_category.'\'';
-    $prefix_path = $db->fetchOne($get_prefix_path);
-
     $get_category_list = 'select * from '.$db->table('category');
-    $get_category_list .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_category_list .= ' where 1';
     $get_category_list .= ' order by `path` ASC';
     $category_list = $db->fetchAll($get_category_list);
     if( $category_list ) {
         foreach ($category_list as $key => $category) {
-            $category['path'] = str_replace($prefix_path, '', $category['path']);
             $count = count(explode(',', $category['path']));
             if ($count > 1) {
                 $temp = '|--' . $category['name'];
@@ -333,39 +288,24 @@ if( 'edit' == $act ) {
         show_system_message('产品分类不存在', array());
         exit;
     }
-    if( $category['business_account'] != $_SESSION['business_account'] ) {
-        show_system_message('产品分类不存在', array());
-        exit;
-    }
 
     assign('category', $category);
 
-    $get_business_category = 'select `category_id` from '.$db->table('business');
-    $get_business_category .= ' where business_account = \''.$_SESSION['business_account'].'\' limit 1';
-    $business_category = $db->fetchOne($get_business_category);
-
-    $get_prefix_path = 'select `path` from '.$db->table('category').' where `id` = \''.$business_category.'\'';
-    $prefix_path = $db->fetchOne($get_prefix_path);
-
     $get_category_list = 'select * from '.$db->table('category');
-    $get_category_list .= ' where business_account = \''.$_SESSION['business_account'].'\' and id <> \''.$id.'\' and path not like \''.$category['path'].'%\'';
-
+    $get_category_list .= ' where `id`<>'.$id.' and `path` not like \''.$category['path'].'%\'';
+    $get_category_list .= ' order by `path` ASC';
     $category_list = $db->fetchAll($get_category_list);
-
     if( $category_list ) {
-        foreach ($category_list as $key => $value) {
-            if( false === strpos($value['path'], $category['path']) ) {
-                $value['path'] = str_replace($prefix_path, '', $value['path']);
-                $count = count(explode(',', $value['path']));
-                if ($count > 1) {
-                    $temp = '|--' . $value['name'];
-                    while ($count--) {
-                        $temp = '&nbsp;&nbsp;' . $temp;
-                    }
-
-                    $value['name'] = $temp;
-                    $category_list[$key] = $value;
+        foreach ($category_list as $key => $category) {
+            $count = count(explode(',', $category['path']));
+            if ($count > 1) {
+                $temp = '|--' . $category['name'];
+                while ($count--) {
+                    $temp = '&nbsp;&nbsp;' . $temp;
                 }
+
+                $category['name'] = $temp;
+                $category_list[$key] = $category;
             }
         }
     }
@@ -387,10 +327,6 @@ if( 'delete' == $act ) {
     $get_category = 'select * from '.$db->table('category').' where id = \''.$id.'\' limit 1';
     $category = $db->fetchRow($get_category);
     if( empty($category) ) {
-        show_system_message('产品分类不存在', array());
-        exit;
-    }
-    if( $category['business_account'] != $_SESSION['business_account'] ) {
         show_system_message('产品分类不存在', array());
         exit;
     }

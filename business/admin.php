@@ -34,7 +34,7 @@ if( 'delete' == $opera ) {
         $response['message'] = '参数错误';
     } else {
         $account = $db->escape($account);
-        $get_admin = 'select * from '.$db->table('admin').' where business_account = \''.$_SESSION['business_account'].'\' and `account` = \''.$account.'\' limit 1';
+        $get_admin = 'select * from '.$db->table('admin').' where `account` = \''.$account.'\' limit 1';
         $admin = $db->fetchRow($get_admin);
         if( empty($admin) ) {
             $response['message'] = '管理员不存在';
@@ -42,7 +42,7 @@ if( 'delete' == $opera ) {
     }
 
     if($response['message'] == '') {
-        $delete_admin = 'DELETE FROM ' . $db->table('admin') . ' WHERE business_account = \'' . $_SESSION['business_account'] . '\' AND `account` = \'' . $account . '\' LIMIT 1';
+        $delete_admin = 'DELETE FROM ' . $db->table('admin') . ' where `account` = \'' . $account . '\' LIMIT 1';
         if ($db->delete($delete_admin)) {
             $response['message'] = '成功删除管理员';
             $response['error'] = 0;
@@ -77,7 +77,6 @@ if( 'edit' == $opera ) {
         $response['message'] = '参数错误';
     } else {
         $validate_account_conditions = array(
-            'business_account' => $_SESSION['business_account'],
             'account' => $account
         );
 
@@ -142,7 +141,7 @@ if( 'edit' == $opera ) {
             $data['password'] = $password;
         }
 
-        $where = '`business_account`=\''.$_SESSION['business_account'].'\' and `account`=\''.$account.'\'';
+        $where = '`account`=\''.$account.'\'';
 
         if ($db->autoUpdate('admin', $data, $where, '', 1) !== false) {
             $response['message'] = '修改管理员成功';
@@ -181,7 +180,7 @@ if( 'add' == $opera ) {
         $response['validate_message']['account'] = '帐号格式不正确';
     } else {
         $account .= '@'.$_SESSION['business_account'];
-        $check_account = 'select `account` from '.$db->table('admin').' where business_account = \''.$_SESSION['business_account'].'\' and `account`=\''.$account.'\'';
+        $check_account = 'select `account` from '.$db->table('admin').' where `account`=\''.$account.'\'';
         if( $db->fetchRow($check_account) ) {
             $response['validate_message']['account'] = '该账号已被注册，请使用其他账号进行注册';
         }
@@ -237,7 +236,6 @@ if( 'add' == $opera ) {
             'name' => $name,
             'sex' => $sex,
             'role_id' => $role_id,
-            'business_account' => $_SESSION['business_account'],
             'mobile' => $mobile,
             'business_notice_enabled' => $business_notice_enabled
         );
@@ -268,7 +266,6 @@ if( 'view' == $act ) {
 
     $admin_list = $db->fetchAll($get_admin_list);
     assign('adminList', $admin_list);
-
 }
 
 if( 'add' == $act ) {
@@ -277,7 +274,7 @@ if( 'add' == $act ) {
         exit;
     }
 
-    $get_role_list = 'select `id`,`name` from '.$db->table('role').' where business_account = \''.$_SESSION['business_account'].'\' order by `id` asc';
+    $get_role_list = 'select `id`,`name` from '.$db->table('role').' order by `id` asc';
     $role_list = $db->fetchAll($get_role_list);
 
     if( empty($role_list) ) {
@@ -300,7 +297,7 @@ if( 'edit' == $act ) {
         exit;
     }
 
-    $get_admin = 'select * from '.$db->table('admin').' where business_account = \''.$_SESSION['business_account'].'\' and account = \''.$account.'\' limit 1';
+    $get_admin = 'select * from '.$db->table('admin').' where account = \''.$account.'\' limit 1';
     $admin = $db->fetchRow($get_admin);
     if( empty($admin) ) {
         show_system_message('管理员不存在', array());
@@ -309,7 +306,7 @@ if( 'edit' == $act ) {
 
     assign('admin', $admin);
 
-    $get_role_list = 'select `id`,`name` from '.$db->table('role').' where business_account = \''.$_SESSION['business_account'].'\' order by `id` asc';
+    $get_role_list = 'select `id`,`name` from '.$db->table('role').' order by `id` asc';
     $role_list = $db->fetchAll($get_role_list);
 
     if( empty($role_list) ) {

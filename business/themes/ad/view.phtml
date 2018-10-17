@@ -10,6 +10,24 @@
         <div class="clear"></div>
     </div>
     <div class="ad-main">
+        <div class="ad-main-header">
+            <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    广告位:
+                    <select name="pos" id="pos" class="w200">
+                        <option value="0">全部</option>
+                        {foreach from=$adpos_list item=a}
+                        <option value="{$a.id}" {if $pos eq $a.id}selected="selected"{/if}>{$a.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                </p>
+            </fieldset>
+            </form>
+            <div class="clear"></div>
+        </div>
         <table class="table">
             <thead>
             <tr>
@@ -17,6 +35,7 @@
                 <th>替换文字</th>
                 <th>广告链接</th>
                 <th>点击次数</th>
+                <th>广告位置</th>
                 <th>排序</th>
                 <th class="text-right">操作</th>
             </tr>
@@ -25,29 +44,73 @@
             {if $ad_list}
             {foreach from=$ad_list item=ad}
             <tr>
-                <td><a href="{$ad.img}" target="_blank"><img src="{$ad.img}" width="80" height="60" class="ad-img"/></a></td>
+                <td><img src="{$ad.img}" class="ad-img" width="120px"/></td>
                 <td>{$ad.alt}</td>
                 <td>{$ad.url}</td>
                 <td>{$ad.click_time}</td>
+                <td>{$ad.pos_name}</td>
                 <td>{$ad.order_view}</td>
                 <td class="text-right"><a href="?act=edit&id={$ad.id}">编辑</a> | <a href="javascript:delete_ad({$ad.id});">删除</a></td>
             </tr>
             {/foreach}
             {else}
             <tr>
-                <td style="padding: 50px 0" colspan="6" align="center">您还没有广告，立即点击 “<a href="?act=add">这里</a>” 添加广告！</td>
+                {if $adpos_list}
+                <td style="padding: 50px 0" colspan="7" align="center">您还没有广告，立即点击 “<a href="?act=add">这里</a>” 添加广告！</td>
+                {else}
+                <td style="padding: 50px 0" colspan="7" align="center">您还没有广告位置，立即点击 “<a href="adpos.php?act=add">这里</a>” 添加广告位置！</td>
+                {/if}
             </tr>
             {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&count={$count}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&count={$count}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&count={$count}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&count={$count}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&count={$count}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
 </div>
 <script type="text/javascript">
-    function delete_ad(id) {
-        if(confirm("确定要删除?")) {
-            window.location.href = "?act=delete&id="+id;
-        }
+function delete_ad(id) {
+    if(confirm("确定要删除?")) {
+        window.location.href = "?act=delete&id="+id;
     }
+}
+$(function() {
+    $('#pos').change(function() {
+        window.location.href = "?act=view&pos="+$(this).val();
+    })
+})
 </script>
 <!-- END content -->
 {include file="library/footer.lbi"}

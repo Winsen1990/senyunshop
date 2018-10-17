@@ -76,15 +76,13 @@ if('area_edit' == $opera)
             $area_list[] = array(
                 'province' => intval($a['province']),
                 'city' => intval($a['city']),
-                'district' => intval($a['district']),
-                'business_account' => $_SESSION['business_account']
+                'district' => intval($a['district'])
             );
         } else if($a['checked'] == 0) {
             if(isset($a['id']) && $did = intval($a['id']))
             {
                 $area_flag--;
-                $delete_condition[] = '`business_account`=\''.$_SESSION['business_account'].'\' and `area_id`='.$id.
-                                      ' and `id`='.$did;
+                $delete_condition[] = '`area_id`='.$id.' and `id`='.$did;
             }
         }
     }
@@ -101,11 +99,10 @@ if('area_edit' == $opera)
             'first_weight' => $first_weight,
             'next_weight' => $next_weight,
             'free' => $free,
-            'name' => $name,
-            'business_account' => $_SESSION['business_account']
+            'name' => $name
         );
 
-        if($db->autoUpdate('delivery_area', $area_data, '`id`='.$id))
+        if($db->autoUpdate('delivery_area', $area_data, '`id`='.$id) !== false)
         {
 
             foreach($area_list as $key=>$a)
@@ -181,8 +178,7 @@ if('area_add' == $opera)
             $area_list[] = array(
                 'province' => intval($a['province']),
                 'city' => intval($a['city']),
-                'district' => intval($a['district']),
-                'business_account' => $_SESSION['business_account']
+                'district' => intval($a['district'])
             );
         }
     }
@@ -200,8 +196,7 @@ if('area_add' == $opera)
             'next_weight' => $next_weight,
             'free' => $free,
             'delivery_id' => $delivery_id,
-            'name' => $name,
-            'business_account' => $_SESSION['business_account']
+            'name' => $name
         );
 
         if($db->autoInsert('delivery_area', array($area_data)))
@@ -237,7 +232,7 @@ if('delivery_area_delete' == $act)
         show_system_message('参数错误');
     }
 
-    if($db->autoDelete('delivery_area', '`business_account`=\''.$_SESSION['business_account'].'\' and `id`='.$id))
+    if($db->autoDelete('delivery_area', '`id`='.$id))
     {
         show_system_message('删除配送区域成功');
     } else {
@@ -254,13 +249,12 @@ if('delivery_area' == $act)
         show_system_message('参数错误');
     }
 
-    $get_delivery_info = 'select `id`,`name` from '.$db->table('delivery').' where `id`='.$id.' and '.
-                         '`business_account`=\''.$_SESSION['business_account'].'\'';
+    $get_delivery_info = 'select `id`,`name` from '.$db->table('delivery').' where `id`='.$id;
     $delivery = $db->fetchRow($get_delivery_info);
     assign('delivery', $delivery);
 
     $get_area_list = 'select `id`,`first_weight`,`next_weight`,`free`,`delivery_id`,`name` from '.$db->table('delivery_area').
-                     ' where `business_account`=\''.$_SESSION['business_account'].'\' and `delivery_id`='.$id;
+                     ' where `delivery_id`='.$id;
 
     $area_list = $db->fetchAll($get_area_list);
     assign('area_list', $area_list);
@@ -276,7 +270,7 @@ if('delivery_area_edit' == $act)
     }
 
     $get_area_info = 'select `id`,`first_weight`,`next_weight`,`free`,`delivery_id`,`name` from '.$db->table('delivery_area').
-                     ' where `business_account`=\''.$_SESSION['business_account'].'\' and `id`='.$id;
+                     ' where `id`='.$id;
 
     $area = $db->fetchRow($get_area_info);
     assign('area', $area);
@@ -438,7 +432,6 @@ if('install' == $act)
     $delivery_data = $plugins[0];
 
     $delivery_data['status'] = 1;
-    $delivery_data['business_account'] = $_SESSION['business_account'];
 
     if($db->autoInsert('delivery', array($delivery_data)))
     {
@@ -466,7 +459,7 @@ if('uninstall' == $act)
 
     //读取物流方式信息
     $get_delivery_id = 'select `id` from '.$db->table('delivery').
-                       ' where `plugins`=\''.$plugin.'\' and `business_account`=\''.$_SESSION['business_account'].'\'';
+                       ' where `plugins`=\''.$plugin.'\'';
     $delivery_id = $db->fetchOne($get_delivery_id);
 
     if($delivery_id)
@@ -526,7 +519,7 @@ if('view' == $act)
     {
         //检查该插件是否已经安装
         $check_plugin_status = 'select `id`,`self_delivery`,`name`,`status`,`desc`,`plugins` from '.$db->table('delivery').
-                               ' where `plugins`=\''.$plugin['plugins'].'\' and `business_account`=\''.$_SESSION['business_account'].'\'';
+                               ' where `plugins`=\''.$plugin['plugins'].'\'';
 
         $delivery_plugin = $db->fetchRow($check_plugin_status);
         if($delivery_plugin)

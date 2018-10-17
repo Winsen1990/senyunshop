@@ -1,0 +1,8 @@
+{foreach from=$product_list item=product}
+<div class="product-selector-item" data-id="{$product.product_sn}" data-img="{$product.img}" data-name="{$product.name|escape}" data-price="{$product.price|string_format:'%.2f'}">
+    <img class="product-selector-item-img" src="{$product.img}">
+    <p class="product-selector-item-name">{$product.name|escape}</p>
+    <p class="product-selector-item-price">￥{$product.price|string_format:'%.2f'}</p>
+    <div class="product-selector-checked-mask"></div>
+</div>
+{/foreach}

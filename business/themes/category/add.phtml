@@ -44,6 +44,14 @@
                 </p>
                 -->
                 <p>
+                    <label class="l-title">图片：</label>
+                    <input type="hidden" name="img" id="img" placeholder="">
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" height="120px">&nbsp;
+                    <br/>
+                    <label class="l-title"></label>
+                    建议尺寸，<span id="tips">300x300</span>像素
+                </p>
+                <p>
                     <label class="l-title"></label>
                     <input type="hidden" name="price_filter" value="3"/>
                     <input type="hidden" name="icon" value="e607"/>
@@ -56,6 +64,43 @@
     </div>
 </div>
 <!-- END content -->
+<!-- kindeditor编辑器 -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 120 + 'px';
+                        }
+                        if( !height ) {
+                            height = 120 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('.select-image').attr('src', url);
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=120&height=120');
+        });
+    });
+</script>
 {include file="library/footer.lbi"}
 </body>
 </html>

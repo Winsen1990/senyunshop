@@ -16,10 +16,12 @@
                     <p>
                         <input class="text-input w-90" type="text" id="small-input" name="title" placeholder="请输入资讯标题" value="{$content.title}" />
                     </p>
+                    <!--
                     <h5>PC端内容：</h5>
                     <p>
                         <script id="pc_content" name="content" type="text/plain" class="rn w-90" style="height: 400px;">{$content.content}</script>
                     </p>
+                    -->
                     <h5>手机端内容：</h5>
                     <p>
                         <script id="wap_content" name="wap_content" type="text/plain" style="width: 550px; height: 500px;">{$content.wap_content}</script>
@@ -138,7 +140,7 @@
 <link rel="stylesheet" type="text/css" href="../plugins/UEditor/dialogs/xiumi/xiumi-ue-v5.css"/>
 <script type="text/javascript">
     var wap_editor = UE.getEditor('wap_content');
-    var pc_editor = UE.getEditor('pc_content');
+//    var pc_editor = UE.getEditor('pc_content');
 </script>
 <!-- kindeditor编辑器 -->
 <link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
@@ -190,11 +192,11 @@
 
         var editor = K.editor({
             allowFileManager: true,
-            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
-            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
         });
         K('#select-image').click(function() {
-            editor.loadPlugin('image', function() {
+            editor.loadPlugin('fileupload', function() {
                 editor.plugin.imageDialog({
                     imageUrl : '',
                     clickFn : function(url, title, width, height, border, align) {
@@ -205,7 +207,7 @@
                             height = 120 + 'px';
                         }
 
-                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "http://{$config.domain}/"));
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
                         K('#show-image').attr('src', url);
                         K('#show-image').css('display', 'block');
                         K('#show-image').attr('width', width);

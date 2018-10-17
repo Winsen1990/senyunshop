@@ -1,0 +1,259 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}-设置 [{$block.name|escape}] 产品</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="block-main">
+        <form id="block-form" name="block-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">专区名称:</label>
+                    <span>{$block.name|escape}</span>
+                </p>
+                <p class="clear" id="img-input">
+                    <label class="l-title">关联产品：</label>
+                    <input type="button" class="text-input" id="product-selector" value="请选择关联产品" style="cursor:pointer"/>
+                    <span class="error-input" id="assoc-error"></span>
+                </p>
+                <div class="clear" id="product-scope-input-notice">
+                    {foreach from=$assoc_products item=product}
+                    <div class="product-optional-item" id="product-option-selected-{$product.product_sn}">
+                        <img src="{$product.img}"/>
+                        <p class="product-name">{$product.name|escape}</p>
+                        <p class="product-price">￥{$product.price|string_format:'%.2f'}</p>
+                        <a href="javascript:void(0);" data-id="{$product.product_sn}" onclick="remove_selected_product(this);">删除</a>
+                        <input type="hidden" name="product_scope" value="{$product.product_sn}"/>
+                        <input class="text-input" type="text" name="product_sort" value="{$product.sort}" placeholder="排序"/>
+                    </div>
+                    {/foreach}
+                </div>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:void(0);">
+                        设置<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <input type="hidden" name="eid" id="eid" value="{$block.id}"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript" src="js/layer/layer.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $('#submit-btn').click(do_submit);
+        $('#product-selector').click(show_product_optional);
+    });
+
+    function do_submit() {
+        var flag = true;
+        //参数校验
+        var data = {
+            sorts: [],
+            products: product_scope,
+            eid: parseInt($('#eid').val()),
+            opera: 'assoc'
+        };
+
+        var error = {};
+
+        $('input[name=product_sort]').each(function() {
+           var sort = $(this).val();
+           sort = parseInt(sort);
+
+           if(isNaN(sort) || sort === 0) {
+               sort = 50;
+           }
+
+           data.sorts.push(sort);
+        });
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $('.btn-loading-img').show();
+            $('#submit-btn').addClass('btn-disabled');
+            $('#mask').show();
+
+            var url = 'block.php';
+            $.post(url, data, do_response, 'json');
+        } else {
+            for(var key in error) {
+                if($('#' + key + '-error').length) {
+                    $('#' + key + '-error').text(error[key]);
+                }
+            }
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $('.btn-loading-img').hide();
+        $('#submit-btn').removeClass('btn-disabled');
+        $('#mask').hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.msg);
+            window.location.reload();
+        } else {
+            if(result.msg !== "") {
+                alert(result.msg);
+            }
+
+            if(result.errmsg.length) {
+                for(var id in result.errmsg) {
+                    $("#"+id+"-error").text(result.errmsg[id]);
+                }
+            }
+        }
+    }
+
+    var product_list_param = {
+        total: 0,
+        page: 1
+    };
+    //显示可用产品
+    function show_product_optional() {
+        layer.load(1);
+
+        $.getJSON('ajax.php', { act: 'product_list', page: product_list_param.page, page_size: 9 }, function(response) {
+            layer.closeAll('loading');
+
+            product_selector(response.selector);
+        });
+    }
+
+    var product_scope = {if !empty($product_scope)}{json_encode($product_scope)}{else}[]{/if};
+    var product_selected = {if !empty($product_selected)}{json_encode($product_selected)}{else}{}{/if};
+    function product_selector(product_panel) {
+        $.ajaxSetup({
+            beforeSend: function() {
+                $('.product-selector-item.checked').each(function() {
+                    var id = $(this).attr('data-id');
+
+                    if(product_scope.indexOf(id) === -1) {
+                        product_scope.push(id);
+
+                        product_selected[id] = {
+                            id: id,
+                            name: $(this).attr('data-name'),
+                            img: $(this).attr('data-img'),
+                            price: $(this).attr('data-price')
+                        };
+                    }
+                });
+            }
+        });
+
+        var selector = layer.open({
+            title: '请选择适用产品',
+            content: product_panel,
+            area: ['600px', '340px'],
+            btn: ['确认', '清空已选'],
+            yes: function() {
+                $('.product-selector-item.checked').each(function() {
+                    var id = $(this).attr('data-id');
+
+                    if(product_scope.indexOf(id) === -1) {
+                        product_scope.push(id);
+
+                        product_selected[id] = {
+                            id: id,
+                            name: $(this).attr('data-name'),
+                            img: $(this).attr('data-img'),
+                            price: $(this).attr('data-price')
+                        };
+                    }
+                });
+                layer.close(selector);
+            },
+            btn2: function() {
+                $('.product-selector-item.checked').each(function() {
+                    $(this).removeClass('checked');
+                });
+                return false;
+            },
+            end: function() {
+                $.ajaxSetup({
+                    beforeSend: null
+                });
+
+                render_product();
+            }
+        });
+
+        $('.product-selector-item').each(function() {
+            var id = $(this).attr('data-id');
+            if(product_scope.indexOf(id) !== -1) {
+                $(this).addClass('checked');
+            }
+        });
+
+        $('.product-selector-item').click(function () {
+            if (!$(this).hasClass('checked')) {
+                $(this).addClass('checked');
+            } else {
+                $(this).removeClass('checked');
+            }
+        });
+
+        $('.product-selection-pagination a').click(function() {
+            var page = $(this).attr('data-page');
+
+            layer.load(1);
+
+            $.getJSON('ajax.php', { act: 'product_list', page: page, page_size: 9 }, function(response) {
+                layer.closeAll('loading');
+
+                product_selector(response.selector);
+            });
+        });
+    }
+
+    function render_product() {
+        for(var id in product_selected) {
+            if($('#product-option-selected-' + id).length) {
+                continue;
+            }
+
+            var product = product_selected[id];
+
+            var product_item = '<div class="product-optional-item" id="product-option-selected-' + id + '">';
+
+            product_item += '<img src="' + product.img + '"/>';
+            product_item += '<p class="product-name">' + product.name + '</p>';
+            product_item += '<p class="product-price">￥' + product.price + '</p>';
+            product_item += '<a href="javascript:void(0);" data-id="' + id + '" onclick="remove_selected_product(this);">删除</a>';
+            product_item += '<input type="hidden" name="product_scope" value="' + id + '"/>';
+            product_item += '<input class="text-input" type="text" name="product_sort" value="" placeholder="排序"/>';
+
+            product_item += '</div>';
+
+            $('#product-scope-input-notice').append(product_item);
+        }
+    }
+
+    function remove_selected_product(obj) {
+        var id = $(obj).attr('data-id');
+        delete product_selected[id];
+        if(product_scope.indexOf(id) !== -1) {
+            product_scope.splice(product_scope.indexOf(id), 1);
+        }
+
+        obj.parentNode.remove();
+    }
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

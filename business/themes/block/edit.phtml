@@ -1,0 +1,188 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}-{$block.name|escape}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="block-main">
+        <form id="block-form" name="block-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">专区名称:</label>
+                    <input class="text-input w300" type="text" value="{$block.name|escape}" id="name" name="name" placeholder="请输入专区名称"/>
+                    <span class="error-input" id="name-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">链接:</label>
+                    <input class="text-input w300" type="text" value="{$block.url}" id="url" name="url" placeholder="请输入链接"/>
+                    <span class="error-input" id="url-error"></span>
+                </p>
+                <p class="clear" id="img-input">
+                    <label class="l-title">封面图片：</label>
+                    <input type="button" class="text-input" id="select-image" value="请选择封面图片" style="cursor:pointer">
+                    <input type="hidden" class="" name="cover" id="cover" value="{$block.cover|escape}"/>
+                    <span class="error-input" id="cover-error">{if isset($error.cover)}{$error.cover}{/if}</span>
+                    <br/><br/>
+                    <label class="l-title"></label>
+                    <img id="show-image" alt="" src="{$block.cover}" width="320px">
+                    <br/>
+                    <label class="l-title"></label>
+                    <span class="error-input" id="img-notice">建议尺寸: 750像素x250像素</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">状态:</label>
+                    <label for="status-0">
+                        <input id="status-0" type="radio" {if $block.status eq 0}checked="checked"{/if} name="status" value="0"/>
+                        <em>停用</em>
+                    </label>
+
+                    <label for="status-1">
+                        <input id="status-1" type="radio" {if $block.status eq 1}checked="checked"{/if} name="status" value="1"/>
+                        <em>启用</em>
+                    </label>
+                    <span class="error-input" id="status-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">排序:</label>
+                    <input class="text-input w300" type="text" id="sort" name="sort" placeholder="请输入排序，升序排列" value="{$block.sort}"/>
+                    <span class="error-input" id="sort-error"></span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:void(0);">
+                        编辑<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <input type="hidden" name="eid" id="eid" value="{$block.id}"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript">
+    $(function() {
+        $("#submit-btn").click(do_submit);
+    });
+
+    function do_submit() {
+        var flag = true;
+        //参数校验
+        var data = {
+            name: $('#name').val().trim(),
+            cover: $('#cover').val().trim(),
+            status: 0,
+            url: $('#url').val().trim(),
+            sort: parseInt($('#sort').val().trim()),
+            eid: parseInt($('#eid').val()),
+            opera: 'edit'
+        };
+
+        var error = {};
+
+        if(data.name === '') {
+            error.name = '-请输入专区名称';
+            flag = false;
+        } else {
+            $('#name-error').text('');
+        }
+
+        if(data.cover === '') {
+            error.cover = '-请选择封面图片';
+            flag = false;
+        } else {
+            $('#cover-error').text('');
+        }
+
+        $('input[name=status]').each(function() {
+            if($(this).prop('checked')) {
+                data.status = $(this).val();
+            }
+        });
+
+        if(isNaN(data.sort) || data.sort <= 0) {
+            data.sort = 50;
+        }
+
+        console.info(data);
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $('.btn-loading-img').show();
+            $('#submit-btn').addClass('btn-disabled');
+            $('#mask').show();
+
+            var url = 'block.php';
+            $.post(url, data, do_response, 'json');
+        } else {
+            for(var key in error) {
+                if($('#' + key + '-error').length) {
+                    $('#' + key + '-error').text(error[key]);
+                }
+            }
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $('.btn-loading-img').hide();
+        $('#submit-btn').removeClass('btn-disabled');
+        $('#mask').hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.msg);
+            window.location.reload();
+        } else {
+            if(result.msg !== "") {
+                alert(result.msg);
+            }
+
+            if(result.errmsg.length) {
+                for(var id in result.errmsg) {
+                    $("#"+id+"-error").text(result.errmsg[id]);
+                }
+            }
+        }
+    }
+</script>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        K('#cover').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var width = $('#show-image').attr('width');
+            var height = $('#show-image').attr('height');
+            var action = $('form.ke-upload-area').attr('action') + '&width=' + width + '&height=' + height;
+            $('form.ke-upload-area').attr('action', action);
+        });
+    });
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

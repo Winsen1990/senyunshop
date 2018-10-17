@@ -15,8 +15,7 @@ assign('subTitle', '内容管理');
 $action = 'edit|add|view|delete|cycle|revoke|remove|empty';
 $operation = 'edit|add';
 
-$act = check_action($action, getGET('act'));
-$act = ( $act == '' ) ? 'view' : $act;
+$act = check_action($action, getGET('act'), 'view');
 
 $opera = check_action($operation, getPOST('opera'));
 
@@ -246,7 +245,7 @@ if( 'edit' == $opera ) {
     $order = '';
     $limit = '1';
 
-    if( $db->autoUpdate('content', $data, $where, $order, $limit) ) {
+    if( $db->autoUpdate('content', $data, $where, $order, $limit) !== false ) {
         $links = array(
             array('alt'=>'返回列表', 'link'=>'content.php'),
             array('alt'=>'添加内容', 'link'=>'content.php?act=add'),

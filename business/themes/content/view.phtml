@@ -62,15 +62,16 @@
                 </td>
 -->
                 <td>
-                    手机：http://{$config.domain}/article.php?id={$content.id}<br />
-                    PC：http://{$config.pc_domain}/article.php?id={$content.id}
+                    {$config.domain}/article.php?id={$content.id}
                 </td>
                 <td>{$content.section_name}</td>
                 <td>{$content.author}</td>
                 <td>{$content.add_time}</td>
                 <td class="text-right">
-                    <a href="http://{$config.domain}/article.php?id={$content.id}">预览</a> |
-                    <a href="?act=edit&id={$content.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$content.id}">删除</a></td>
+                    <a href="{$config.domain}/article.php?id={$content.id}">预览</a> |
+                    <a href="?act=edit&id={$content.id}">编辑</a> |
+                    <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$content.id}">删除</a>
+                </td>
             </tr>
             {/foreach}
             {else}

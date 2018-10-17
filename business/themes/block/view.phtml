@@ -1,0 +1,57 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加专区</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="adpos-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>编号</th>
+                <th>专区名称</th>
+                <th>专区封面</th>
+                <th>排序</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $blocks}
+            {foreach from=$blocks item=block}
+            <tr>
+                <td>{$block.id}</td>
+                <td>{$block.name|escape}</td>
+                <td><img src="{$block.cover|escape}" height="80px"/></td>
+                <td>{$block.sort}</td>
+                <td>
+                    <a href="?act=edit&id={$block.id}">编辑</a>
+                    | <a href="?act=assoc&id={$block.id}">设置产品</a>
+                    | <a href="javascript:delete_block({$block.id});">删除</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="3" align="center">您还没有设置专区，立即点击 “<a href="?act=add">这里</a>” 添加专区！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+function delete_block(id) {
+    if(confirm("确定要删除?")) {
+        window.location.href = "?act=delete&id="+id;
+    }
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

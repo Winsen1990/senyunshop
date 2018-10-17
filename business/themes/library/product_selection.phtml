@@ -1,0 +1,40 @@
+<div id="product-selection-wrapper">
+    <div id="product-selection-list" class="product-selector">
+        {include file='library/product_option_item.phtml' product_list=$product_list}
+    </div>
+</div>
+{if $total_page gt 1}
+<div class="product-selection-pagination">
+    {if $go_first}
+    <a href="javascript:void(0);" data-page="1">首页</a>
+    {/if}
+    {if $has_prev}
+    <a href="javascript:void(0);" data-page="{$page - 1}">上一页</a>
+    {/if}
+    {if $has_many_prev}
+    ...
+    {/if}
+    {foreach from=$show_page item=pageNum}
+    {if $pageNum eq $page}
+    <b>{$page}</b>
+    {else}
+    <a href="javascript:void(0);" data-page="{$pageNum}">{$pageNum}</a>
+    {/if}
+    {/foreach}
+    {if $has_many_next}
+    ...
+    {/if}
+    {if $go_last}
+    <a href="javascript:void(0);" data-page="{$totalPage}">末页</a>
+    {/if}
+    {if $has_next}
+    <a href="javascript:void(0);" data-page="{$page + 1}">下一页</a>
+    {/if}
+</div>
+<script type="text/javascript">
+    $(function() {
+        console.info('register event');
+
+    });
+</script>
+{/if}

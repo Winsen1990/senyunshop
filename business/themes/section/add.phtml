@@ -1,0 +1,89 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加栏目</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <form id="sectionForm" name="sectionForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">栏目名称：</label>
+                    <input class="text-input w300" type="text" id="articleCatName" name="articleCatName" placeholder="请输入栏目名称" maxlength="32">
+                </p>
+                <p>
+                    <label class="l-title">父级栏目：</label>
+                    <select name="parentId" class="w150">
+                        <option value="0">顶级栏目</option>
+                        {foreach from=$sectionList item=section}
+                        <option value="{$section.id}">{$section.section_name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">排序：</label>
+                    <input class="text-input w300" type="text" id="order_view" name="order_view" value="50">
+                </p>
+<!--                <p>-->
+<!--                    <label class="l-title">栏目关键字：</label>-->
+<!--                    <input class="text-input w300" type="text" id="keywords" name="keywords"  placeholder='请输入栏目关键字，多个关键字以英文逗号","隔开'>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <label class="l-title">栏目描述：</label>-->
+<!--                    <textarea class="w300" id="description" name="description" maxlength="140" rows="5"></textarea>-->
+<!--                </p>-->
+                <p>
+                    <label class="l-title">封面：</label>
+                    <input type="button" class="text-input" id="select-image" value="请选择栏目封面" style="cursor:pointer">
+                    <!--                    <div id="show-image" style="width: 187px; height: 140px; display: inline-block">-->
+                    <!--                    </div>-->
+                    <input type="hidden" class="" name="img" id="img" value=""/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <img id="show-image" alt="" src="../upload/image/no-image.png" width="120px">
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add" />
+                    <button class="btn btn-primary" type="submit">添加</button> &nbsp;<a href="articleCat.php.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K)
+    {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson : '../plugins/kindeditor/upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('#show-image').attr('src', url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+//    prettyPrint();
+    });
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

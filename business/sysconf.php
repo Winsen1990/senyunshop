@@ -1,6 +1,6 @@
 <?php
 include 'library/init.inc.php';
-back_base_init();
+business_base_init();
 
 $template = 'sysconf/';
 
@@ -19,7 +19,7 @@ $act = ( $act == '' ) ? 'view' : $act;
 //新增系统参数
 if('add' == $opera)
 {
-    if(!check_purview('pur_sysconf_add', $_SESSION['purview']))
+    if(!check_purview('pur_sysconf_add', $_SESSION['business_purview']))
     {
         show_system_message('权限不足', array());
         exit;
@@ -30,7 +30,7 @@ if('add' == $opera)
 //修改系统参数
 if('edit' == $opera)
 {
-    if(!check_purview('pur_sysconf_edit', $_SESSION['purview']))
+    if(!check_purview('pur_sysconf_edit', $_SESSION['business_purview']))
     {
         show_system_message('权限不足', array());
         exit;
@@ -96,7 +96,7 @@ if('edit' == $opera)
 
 if('view' == $act)
 {
-    if(!check_purview('pur_sysconf_view', $_SESSION['purview']))
+    if(!check_purview('pur_sysconf_view', $_SESSION['business_purview']))
     {
         show_system_message('权限不足', array());
         exit;
@@ -111,7 +111,7 @@ if('view' == $act)
 
 if('edit' == $act)
 {
-    if(!check_purview('pur_sysconf_edit', $_SESSION['purview']))
+    if(!check_purview('pur_sysconf_edit', $_SESSION['business_purview']))
     {
         show_system_message('权限不足', array());
         exit;

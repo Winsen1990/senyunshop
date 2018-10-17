@@ -28,6 +28,9 @@ if( check_cross_domain() ) {
 $operation = 'order_detail|edit_attr|add_attr|delete_attr|add_content|edit_content|delete_content|get_attr';
 $opera = check_action($operation, getPOST('opera'));
 
+$action = 'product_list';
+$act = check_action($action, getGET('act'));
+
 //编辑消费内容
 if( 'edit_content' == $opera ) {
     $product_sn = trim(getPOST('sn'));
@@ -57,7 +60,7 @@ if( 'edit_content' == $opera ) {
     $total = $db->escape($total);
 
     $get_product = 'select * from '.$db->table('product');
-    $get_product .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_product .= ' where 1';
     $get_product .= ' and product_sn = \''.$product_sn.'\' and is_virtual = 1 limit 1';
 
     $product = $db->fetchRow($get_product);
@@ -129,7 +132,7 @@ if( 'add_content' == $opera )  {
     $total = $db->escape($total);
 
     $get_product = 'select * from '.$db->table('product');
-    $get_product .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_product .= ' where 1';
     $get_product .= ' and product_sn = \''.$product_sn.'\' and is_virtual = 1 limit 1';
 
     $product = $db->fetchRow($get_product);
@@ -185,7 +188,7 @@ if( 'delete_content' == $opera ) {
     }
 
     $get_product = 'select * from '.$db->table('product');
-    $get_product .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_product .= ' where 1';
     $get_product .= ' and product_sn = \''.$product_sn.'\' and is_virtual = 1 limit 1';
 
     $product = $db->fetchRow($get_product);
@@ -265,7 +268,7 @@ if( 'order_detail' == $opera ) {
     $get_order .= ' left join '.$db->table('group').' as g on a.group = g.id';
     $get_order .= ' left join '.$db->table('express').' as e on a.express_id = e.id';
 
-    $get_order .= ' where `business_account` = \''.$_SESSION['business_account'].'\'';
+    $get_order .= ' where 1';
     $get_order .= ' and order_sn = \''.$order_sn.'\'';
     $get_order .= ' limit 1';
 
@@ -287,7 +290,7 @@ if( 'order_detail' == $opera ) {
 
     $get_order_detail = 'select o.*, p.img from '. $db->table('order_detail').' as o';
     $get_order_detail .= ' left join '.$db->table('product').' as p on o.product_sn = p.product_sn';
-    $get_order_detail .= ' where o.business_account = \''.$_SESSION['business_account'].'\'';
+    $get_order_detail .= ' where 1';
     $get_order_detail .= ' and o.order_sn = \''.$order_sn.'\'';
 
     $order_detail = $db->fetchAll($get_order_detail);
@@ -335,7 +338,7 @@ if( 'edit_attr' == $opera ) {
     $inventory = ( 0 > $inventory ) ? 0 : $inventory;
 
     $get_product = 'select * from '.$db->table('product');
-    $get_product .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_product .= ' where 1';
     $get_product .= ' and product_sn = \''.$product_sn.'\' limit 1';
 
     $product = $db->fetchRow($get_product);
@@ -459,7 +462,7 @@ if( 'delete_attr' == $opera ) {
 
 
     $get_product = 'select * from '.$db->table('product');
-    $get_product .= ' where business_account = \''.$_SESSION['business_account'].'\'';
+    $get_product .= ' where 1';
     $get_product .= ' and product_sn = \''.$product_sn.'\' limit 1';
 
     $product = $db->fetchRow($get_product);
@@ -530,6 +533,47 @@ if( 'get_attr' == $opera ) {
         ));
         exit;
     }
+}
+
+//获取产品列表
+if('product_list' == $act)
+{
+    $response = [
+        'error' => -1,
+        'message' => ''
+    ];
+
+    $page = intval(getGET('page'));
+    $page_size = intval(getGET('page_size'));
+    $keyword = trim(getGET('keyword'));
+
+    $page = max(1, $page);
+    $page_size = max(5, $page_size);
+
+    $limit = (($page - 1) * $page_size).','.$page_size;
+
+    $conditions = [
+        'status' => 4 //已上架产品
+    ];
+
+    if(!empty($keyword)) {
+        $conditions['name'] = ['like', '%'.$keyword.'%'];
+    }
+
+    $total = $db->getColumn('product', 'count(*)', $conditions);
+
+    $product_list = $db->all('product', ['id', 'product_sn', 'name', 'img', 'price'], $conditions, $limit, ['order_view']);
+
+    $response['total'] = $total;
+    $response['total_page'] = ceil($total/$page_size);
+    $response['product_list'] = $product_list;
+    assign('product_list', $product_list);
+    create_pager($page, $response['total_page'], $total);
+    assign('total_page', $response['total_page']);
+    $response['selector'] = $smarty->fetch('library/product_selection.phtml');
+
+    echo json_encode($response);
+    exit;
 }
 
 echo json_encode(array(

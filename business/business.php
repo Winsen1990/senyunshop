@@ -26,7 +26,6 @@ if( 'base' == $opera ) {
         exit;
     }
 
-//    var_dump($_POST);exit;
     $shop_name = trim(getPOST('shop_name'));
     $shop_sign = trim(getPOST('sign'));
     $pc_shop_sign = trim(getPOST('pc-sign'));
@@ -119,15 +118,9 @@ if( 'base' == $opera ) {
     $limit = '';
 
     if( $db->autoUpdate($table, $data, $where, $order, $limit) ) {
-
-//        if( !empty($old_shop_logo) && ($old_shop_logo != $shop_logo) && file_exists(realpath('..'.$old_shop_logo)) ) {
-//            unlink(realpath('..'.$old_shop_logo));
-//        }
         show_system_message('更新商户信息成功', array());
-        exit;
     } else {
         show_system_message('系统繁忙，请稍后重试', array());
-        exit;
     }
 
 

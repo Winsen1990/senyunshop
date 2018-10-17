@@ -14,12 +14,14 @@
             <div class="addArticleMainL pull-left">
                 <fieldset>
                     <p>
-                        <input class="text-input w-90" type="text" id="small-input" name="title" placeholder="请输入资讯标题">
+                        <input class="text-input w-90" type="text" id="small-input" name="title" placeholder="请输入资讯标题"/>
                     </p>
+                    <!--
                     <h5>PC端内容：</h5>
                     <p>
                         <script id="pc_content" name="content" type="text/plain" class="rn w-90" style="height: 400px;"></script>
                     </p>
+                    -->
                     <h5>手机端内容：</h5>
                     <p>
                         <script id="wap_content" name="wap_content" type="text/plain" class="rn w-90" style="height: 400px;"></script>
@@ -28,6 +30,7 @@
                         <input type="hidden" name="opera" value="add" />
                         <button class="btn btn-primary" >提交</button> &nbsp;<a href="content.php" class="btn btn-primary">返回</a>
                     </p>
+                </fieldset>
             </div>
             <div class="addArticleMainR pull-left">
                 <fieldset>
@@ -130,7 +133,7 @@
 <link rel="stylesheet" type="text/css" href="../plugins/UEditor/dialogs/xiumi/xiumi-ue-v5.css"/>
 <script type="text/javascript">
     var wap_editor = UE.getEditor('wap_content');
-    var pc_editor = UE.getEditor('pc_content');
+//    var pc_editor = UE.getEditor('pc_content');
 </script>
 <!-- UEditor编辑器 end -->
 <!-- kindeditor编辑器 -->
@@ -183,11 +186,11 @@
 
         var editor = K.editor({
             allowFileManager: true,
-            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
-            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
         });
         K('#select-image').click(function() {
-            editor.loadPlugin('image', function() {
+            editor.loadPlugin('fileupload', function() {
                 editor.plugin.imageDialog({
                     imageUrl : '',
                     clickFn : function(url, title, width, height, border, align) {
@@ -198,7 +201,7 @@
                             height = 120 + 'px';
                         }
 
-                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "http://{$config.domain}/"));
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
                         K('#show-image').attr('src', url);
                         K('#show-image').css('display', 'block');
                         K('#show-image').attr('width', width);
@@ -211,6 +214,7 @@
             $('form.ke-upload-area').attr('action', action + '&width=80&height=80');
         });
     });
+
     $('input[name=isAutoPublish]').click(function(){
         console.log($(this).is(':checked'));
         if( $(this).val() == 1 ) {

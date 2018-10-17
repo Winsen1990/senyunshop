@@ -8,6 +8,7 @@
  */
 
 include 'library/init.inc.php';
+global $db, $log, $smarty, $config;
 
 //商户管理后台初始化
 business_base_init();
@@ -33,7 +34,7 @@ if( 'response' == $opera ) {
 
     $get_comment = 'select a.* from '.$db->table('comment').' as a';
     $get_comment .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
-    $get_comment .= ' where b.business_account = \''.$_SESSION['business_account'].'\'';
+    $get_comment .= ' where 1';
     $get_comment .= ' and a.id = \''.$id.'\' and a.parent_id = 0 limit 1';
     $comment = $db->fetchRow($get_comment);
     if( !$comment ) {
@@ -70,7 +71,7 @@ if( 'response' == $opera ) {
             'add_time' => time(),
             'comment' => $response,
             'product_sn' => $comment['product_sn'],
-            'account' => $_SESSION['business_account'],
+            'account' => '',
             'parent_id' => $id,
         );
 
@@ -137,7 +138,7 @@ if( 'view' == $act ) {
     //获取总数
     $get_total = 'select count(*) from '.$db->table('comment').' as a';
     $get_total .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
-    $get_total .= ' where a.parent_id = 0 and b.business_account = \''.$_SESSION['business_account'].'\'';
+    $get_total .= ' where a.parent_id = 0 ';
     $total = $db->fetchOne($get_total);
 
     $page = ( $page > $total ) ? $total : $page;
@@ -152,7 +153,7 @@ if( 'view' == $act ) {
     $get_comment_list = 'select a.*,d.comment as response from '.$db->table('comment').'as a';
     $get_comment_list .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
     $get_comment_list .= ' left join '.$db->table('comment').' as d on a.id = d.parent_id';
-    $get_comment_list .= ' where a.parent_id = 0 and b.business_account = \''.$_SESSION['business_account'].'\'';
+    $get_comment_list .= ' where a.parent_id = 0 ';
     $get_comment_list .= $order_by;
     $get_comment_list .= ' limit '.$offset.','.$count;
     $comment_list = $db->fetchAll($get_comment_list);
@@ -180,7 +181,7 @@ if( 'response' == $act ) {
     $get_comment = 'select a.*,d.comment as response from '.$db->table('comment').' as a';
     $get_comment .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
     $get_comment .= ' left join '.$db->table('comment').' as d on a.id = d.parent_id';
-    $get_comment .= ' where b.business_account = \''.$_SESSION['business_account'].'\'';
+    $get_comment .= ' where 1';
     $get_comment .= ' and a.id = \''.$id.'\' and a.parent_id = 0 limit 1';
     $comment = $db->fetchRow($get_comment);
     if( !$comment ) {
@@ -203,7 +204,7 @@ if( 'delete' == $act ) {
 
     $get_comment = 'select * from '.$db->table('comment').' as a';
     $get_comment .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
-    $get_comment .= ' where a.id = \''.$id.'\' and b.business_account = \''.$_SESSION['business_account'].'\' limit 1';
+    $get_comment .= ' where a.id = \''.$id.'\' limit 1';
 
     $comment = $db->fetchRow($get_comment);
     if( empty($comment) ) {

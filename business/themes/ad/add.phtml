@@ -38,18 +38,28 @@
                     <input class="text-input" type="text" id="end_time" name="end_time" placeholder="请选择结束时间"/>
                     <span class="error-input" id="time-error">{if isset($error.time)}{$error.time}{/if}</span>
                 </p>
+                <p class="clear">
+                    <label class="l-title">广告位置:</label>
+                    <select name="ad_pos_id" id="ad_pos_id" class="w150" onchange="select_ad(this.value);">
+                        <option value="0">--请选择--</option>
+                        {foreach from=$adpos_list item=adpos}
+                        <option value="{$adpos.id}">{$adpos.name}</option>
+                        {/foreach}
+                    </select>
+                    <span class="error-input" id="ad_pos_id-error">{if isset($error.ad_pos_id)}{$error.ad_pos_id}{/if}</span>
+                </p>
                 <p class="clear" id="img-input">
                     <label class="l-title">广告图片：</label>
                     <input type="button" class="text-input" id="select-image" value="请选择广告图片" style="cursor:pointer">
                     <input type="hidden" class="" name="img" id="img" value=""/>
-                    <span class="error-input" id="img-error">{if isset($error.img)}{$error.img}{/if}</span>
                     <br/>
-                    <label class="l-title"></label>
-                    建议尺寸 320x140像素
+                    <span class="error-input" id="img-error">{if isset($error.img)}{$error.img}{else}请先选择广告位{/if}</span>
                 </p>
                 <p id="img-show">
                     <label class="l-title"></label>
-                    <img id="show-image" alt="" src="../upload/image/no-image.png">
+                    <img id="show-image" alt="" src="../upload/image/no-image.png" width="480px">
+                    <br/>
+                    <span class="error-input" id="img-notice"></span>
                 </p>
                 <p>
                     <label class="l-title"></label>
@@ -71,6 +81,17 @@ function check_forever(value) {
         $("#available-time").hide();
     } else {
         $("#available-time").show();
+    }
+}
+
+var adpos_json = {$adpos_json};
+function select_ad(id) {
+    if(adpos_json[id] != undefined) {
+        $("#show-image").attr({ "width":adpos_json[id].width, "height":adpos_json[id].height });
+        $('#img-notice').text(adpos_json[id].width + '*' + adpos_json[id].height + ',大小不要超过100k');
+        if( $('#img-error').text() == '请先选择广告位' ) {
+            $('#img-error').text('');
+        }
     }
 }
 
@@ -122,7 +143,7 @@ function do_submit() {
     var forever = $("input[name='forever']")[0].checked ?  $("input[name='forever']")[0].value :  $("input[name='forever']")[1].value;
     var url = $("#url").val();
     var order_view = $("#order_view").val().trim();
-//    var ad_pos_id = $("#ad_pos_id").val();
+    var ad_pos_id = $("#ad_pos_id").val();
 
     if(url == "") {
         $("#url-error").text("-请输入广告链接");
@@ -168,6 +189,15 @@ function do_submit() {
         $("#order_view-error").text("");
     }
 
+    ad_pos_id = parseInt(ad_pos_id);
+    if(isNaN(ad_pos_id) || ad_pos_id <= 0)
+    {
+        $("#ad_pos_id-error").text("-请选择广告位置");
+        flag = false;
+    } else {
+        $("#ad_pos_id-error").text("");
+    }
+
     if(flag) {
         flag = true;
         //启用过渡效果
@@ -175,7 +205,7 @@ function do_submit() {
         $("#submit-btn").addClass("btn-disabled");
         $("#mask").show();
 
-        var params = { "opera":"add", "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view, "ad_pos_id":3 };
+        var params = { "opera":"add", "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view, "ad_pos_id":ad_pos_id };
         var url = "ad.php";
         $.post(url, params, do_response, "json");
     }
@@ -215,23 +245,28 @@ function do_response(result) {
     KindEditor.ready(function(K) {
         var editor = K.editor({
             allowFileManager : true,
-            uploadJson : 'plugin_upload_json.php',
+            uploadJson: '../plugins/kindeditor/upload_json.php',
             fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
         });
         K('#select-image').click(function() {
+            if( $('#ad_pos_id').val() == 0 ) {
+                return;
+            }
             editor.loadPlugin('fileupload', function() {
                 editor.plugin.imageDialog({
                     imageUrl : '',
                     clickFn : function(url, title, width, height, border, align) {
-                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "http://{$config.domain}/"));
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
                         K('#show-image').attr('src', url);
                         K('#show-image').css('display', 'block');
                         editor.hideDialog();
                     }
                 });
             });
-            var action = $('form.ke-upload-area').attr('action');
-            $('form.ke-upload-area').attr('action', action + '&width=320&height=140');
+            var width = $('#show-image').attr('width');
+            var height = $('#show-image').attr('height');
+            var action = $('form.ke-upload-area').attr('action') + '&width=' + width + '&height=' + height;
+            $('form.ke-upload-area').attr('action', action);
         });
     });
 </script>

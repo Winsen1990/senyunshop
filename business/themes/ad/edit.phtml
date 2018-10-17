@@ -33,23 +33,33 @@
                     <span class="error-input" id="forever-error">{if isset($error.forever)}{$error.forever}{/if}</span>
                 </p>
                 <p class="clear" id="available-time" {if $ad.forever eq 1}style="display: none"{/if}>
-                <label class="l-title">有效时间:</label>
-                <input class="text-input" type="text" id="begin_time" name="begin_time" placeholder="请选择开始时间" value="{date('Y-m-d', $ad.begin_time)}"/> 至
-                <input class="text-input" type="text" id="end_time" name="end_time" placeholder="请选择结束时间" value="{date('Y-m-d', $ad.end_time)}"/>
-                <span class="error-input" id="time-error">{if isset($error.time)}{$error.time}{/if}</span>
+                    <label class="l-title">有效时间:</label>
+                    <input class="text-input" type="text" id="begin_time" name="begin_time" placeholder="请选择开始时间" value="{date('Y-m-d', $ad.begin_time)}"/> 至 
+                    <input class="text-input" type="text" id="end_time" name="end_time" placeholder="请选择结束时间" value="{date('Y-m-d', $ad.end_time)}"/>
+                    <span class="error-input" id="time-error">{if isset($error.time)}{$error.time}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">广告位置:</label>
+                    <select name="ad_pos_id" id="ad_pos_id" class="w150" onchange="select_ad(this.value);">
+                        <option value="0">--请选择--</option>
+                        {foreach from=$adpos_list item=adpos}
+                        <option value="{$adpos.id}" {if $ad.ad_pos_id eq $adpos.id}selected="selected"{/if}>{$adpos.name}</option>
+                        {/foreach}
+                    </select>
+                    <span class="error-input" id="ad_pos_id-error">{if isset($error.ad_pos_id)}{$error.ad_pos_id}{/if}</span>
                 </p>
                 <p class="clear" id="img-input">
                     <label class="l-title">广告图片：</label>
                     <input type="button" class="text-input" id="select-image" value="请选择广告图片" style="cursor:pointer">
-                    <input type="hidden" class="" name="img" id="img" value="../{$ad.img}"/>
-                    <span class="error-input" id="img-error">{if isset($error.img)}{$error.img}{/if}</span>
+                    <input type="hidden" class="" name="img" id="img" value="{$ad.img}"/>
                     <br/>
-                    <label class="l-title"></label>
-                    建议尺寸 320x140像素
+                    <span class="error-input" id="img-error">{if isset($error.img)}{$error.img}{/if}</span>
                 </p>
                 <p id="img-show">
                     <label class="l-title"></label>
-                    <img id="show-image" alt="" src="{$ad.img}">
+                    <img id="show-image" alt="" src="{$ad.img}"/>
+                    <br/>
+                    <span class="error-input" id="img-notice"></span>
                 </p>
                 <p>
                     <label class="l-title"></label>
@@ -59,160 +69,184 @@
                     <input type="hidden" name="opera" value="edit"/>
                     <input type="hidden" id="eid" name="eid" value="{$ad.id}"/>
                     <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
-                </p>
+                </p>                
             </fieldset>
-        </form>
+        </form> 
     </div>
 </div>
 <div id="mask"></div>
 <script type="text/javascript" src="laydate/laydate.js"></script>
 <script type="text/javascript">
-    function check_forever(value) {
-        if(value) {
-            $("#available-time").hide();
-        } else {
-            $("#available-time").show();
+function check_forever(value) {
+    if(value) {
+        $("#available-time").hide();
+    } else {
+        $("#available-time").show();
+    }
+}
+
+var adpos_json = {$adpos_json};
+function select_ad(id) {
+    if(adpos_json[id] != undefined) {
+        $("#show-image").attr({ "width":adpos_json[id].width, "height":adpos_json[id].height });
+        $('#img-notice').text(adpos_json[id].width + '*' + adpos_json[id].height + ',大小不要超过100k');
+        if( $('#img-error').text() == '请先选择广告位' ) {
+            $('#img-error').text('');
         }
     }
+}
 
-    $(function() {
-        $("#submit-btn").click(do_submit);
-    });
-    var start = {
-        elem: '#begin_time',
-        format: 'YYYY-MM-DD',
-        min: laydate.now(), //设定最小日期为当前日期
-        max: '9999-12-31 23:59:59', //最大日期
-        istime: false,
-        istoday: true,
-        choose: function(datas){
-            end.min = datas; //开始日选好后，重置结束日的最小日期
-            end.start = datas //将结束日的初始值设定为开始日
-            end.click;
-        }
-    };
+$(function() {
+    var id = $('#ad_pos_id').val();
+    $("#show-image").attr({ "width":adpos_json[id].width, "height":adpos_json[id].height });
+    $('#img-notice').text(adpos_json[id].width + '*' + adpos_json[id].height + ',大小不要超过100k');
+    $("#submit-btn").click(do_submit);
+});
+var start = {
+    elem: '#begin_time',
+    format: 'YYYY-MM-DD',
+    min: laydate.now(), //设定最小日期为当前日期
+    max: '9999-12-31 23:59:59', //最大日期
+    istime: false,
+    istoday: true,
+    choose: function(datas){
+        end.min = datas; //开始日选好后，重置结束日的最小日期
+        end.start = datas //将结束日的初始值设定为开始日
+        end.click;
+    }
+};
 
-    var end = {
-        elem: '#end_time',
-        format: 'YYYY-MM-DD',
-        min: laydate.now(),
-        max: '9999-12-31 23:59:59',
-        istime: false,
-        istoday: true,
-        choose: function(datas){
-            start.max = datas; //结束日选好后，重置开始日的最大日期
-        }
-    };
+var end = {
+    elem: '#end_time',
+    format: 'YYYY-MM-DD',
+    min: laydate.now(),
+    max: '9999-12-31 23:59:59',
+    istime: false,
+    istoday: true,
+    choose: function(datas){
+        start.max = datas; //结束日选好后，重置开始日的最大日期
+    }
+};
 
-    laydate(start);
-    laydate(end);
-    /**
-     * 这个解决方案可以作为Ajax提交表单的模板
-     * 1、form的提交操作托管给do_submit处理;
-     * 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
-     * 3、仅支持post方式提交表单;
-     * 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
-     **/
-    function do_submit() {
-        //参数校验
-        var flag = true;
-        var id = $("#eid").val();
-        var alt = $("#alt").val().trim();
-        var img = $("#img").val().trim();
-        var end_time = $("#end_time").val().trim();
-        var begin_time = $("#begin_time").val().trim();
-        var forever = $("input[name='forever']")[0].checked ?  $("input[name='forever']")[0].value :  $("input[name='forever']")[1].value;
-        var url = $("#url").val();
-        var order_view = $("#order_view").val().trim();
+laydate(start);
+laydate(end);
+/**
+* 这个解决方案可以作为Ajax提交表单的模板
+* 1、form的提交操作托管给do_submit处理;
+* 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
+* 3、仅支持post方式提交表单;
+* 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
+**/
+function do_submit() {
+    //参数校验
+    var flag = true;
+    var id = $("#eid").val();
+    var alt = $("#alt").val().trim();
+    var img = $("#img").val().trim();
+    var end_time = $("#end_time").val().trim();
+    var begin_time = $("#begin_time").val().trim();
+    var forever = $("input[name='forever']")[0].checked ?  $("input[name='forever']")[0].value :  $("input[name='forever']")[1].value;
+    var url = $("#url").val();
+    var order_view = $("#order_view").val().trim();
+    var ad_pos_id = $("#ad_pos_id").val();
 
-        id = parseInt(id);
+    id = parseInt(id);
 
-        if(id <= 0) {
-            alert("参数错误");
-            flag = false;
-        }
-
-        if(url == "") {
-            $("#url-error").text("-请输入广告链接");
-            flag = false;
-        } else {
-            $("#url-error").text("");
-        }
-
-        if(alt == "") {
-            $("#alt-error").text("-请输入替换文字");
-            flag = false;
-        } else {
-            $("#alt-error").text("");
-        }
-
-        if(img == "") {
-            $("#img-error").text("-请上传广告图片");
-            flag = false;
-        } else {
-            $("#img-error").text("");
-        }
-
-        forever = parseInt(forever);
-        if(forever == 0) {
-            if(begin_time == "" || end_time == "" || begin_time > end_time) {
-                $("#time-error").text("-请选择有效时间");
-                flag = false;
-            } else {
-                $("#time-error").text("");
-                begin_time += " 00:00:00";
-                end_time += " 23:59:59";
-            }
-        } else {
-            forever = 1;
-        }
-
-        order_view = parseInt(order_view);
-
-        if(isNaN(order_view) || order_view < 0) {
-            $("#order_view-error").text("-请输入广告排序");
-            flag = false;
-        } else {
-            $("#order_view-error").text("");
-        }
-
-        if(flag) {
-            flag = true;
-            //启用过渡效果
-            $(".btn-loading-img").show();
-            $("#submit-btn").addClass("btn-disabled");
-            $("#mask").show();
-
-            var params = { "opera":"edit", "eid":id, "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view};
-            var url = "ad.php";
-            $.post(url, params, do_response, "json");
-        }
-
-        return flag;
+    if(id <= 0) {
+        alert("参数错误");
+        flag = false;
     }
 
-    function do_response(result) {
-        //关闭过渡效果
-        $(".btn-loading-img").hide();
-        $("#submit-btn").removeClass("btn-disabled");
-        $("#mask").hide();
-        //处理返回结果
-        if(result.error == 0) {
+    if(url == "") {
+        $("#url-error").text("-请输入广告链接");
+        flag = false;
+    } else {
+        $("#url-error").text("");
+    }
+
+    if(alt == "") {
+        $("#alt-error").text("-请输入替换文字");
+        flag = false;
+    } else {
+        $("#alt-error").text("");
+    }
+
+    if(img == "") {
+        $("#img-error").text("-请上传广告图片");
+        flag = false;
+    } else {
+        $("#img-error").text("");
+    }
+
+    forever = parseInt(forever);
+    if(forever == 0) {
+        if(begin_time == "" || end_time == "" || begin_time > end_time) {
+            $("#time-error").text("-请选择有效时间");
+            flag = false;
+        } else {
+            $("#time-error").text("");
+            begin_time += " 00:00:00";
+            end_time += " 23:59:59";
+        }
+    } else {
+        forever = 1;
+    }
+
+    order_view = parseInt(order_view);
+
+    if(isNaN(order_view) || order_view < 0) {
+        $("#order_view-error").text("-请输入广告排序");
+        flag = false;
+    } else {
+        $("#order_view-error").text("");
+    }
+
+    ad_pos_id = parseInt(ad_pos_id);
+    if(isNaN(ad_pos_id) || ad_pos_id <= 0)
+    {
+        $("#ad_pos_id-error").text("-请选择广告位置");
+        flag = false;
+    } else {
+        $("#ad_pos_id-error").text("");
+    }
+
+    if(flag) {
+        flag = true;
+        //启用过渡效果
+        $(".btn-loading-img").show();
+        $("#submit-btn").addClass("btn-disabled");
+        $("#mask").show();
+
+        var params = { "opera":"edit", "eid":id, "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view, "ad_pos_id":ad_pos_id };
+        var url = "ad.php";
+        $.post(url, params, do_response, "json");
+    }
+
+    return flag;
+}
+
+function do_response(result) {
+    //关闭过渡效果
+    $(".btn-loading-img").hide();
+    $("#submit-btn").removeClass("btn-disabled");
+    $("#mask").hide();
+    //处理返回结果
+    if(result.error == 0) {
+        alert(result.msg);
+        window.location.reload();
+    } else {
+        if(result.msg != "") {
             alert(result.msg);
-            window.location.reload();
-        } else {
-            if(result.msg != "") {
-                alert(result.msg);
-            }
+        }
 
-            if(result.errmsg.length) {
-                for(var id in result.errmsg) {
-                    $("#"+id+"-error").text(result.errmsg[id]);
-                }
+        if(result.errmsg.length) {
+            for(var id in result.errmsg) {
+                $("#"+id+"-error").text(result.errmsg[id]);
             }
         }
     }
-    /*----------------  Ajax end ---------------------*/
+}
+/*----------------  Ajax end ---------------------*/
 </script>
 <link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
 <link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
@@ -221,7 +255,7 @@
     KindEditor.ready(function(K) {
         var editor = K.editor({
             allowFileManager : true,
-            uploadJson : 'plugin_upload_json.php',
+            uploadJson: '../plugins/kindeditor/upload_json.php',
             fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
         });
         K('#select-image').click(function() {
@@ -229,15 +263,17 @@
                 editor.plugin.imageDialog({
                     imageUrl : '',
                     clickFn : function(url, title, width, height, border, align) {
-                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "http://{$config.domain}/"));
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
                         K('#show-image').attr('src', url);
                         K('#show-image').css('display', 'block');
                         editor.hideDialog();
                     }
                 });
             });
-            var action = $('form.ke-upload-area').attr('action');
-            $('form.ke-upload-area').attr('action', action + '&width=320&height=140');
+            var width = $('#show-image').attr('width');
+            var height = $('#show-image').attr('height');
+            var action = $('form.ke-upload-area').attr('action') + '&width=' + width + '&height=' + height;
+            $('form.ke-upload-area').attr('action', action);
         });
     });
 </script>
