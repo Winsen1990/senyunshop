@@ -1,0 +1,161 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+<!--        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加内容</a>&nbsp;<a class="btn btn-primary" href="?act=cycle">回收站</a></div>-->
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <div class="article-main-header">
+            <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    显示
+                    <select name="count" class="w75">
+                        <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                        <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                        <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                        <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                    </select>
+                    项结果
+                </div>
+                <div class="pull-right">
+                    <label>账号：</label>
+                    <input class="text-input w150" type="text" id="small-input" name="account" value="">&nbsp;
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </div>
+                </p>
+            </fieldset>
+            </form>
+            <div class="clear"></div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>昵称</th>
+                <th>姓名</th>
+                <th>帐号</th>
+                <th>性别</th>
+                <th>手机</th>
+                <th>邮箱</th>
+                <th>是否关注</th>
+                <th>等级</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$member_list item=member}
+            <tr>
+                <td>{$member.id}</td>
+                <td>{$member.nickname|escape}</td>
+                <td>{$member.real_name|escape}</td>
+                <td>{$member.account}</td>
+                <td>{$member.sex}</td>
+                <td>{$member.mobile}</td>
+                <td>{$member.email}</td>
+                <td>{$member.subscribed}</td>
+                <td>{$member.level_str}</td>
+                <td class="text-right">
+                    <a href="?act=network&account={$member.account}">会员网络图</a>
+                    | <a href="?act=edit&account={$member.account}">编辑</a>
+                    {if $member.status eq 1}
+                    | <a onclick="javascript:if(confirm('确认要拉黑？')) return true; else return false;" href="?act=delete&account={$member.account}">拉黑</a>
+                    {else}
+                    | <a onclick="javascript:if(confirm('确认要撤销拉黑？')) return true; else return false;" href="?act=revoke&account={$member.account}">撤销</a>
+                    {/if}
+                    | <a href="javascript:void(0);" class="async-info" data-account="{$member.account}">同步微信资料</a>
+                    {if $member.expired neq -1}
+                    | <a href="javascript:void(0);" class="get-forever-qr-code" data-account="{$member.account}">生成永久二维码</a>
+                    {/if}
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="10" align="center">您还没有会员</td>
+            </tr>
+            {/if}
+
+            <tr>
+                <td colspan="10">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&count={$count}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&count={$count}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&count={$count}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&count={$count}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&count={$count}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    $(function(){
+        $('select[name=count]').change(function(){
+            window.location.href="member.php?count="+$(this).val();
+        });
+
+        $('.async-info').click(function () {
+            var account = $(this).attr('data-account');
+
+            if(account == '') {
+                alert('参数值为空');
+                return false;
+            }
+
+            $.post('member.php', { opera: 'refresh', account: account }, operation_handler, 'json');
+        });
+
+        $('.get-forever-qr-code').click(function () {
+            var account = $(this).attr('data-account');
+
+            if(account == '') {
+                alert('参数值为空');
+                return false;
+            }
+
+            $.post('member.php', { opera: 'get_forever_qr_code', account: account }, operation_handler, 'json');
+        });
+    });
+
+    function operation_handler(response) {
+        alert(response.message);
+    }
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

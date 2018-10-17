@@ -1,0 +1,54 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加用户组</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminGroup-main">
+        <form id="roleForm" name="roleForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">用户组名称：</label>
+                    <input class="text-input w300" type="text" id="small-input" name="name" placeholder="请输入用户组名称" maxlength="32">
+                </p>
+            </fieldset>
+            <fieldset>
+                <p>
+                    <label class="l-title">权限管理：</label>
+                    <input type="checkbox" id="all"><em>全选</em>
+                </p>
+                <div class="clear"></div>
+            </fieldset>
+            {foreach from=$purviews item=purview key=key}
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">{$purviewValue.$key}：</label>
+                    <input type="checkbox" name="purviews[{$key}]" value="{$key}" class="purview" id="{$key}">
+                </p>
+                <p class="clear">
+                    <label class="l-title"></label>
+                    {foreach from=$purview item=subPurview}
+                    <input type="checkbox" name="purviews[{$key}][]" value="{$subPurview}" class="sub-purview {$key}" data-parent="{$key}"><em>{$purviewValue[$subPurview]}</em>&nbsp;&nbsp;
+                    {/foreach}
+                </p>
+            </fieldset>
+            {/foreach}
+            <fieldset>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add" />
+                    <button class="btn btn-primary" type="submit">添加</button> &nbsp;<a href="role.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

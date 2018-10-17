@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <style type="text/css">
+        <!--
+        {if $shop_config.header_bg neq ''}
+        .shop .user-info:before {
+            background-image: url('{$shop_config.header_bg}');
+        }
+        {/if}
+        -->
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em id="self-shop-name">{$shop_config.name|escape}</em><span class="jk-editor icon" id="shop-name-edit">&#xe64b;</span></h1>
+    <!-- category -->
+    <div class="category">
+        <dl>
+            <dt>
+                <a id="shop_category" href="javascript:void(0);">分类<i></i></a>
+            </dt>
+        </dl>
+    </div>
+    <!-- 分类菜单-->
+    <div class="category_menu">
+        <ul class="list1">
+            {foreach from=$category item=c}
+            {if count($c.children) eq 0}
+            <li>
+                <a href="product_list.php?id={$c.id}">{$c.name}</a>
+            </li>
+            {else}
+            <li class="hasmore">
+                <a href="javascript:void(0);" onclick="return false;" grade="2">{$c.name}</a>
+                <ul class="list2">
+                    {foreach from=$c.children item=cc}
+                    <li><a href="product_list.php?id={$cc.id}">{$cc.name}</a></li>
+                    {/foreach}
+                </ul>
+            </li>
+            {/if}
+            {/foreach}
+        </ul>
+    </div>
+</header>
+<!-- 用户基本信息 -->
+<section class="shop">
+    <header class="user-info">
+        <section class="user-basic">
+            <img class="user-avatar" src="{$shop_config.logo|escape}" alt="商家">
+<!--            <div class="user-name">{$shop_config.name|escape}</div>-->
+        </section>
+        <section class="user-stat">
+            <a id="shop_collect_number" href="category.php"><em>{count($product_list)}</em>全部商品</a>
+            <a id="product_collect_number" href="#"><em>{$new_product_count}</em>平台上新</a>
+            <a id="read_history_count" href="tel://{$user_info.mobile}"><em class="icon">&#xe600;</em>联系掌柜</a>
+        </section>
+    </header>
+    <!-- 广告轮播区 -->
+    <section id="focus" class="focus">
+        <div class="hd">
+            <ul></ul>
+        </div>
+        <div class="bd">
+            <ul>
+                {foreach from=$cycle_ad item=ad}
+                <li><a href="{$ad.url|escape}"><img _src="{$ad.img|escape}" src="{$template_dir}images/blank.png" /></a></li>
+                {/foreach}
+            </ul>
+        </div>
+    </section>
+    <!-- 热卖产品 -->
+    <section class="hot-product floor">
+        <h2>
+            <a class="title"><i class="icon">&#xe610;</i>店长推荐</a>
+            <a href="self_shop.php?act=product_edit" class="more" title="更多">编辑</a>
+        </h2>
+        {if $product_list}
+        <ul style="overflow: hidden; margin: 0.5rem 0px;">
+            {foreach from=$product_list item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$p.img|escape}" alt=""/>
+                    <span>{$p.name|escape}</span>
+                    <em>￥{sprintf('%.2f', $p.price)}</em>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+        {else}
+        <div class="empty-con" style="padding-top: 2rem; overflow: hidden;">
+            <span class="icon">&#xe640;</span>
+            <span class="empty-tips">您的分销产品空空如也!</span>
+            <span class="empty-btn">
+                <a href="self_shop.php?act=product_edit" class="btn">去分销产品</a>
+            </span>
+        </div>
+        {/if}
+    </section>
+    <!-- 猜你喜欢 -->
+    <section class="f-section might-like">
+        <h3><i class="icon">&#xe617;</i>猜你喜欢
+            <a href="javascript:;" onclick="change_fav();"><span class="icon">&#xe618;</span>&nbsp;换一批</a>
+        </h3>
+        <ul id="fav_list">
+            {foreach from=$fav_products item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img src="{$p.img|escape}" alt="产品图">
+                    <span>{$p.name|escape}</span>
+                    <em>￥{sprintf('%.2f', $p.price)}</em>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </section>
+    <!-- 全部产品 -->
+    <!--
+    <section class="all-product">
+        <a href="#" class="arrow">全部商品</a>
+    </section>
+    -->
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="recommend.php"><em class="icon">&#xe626;</em><span>我要分享</span></a></li>
+<!--        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>-->
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a href="user.php"><em class="icon">&#xe600;</em><span>我</span></a></li>
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+        $("#shop_category").click(function(){
+            if($(this).hasClass("up")){
+                $(".category_menu").slideUp(500);
+                $(this).removeClass("up");
+                $(".hasmore").removeClass("up");
+                $(".hasmore").find("ul").slideUp();
+            }else{
+                $(".category_menu").slideDown(500);
+                $(this).addClass("up");
+            }
+        });
+        $(".hasmore a").click(function(){
+            $(this).parent().siblings().removeClass("up");
+            $(this).parent().siblings().find("ul").slideUp(500);
+            if($(this).parent().hasClass("up")){
+                $(this).parent().find("ul").slideUp(500);
+                $(this).parent().removeClass("up");
+            }else{
+                $(this).parent().find("ul").slideDown(500);
+                $(this).parent().addClass("up");
+            }
+        });
+    });
+</script>
+<script type="text/javascript" src="{$template_dir}js/TouchSlide.1.1.js"></script>
+<script type="text/javascript">
+    TouchSlide({
+        slideCell:"#focus",
+        titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+        mainCell:".bd ul",
+        effect:"left",
+        autoPlay:true,//自动播放
+        autoPage:true, //自动分页
+        switchLoad:"_src" //切换加载，真实图片路径为"_src"
+    });
+
+    function change_fav() {
+        var url = "data_center.php";
+        var data = { "opera":"get_fav" };
+        $.post(url, data, change_fav_handler, "json");
+    }
+
+    function change_fav_handler(response) {
+        if(response.error === 0) {
+            $("#fav_list").html(response.content);
+        }
+    }
+</script>
+{include file="dialog.phtml"}
+<script type="text/javascript">
+    $(function () {
+        $('#shop-name-edit').click(function () {
+            var shop_name = document.getElementById('self-shop-name').innerText;
+            var content = '<label>店铺名称:</label>\
+                <input name="shop_name" id="shop_name" type="text" class="popup-input" value="'+ shop_name +'" placeholder="请输入店铺名称"/>';
+
+            popup_confirm(content, submit_shop_name);
+        });
+    });
+
+    function submit_shop_name() {
+        var data = {
+            shop_name: document.getElementById('shop_name').value
+        };
+
+        var message = '';
+
+        if(data.shop_name === '') {
+            message = '请输入店铺名称';
+        }
+
+        if(message === '') {
+            popup_progcessor();
+            data.opera = 'edit';
+            $.post('self_shop.php', data, function(response) {
+                popup_message(response.msg, function () {
+                    if(response.error === 0) {
+                        document.getElementById('self-shop-name').innerText = response.shop_name;
+                        document.getElementsByClassName('user-name')[0].innerText = response.shop_name;
+                    }
+                });
+            }, 'json');
+        } else {
+            popup_message(message, function() {
+                $('#shop-name-edit').trigger('click');
+            });
+        }
+    }
+</script>
+{if is_weixin()}
+<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+<script type="text/javascript">
+    wx.config({
+        appId: '{$signPackage.appId}',
+        timestamp: '{$signPackage.timestamp}',
+        nonceStr: '{$signPackage.nonceStr}',
+        signature: '{$signPackage.signature}',
+        jsApiList: [
+            'chooseWXPay',
+            'closeWindow',
+            'onMenuShareTimeline',
+            'onMenuShareAppMessage',
+            'onMenuShareQQ',
+            'onMenuShareWeibo',
+            'onMenuShareQZone'
+        ]
+    });
+
+    wx.ready(function() {
+        var share_title = '我在{$config.site_name}开了一家店，快来帮我踩踩';
+        var share_link = 'http://{$config.domain}/recommend_shop.php?ukey={$user_info.id}';
+        var share_img = '{$shop_config.logo|escape}';
+        var share_desc = '{$shop_config.name|escape}';
+        //分享到朋友圈
+        wx.onMenuShareTimeline({
+            title: share_title, // 分享标题
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到朋友圈成功了呢!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("为什么要取消分享呢，不喜欢人家了吗？");
+            }
+        });
+
+        //分享给朋友
+        wx.onMenuShareAppMessage({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            type: 'link', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享给朋友成功了哦！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("喜欢我就把我推荐给你的朋友嘛~~");
+            }
+        });
+
+        //分享到QQ
+        wx.onMenuShareQQ({
+            title: share_link, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ成功！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("听说颜值高的人都会把我分享出去的哦");
+            }
+        });
+
+        //分享到腾讯微博
+        wx.onMenuShareWeibo({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到腾讯微博成功!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("把我分享到微博去玩玩嘛~");
+            }
+        });
+
+        //分享到QQ空间
+        wx.onMenuShareQZone({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ空间成功");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("人家想去QQ空间看看啦~");
+            }
+        });
+    });
+</script>
+{/if}
+</body>
+</html>

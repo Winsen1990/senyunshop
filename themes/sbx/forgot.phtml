@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>找回密码</em></h1>
+</header>
+<!-- 找回密码页面 -->
+<section class="register">
+    <section class="register-con" id="step1">
+        <div class="inp user bg">
+            <span class="icon"></span>
+            <span class="input">
+                <input id="mobile" type="tel" placeholder="请输入你的手机号" onblur="verify_mobile();">
+            </span>
+            <span class="more"></span>
+            <span class="clear" style="display: none;"></span>
+        </div>
+        <div class="pw_contain">
+            <div class="inp graphics short small bg">
+                <span class="input">
+                    <input class="identify_code" type="text" placeholder="请输入图形验证码" id="pic_code"/>
+                </span>
+                <span class="clear" style="display: none;"></span>
+            </div>
+            <div class="identify">
+                <a class="refresh" href="javascript:;" onclick="refresh_code();">refresh</a>
+                <img class="repic" src="code.php" alt="验证码">
+            </div>
+        </div>
+        <a class="btn" href="javascript:;" id="verify_pic_code">下一步</a>
+    </section>
+
+    <section class="register-con" id="step2" style="display: none;">
+        <p class="title">已发送验证码到 <span id="mobile-show">139****0000</span></p>
+        <div>
+            <div class="inp user short small bg">
+                <span class="input">
+                    <input type="text" id="verify" placeholder="请输入验证码">
+                </span>
+                <span class="clear" style="display: none;"></span>
+            </div>
+            <button id="reget" class="" type="button" on="获取验证码" off="重新获取" time="60">
+                <em>重新获取</em><i id="timer">39</i>
+            </button>
+        </div>
+        <a class="btn" href="javascript:;" id="verify_message_code">下一步</a>
+    </section>
+
+    <section class="register-con" id="step3" style="display: none;">
+        <p class="title">请设置新密码：</p>
+        <div class="pw_contain">
+            <div class="inp pw bg nomar">
+                <span class="icon"></span>
+                <span class="input">
+                    <input id="password" type="password" name="password" placeholder="密码：6-20位字母或数字"/>
+                </span>
+                <span class="change show"></span>
+                <span class="clear" style="display: none;"></span>
+            </div>
+        </div>
+        <a class="btn" href="javascript:void(0);" id="set_password">设置新密码</a>
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var interval = null;
+    var timer = 0;
+    var mobile = "";
+
+    $(function(){
+        $("#verify_pic_code").click(function(){
+            verify_pic_code();
+        });
+
+        $("#verify_message_code").click(function(){
+            verify_message_code();
+        });
+
+        $("#reget").click(function(){
+            get_message_code();
+        });
+
+        $("#set_password").click(function(){
+            set_password();
+        });
+    });
+
+    function verify_mobile() {
+        var mobile = $("#mobile").val();
+
+        if(mobile == "") {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        var url = "data_center.php";
+        var data = { "opera":"verify_mobile", "mobile":mobile };
+
+        show_mask();
+        $.post(url, data, verify_mobile_handler, "json");
+    }
+
+    function verify_mobile_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#mobile-show").text(response.mobile_mask);
+            mobile = response.mobile;
+        } else {
+            show_message_dialog(response.msg);
+            mobile = "";
+        }
+    }
+
+    function verify_pic_code() {
+        var code = $("#pic_code").val();
+
+        if(code == "") {
+            show_message_dialog("请输入图形验证码");
+            return false;
+        }
+
+        if(mobile == "") {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        var url = "data_center.php";
+        var data = { "opera":"verify_pic_code", "code":code };
+
+        show_mask();
+        $.post(url, data, verify_pic_code_handler, "json");
+    }
+
+    function verify_pic_code_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            step(2);
+            get_message_code();
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function verify_message_code() {
+        var code = $("#verify").val();
+        var mobile = $("#mobile").val();
+
+        if(code == "") {
+            show_message_dialog("请输入验证码");
+            return false;
+        }
+
+        if(mobile == "") {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        var url = "data_center.php";
+        var data = { "opera":"verify_message_code", "code":code, "mobile": mobile };
+
+        show_mask();
+        $.post(url, data, verify_message_code_handler, "json");
+    }
+
+    function verify_message_code_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            step(3);
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function set_password() {
+        var password = $("#password").val();
+
+        if(mobile == "") {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        if(password == "") {
+            show_message_dialog("请输入新密码");
+            return false;
+        } else {
+            var url = "forgot.php";
+            var data = { "opera":"edit", "password":password, "mobile":mobile };
+
+            show_mask();
+            $.post(url, data, set_password_handler, "json");
+        }
+    }
+
+    function set_password_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#dialog_close_btn").click(function(){
+                window.history.back();
+            });
+
+            $("#dialog_close").click(function(){
+                window.history.back();
+            });
+        }
+    }
+
+    function get_message_code() {
+        var mobile = $("#mobile").val();
+
+        if(mobile == "")
+        {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        if(timer == 0) {
+            var url = "data_center.php";
+            var data = { "opera":"get_message_code", "mobile": mobile };
+
+            show_mask();
+            $.post(url, data, get_message_code_handler, "json");
+        }
+    }
+
+    function get_message_code_handler(response) {
+        if(response.error == 0) {
+            timer = response.timer;
+            $("#reget").removeClass("new");
+            $("#reget").html("<em>重新获取</em><i id='timer'>"+timer+"</i>");
+            interval = setInterval(trick, 1000);
+            show_message_dialog("当前没有短信接口,请输入验证码："+response.code);
+        } else {
+            show_message_dialog(response.msg);
+            if(response.timer != undefined) {
+                timer = response.timer;
+                $("#reget").removeClass("new");
+                $("#reget").html("<em>重新获取</em><i id='timer'>" + timer + "</i>");
+                interval = setInterval(trick, 1000);
+            }
+        }
+    }
+
+    function trick() {
+        if(timer) {
+            timer--;
+            $("#timer").text(timer);
+        } else {
+            clearInterval(interval);
+            $("#reget").addClass("new");
+            $("#reget").html("<em>获取短信验证码</em>");
+        }
+    }
+
+    function step(num) {
+        $(".register-con").hide();
+        $("#step"+num).show();
+        if(num > 1) {
+            num--;
+            $(".back").click(function(){
+                step(num);
+                return false;
+            });
+        } else {
+            $(".back").click(function(){
+                return true;
+            });
+        }
+    }
+
+    function refresh_code() {
+        $(".repic").attr("src", "code.php");
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

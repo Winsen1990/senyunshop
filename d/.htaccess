@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^w([a-zA-Z].*)$ index\.php\?code=$1 [L]

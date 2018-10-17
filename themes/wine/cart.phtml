@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <div class="h_label">购物车</div>
+    <!--<a href="javascript: void(0)" class="edit">编辑</a>-->
+</header>
+{if $cart_list}
+<!-- 购物车列表 -->
+<section class="cart">
+    <div class="block">
+        {foreach from=$cart_list item=cart}
+        <div class="cart_list">
+            <div class="shop_title" id="b_id_{$cart.b_id}">
+                <input type="checkbox" class="fl c_checkbox" id="business_{$cart.b_id}" onclick="select_shop({$cart.b_id}, this.checked);"/>
+                <div class="fl"><a class="shopLink eclipse" href="shop.php?sn={$cart.business_account}">{$cart.shop_name}</a></div>
+                <a class="fl right_arrow" href="#"></a>
+            </div>
+            {foreach from=$cart.products item=product}
+            <div class="cart_item">
+                <input type="checkbox" class="fl c_checkbox" id="cart_{$product.c_id}" onclick="select_product({$product.c_id}, this.checked);"/>
+                <a href="product.php?id={$product.p_id}">
+                    <img src="{$product.img}" class="fl pro_pic">
+                </a>
+                <div class="detail">
+                    {if $product.integral gt 1}
+                    <p class="fr prd_price">{sprintf("%.2f", $product.integral)}积分</p>
+                    {else}
+                    <p class="fr prd_price">￥{sprintf("%.2f", $product.price)}</p>
+                    {/if}
+                    <p class="fl prd_tit"><a href="#">{$product.name}</a></p>
+                    <p class="fl prd_tit">{$product.attributes}</p>
+                    <div class="clear tags">
+                        <!-- 数量开始 -->
+                        <section class="quantity">
+                            <div class="number_con">
+                                <span class="minus {if $product.number gt 1}on{/if}" id="minus_{$product.c_id}" onclick="minus({$product.c_id})">-</span>
+                                <div class="input">
+                                    <input type="tel" value="{$product.number}" id="product_{$product.c_id}" onblur="blur_caculate({$product.c_id}, this.value);"/>
+                                </div>
+                                <span class="plus on" id="plus_{$product.c_id}" onclick="plus({$product.c_id})">+</span>
+                            </div>
+                        </section>
+                        <a class="garbage" style="display: inline;" href="javascript:delete_cart_item({$product.c_id});"></a>
+                    </div>
+                </div>
+                <div class="bottom_line"></div>
+            </div>
+            {/foreach}
+        </div>
+        {/foreach}
+    </div>
+</section>
+<div style="height: 4rem;"></div>
+<!-- 去结算 -->
+<footer class="total_result">
+    <div class="fl ">
+        <input type="checkbox" class="c_checkbox" id="cart_check_all" style="">
+        <span>全选</span>
+    </div>
+
+    <div class="fr">
+        <a style="border:.1rem solid #fb4640;" class="c_btn payBtn"  id="check_out_btn" href="javascript:;">去结算(<span id="cart_quantity">{$total_number}</span>)</a>
+    </div>
+    <div class="fr totalPrice">
+        <span>商品金额总计</span>
+        <p id="cart_price">
+            <span id="total_amount">￥{sprintf("%.2f", $total_amount)}</span>
+        </p>
+    </div>
+</footer>
+{else}
+<!-- 购物车为空 -->
+<section class="empty">
+    <div class="empty-con">
+        <span class="icon">&#xe63e;</span>
+        <span class="empty-tips">您的购物车空空如也!</span>
+        <span class="empty-btn">
+            <a href="distribution_shop.php" class="btn">去逛逛</a>
+        </span>
+    </div>
+</section>
+{/if}
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="message_dialog_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="message_dialog_close">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="operation_dialog" style="display: none;">
+        <p>手下留情啊，在考虑一下吧！</p>
+        <ul class="cd-buttons">
+            <li><a href="javascript:void(0);" id="delete_confirm_btn">想得美</a></li>
+            <li><a href="javascript:close_operation_dialog();">留你一命</a></li>
+        </ul>
+        <a href="javascript:close_operation_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var total_amount = {$total_amount};
+    var total_integral = {$total_integral};
+    var cart = {$cart_json};
+
+    //删除购物车
+    function delete_cart_item(cid) {
+        $("#delete_confirm_btn").bind("click", function() { remove_from_cart(cid); });
+        show_operation_dialog();
+    }
+
+    function remove_from_cart(cid) {
+        cid = parseInt(cid);
+
+        if(isNaN(cid) || cid <= 0) {
+            show_message_dialog("无效的id");
+            return false;
+        }
+        console.info(cid);
+        var url = "cart.php";
+        data = { "opera":"delete", "cid":cid };
+
+        show_mask();
+        $.post(url, data, remove_from_cart_handler, "json");
+    }
+
+    function remove_from_cart_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            window.location.reload();
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function show_operation_dialog() {
+        $(".cd-popup").addClass("is-visible");
+        $("#operation_dialog").show();
+    }
+
+    function close_operation_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#operation_dialog").hide();
+    }
+
+    // 加减操作
+    function enable_operation(mode, cid, flag) {
+        if(flag) {
+            $("#" + mode + "_" + cid).addClass("on");
+        } else {
+            $("#" + mode + "_" + cid).removeClass("on");
+        }
+    }
+
+    function blur_caculate(cid, number) {
+        number = parseInt(number);
+
+        if(isNaN(number) || number <= 0) {
+            number = 1;
+        }
+
+        $("#product_"+cid).val(number);
+
+        check_inventory(cid, number);
+        caculate_fee();
+    }
+
+    function plus(cid) {
+        var buy_num = $("#product_"+cid).val();
+        buy_num = parseInt(buy_num);
+
+        if(isNaN(buy_num) || buy_num <= 0) {
+            buy_num = 0;
+        }
+
+        buy_num++;
+
+        $("#product_"+cid).val(buy_num);
+
+        check_inventory(cid, buy_num);
+        caculate_fee();
+    }
+
+    function minus(cid) {
+        var buy_num = $("#product_"+cid).val();
+        buy_num = parseInt(buy_num);
+
+        if(isNaN(buy_num) || buy_num <= 1) {
+            buy_num = 2;
+        }
+
+        buy_num--;
+
+        $("#product_"+cid).val(buy_num);
+
+        check_inventory(cid, buy_num);
+        caculate_fee();
+    }
+
+    function check_inventory(cid, buy_num) {
+        if(cart[cid].inventory < buy_num) {
+            buy_num = cart[cid].inventory;
+            $("#product_"+cid).val(cart[cid].inventory);
+            enable_operation("plus", cid, false);
+        } else {
+            enable_operation("plus", cid, true);
+        }
+
+        if(buy_num == 1) {
+            enable_operation("minus", cid, false);
+        } else {
+            enable_operation("minus", cid, true);
+        }
+
+        cart[cid].number = buy_num;
+    }
+
+    //选择商店
+    function select_shop(b_id, flag) {
+        for(var i in cart) {
+            if(cart[i].b_id == b_id) {
+                select_product(i, flag);
+            }
+        }
+
+        caculate_fee();
+    }
+
+    //选择产品
+    function select_product(c_id, flag) {
+        if(cart[c_id] != undefined) {
+            cart[c_id].checked = flag;
+            set_checkbox_checked("cart_"+c_id, flag);
+
+            if(!flag) {
+                set_checkbox_checked("business_"+cart[c_id].b_id, flag);
+            } else {
+                var select_business = true;
+                for(var i in cart) {
+                    if(cart[i].b_id == cart[c_id].b_id && !cart[i].checked) {
+                        select_business = false;
+                    }
+                }
+
+                set_checkbox_checked("business_"+cart[c_id].b_id, select_business);
+            }
+        }
+
+        caculate_fee();
+    }
+
+    //更改复选框状态
+    function set_checkbox_checked(id, flag) {
+        document.getElementById(id).checked = flag;
+    }
+
+    //计算购物车费用
+    function caculate_fee() {
+        var price_amount = 0;
+        var integral_amount = 0;
+        var buy_num = 0;
+
+        for(var i in cart) {
+            if(cart[i].checked) {
+                price_amount += cart[i].price * cart[i].number;
+                integral_amount += cart[i].integral * cart[i].integral;
+                buy_num += cart[i].number;
+            }
+        }
+
+        $("#total_amount").text("￥"+price_amount.toFixed(2));
+        $("#cart_quantity").text(buy_num);
+    }
+
+    //去结算
+    function check_out() {
+        var url = "checkout.php";
+        var data = { "opera":"checkout", "cart":cart };
+        var buy_num = 0;
+
+        for (var i in cart) {
+            if (cart[i].checked) {
+                buy_num += cart[i].number;
+            }
+        }
+
+        if(buy_num > 0) {
+            show_mask();
+            $.post(url, data, check_out_handler, "json");
+        } else {
+            console.info("show_message_dialog");
+            show_message_dialog("请选择要购买的产品");
+        }
+    }
+
+    function check_out_handler(response) {
+        if(response.error == 0) {
+            window.location.href = "checkout.php";
+        } else {
+            show_message_dialog(response.msg);
+            if(response.refresh) {
+                $("#message_dialog_close").bind("click", function() { window.location.reload(); });
+                $("#message_dialog_btn").bind("click", function() { window.location.reload(); });
+            }
+        }
+    }
+
+    function select_all_product(flag) {
+        for(var i in cart) {
+            cart[i].checked = flag;
+            select_product(i, flag);
+        }
+    }
+
+    $(function(){
+        $("#check_out_btn").bind("click", function() { check_out(); });
+        $("#cart_check_all").bind("click", function() { select_all_product(this.checked); });
+
+        var flag = true;
+        for(var i in cart) {
+            select_product(i, cart[i].checked);
+            if(!cart[i].checked) {
+                flag = false;
+            }
+        }
+
+        set_checkbox_checked("cart_check_all", flag);
+    });
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

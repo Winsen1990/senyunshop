@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>订单{$order.order_sn}</title>
+</head>
+<body>
+    <table width="100%" border="1" cellspacing="0" cellpadding="0">
+        <tr>
+            <td>订单编号</td>
+            <td>{$order.order_sn}</td>
+            <td>订单状态</td>
+            <td>{$order.status_str}</td>
+            <td>下单时间</td>
+            <td>{$order.add_time_str}</td>
+            <td>发货时间</td>
+            <td>{$order.delivery_time_str}</td>
+        </tr>
+        <tr>
+            <td colspan="8">订单详情</td>
+        </tr>
+        <tr>
+            <td>产品编号</td>
+            <td>产品名称</td>
+            <td>产品数量</td>
+            <td>单价</td>
+            <td>总额</td>
+            <td colspan="3">备注</td>
+        </tr>
+        {foreach from=$order_detail item=detail}
+        <tr>
+            <td>{$detail.product_sn}</td>
+            <td>{$detail.product_name}<br/>{$detail.product_attributes}</td>
+            <td>{$detail.count}</td>
+            <td>{$detail.product_price}</td>
+            <td>{$detail.product_amount}</td>
+            <td rowspan="{$product_count}" colspan="3">{$order.remark}</td>
+        </tr>
+        {/foreach}
+        <tr>
+            <td colspan="3"></td>
+            <td>订单运费</td>
+            <td>{$order.delivery_fee}</td>
+            <td colspan="3"></td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+            <td>订单总额</td>
+            <td>{$order.product_amount}</td>
+            <td colspan="3"></td>
+        </tr>
+        <tr>
+            <td colspan="8">物流信息</td>
+        </tr>
+        <tr>
+            <td>配送方式</td>
+            <td>{$order.delivery_name}</td>
+            <td>物流公司</td>
+            <td colspan="2">{$order.express_name}</td>
+            <td>快递单号</td>
+            <td colspan="2">{$order.express_sn}</td>
+        </tr>
+        <tr>
+            <td colspan="4">寄件人信息</td>
+            <td colspan="4">收件人信息</td>
+        </tr>
+        <tr>
+            <td>单位名称</td>
+            <td></td>
+            <td>联系人</td>
+            <td></td>
+            <td>单位名称</td>
+            <td></td>
+            <td>联系人</td>
+            <td>{$order.consignee}</td>
+        </tr>
+        <tr>
+            <td rowspan="2">地址</td>
+            <td colspan="3" rowspan="2"></td>
+            <td rowspan="2">地址</td>
+            <td colspan="3" rowspan="2">
+                {$order.province_name} &nbsp;
+                {$order.city_name} &nbsp;
+                {$order.district_name} &nbsp;
+                {$order.address}
+            </td>
+        </tr>
+        <tr>
+
+        </tr>
+        <tr>
+            <td>区号</td>
+            <td></td>
+            <td>联系号码</td>
+            <td></td>
+            <td>区号</td>
+            <td>{$order.zipcode}</td>
+            <td>联系号码</td>
+            <td>{$order.mobile}</td>
+        </tr>
+    </table>
+</body>
+</html>

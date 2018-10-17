@@ -1,0 +1,134 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">资讯管理</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加资讯</a>&nbsp;<a class="btn btn-primary" href="?act=cycle">回收站</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <div class="article-main-header">
+            <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    显示
+                    <select name="count" class="w75">
+                        <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                        <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                        <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                        <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                    </select>
+                    项结果
+                </div>
+                <div class="pull-right">
+                    <label>搜索：</label>
+                    <input class="text-input w150" type="text" id="small-input" name="keyword" value="{$keyword}">&nbsp;
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </div>
+                </p>
+            </fieldset>
+            </form>
+            <div class="clear"></div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>链接</th>
+                <th>分类</th>
+                <th>作者</th>
+                <th>发布时间</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$contentList item=content}
+            <tr>
+                <td>{$content.id}</td>
+                <td>{$content.title}</td>
+<!--
+                <td>
+                    {if $content.original neq ''}
+                    <img width="80" height="60" src="../{$content.original}" alt=""/>
+                    {else}
+                    <img width="80" height="60" src="../upload/image/no-image.png" alt=""/>
+                    {/if}
+                </td>
+-->
+                <td>
+                    手机：http://{$config.domain}/article.php?id={$content.id}<br />
+                    PC：http://{$config.pc_domain}/article.php?id={$content.id}
+                </td>
+                <td>{$content.section_name}</td>
+                <td>{$content.author}</td>
+                <td>{$content.add_time}</td>
+                <td class="text-right">
+                    <a href="http://{$config.domain}/article.php?id={$content.id}">预览</a> |
+                    <a href="?act=edit&id={$content.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$content.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $keyword eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">您还没有资讯记录，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加资讯！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&keyword={$keyword}&count={$count}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&keyword={$keyword}&count={$count}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&keyword={$keyword}&count={$count}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&keyword={$keyword}&count={$count}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&keyword={$keyword}&count={$count}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+
+
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<section class="main">
+    <div class="search_header" id="category_header">
+        <a href="javascript:history.back();" class="back" name="go_to_index" title="到首页"></a>
+        <div class="search">
+            <div class="text_box" name="search_box" title="搜索框" onclick="return 1;"><input id="_keyword" type="text" class="text" placeholder="搜索商品、品牌、种类" onkeydown="this.style.color='#404040'"></div>
+            <input type="submit" value="" class="submit">
+        </div>
+    </div>
+    <div class="main_box">
+        <nav class="class_list_nav">
+            <div class="class_list_nav_box" id="class_list_nav_box" title="一级分类" style="overflow: hidden;">
+                <ul style="transition-property: transform; transform-origin: 0px 0px 0px; transform: translate(0px, 0px) scale(1) translateZ(0px);">
+                    {foreach from=$category_list item=cat name=category_list}
+                    <a name="cate_lev1_{$cat.id}" title="{$cat.name}" rel="{$cat.id}">
+                        <li class="{if $smarty.foreach.category_list.first}on{/if}">{$cat.name}</li>
+                    </a>
+                    {/foreach}
+                </ul>
+            </div>
+        </nav>
+        <div class="class_box">
+            <div class="class_box_inner" id="class_box_inner" title="二级分类" style="overflow: hidden;">
+                <div class="class_box_over" style="transition-property: transform; transform-origin: 0px 0px 0px; transform: translate(0px, -410px) scale(1) translateZ(0px);">
+                    {foreach from=$category_2_list item=cat key=parent_id}
+                    <div id="cate_lev2_div_{$parent_id}" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+                        <a href="#" class="banImg" name="cate_lev2_banner_0" title="">
+                            {if $category_list[$parent_id].icon eq '' }
+                            <img class="cate_banner_img" src="{$template_dir}images/bg_pic.png" data-src="http://img63.ddimg.cn/upload_img/00087/hw/886x315_gr_0901.jpg">
+                            {else}
+                            <img class="cate_banner_img" src="{$category_list[$parent_id].icon}" data-src="{$category_list[$parent_id].icon}">
+                            {/if}
+                        </a>
+                        {foreach from=$cat item=c name=cat}
+                        <h3>{$c.name}</h3>
+                        <ul class="clearfix">
+                            {foreach from=$c.children item=cc name=cc}
+                            <li>
+                                <div>
+                                    <a href="product_list.php?id={$cc.id}" name="cate_lev2_{$parent_id}_{$smarty.foreach.cat.iteration}_{$smarty.foreach.cc.iteration}" title="{$cc.name}">
+                                        <img class="cate_icon_img" src="{$template_dir}images/bg_pic.png" data-src="{$cc.icon}" alt="{$cc.name}">
+                                        <span>{$cc.name}</span>
+                                    </a>
+                                </div>
+                            </li>
+                            {/foreach}
+                        </ul>
+                        {/foreach}
+                    </div>
+                    {/foreach}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="mix_search_div" title="搜索浮层" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1); display: none;">
+    <header id="bd">
+        <header class="con floatsearch">
+            <div id="component_1434612"></div>
+            <section class="mix_new_header">
+                <a href="javascript:void(0)" class="mix_back"></a>
+                <form id="index_search_form" method="get" action="search.php" target="_parent" onsubmit="return mix_submit_search();">
+                    <div class="search">
+                        <div class="text_box">
+                            <input id="keyword" name="keyword" type="text" value="" placeholder="搜索商品、品牌、种类" class="keyword text" onkeydown="this.style.color='#404040';" maxlength="70" autocomplete="off">
+                        </div>
+                        <span class="mix_submit"></span>
+                        <a href="javascript:void(0)" class="clear_input" id="clear_input" style="display: block;"></a>
+                        <input type="hidden" value="0" name="cid" id="cid">
+                        <input type="hidden" value="" name="sid">
+                    </div>
+                    <input type="submit" value="搜索" class="mix_filtrate">
+                </form>
+            </section>
+        </header>
+    </header></section>
+<script type="text/javascript" src="{$template_dir}js/zepto.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/iscroll.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/zepto.lazyload.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/category.js"></script>
+</body>
+</html>

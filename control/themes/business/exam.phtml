@@ -1,0 +1,95 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">商户入驻审核-商业会员申请</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="businessExamForm" method="post" action="" onsubmit="javascript:if(confirm('确认通过审核？')) return true; else return false;">
+            <fieldset>
+                <p>
+                    <label class="l-title">店铺名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="shop_name" value="{$business.shop_name}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">LOGO：</label>
+                    <input type="hidden" name="logo" id="logo" placeholder="">
+                    {if $business.shop_logo}
+                    <img class="select-image" alt="" src="{$business.shop_logo}" width="95px" height="95px">&nbsp;
+                    {else}
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" width="95px" height="95px">&nbsp;
+                    {/if}
+                </p>
+                <p>
+                    <label class="l-title">店招：</label>
+                    <input type="hidden" name="sign" id="sign" placeholder="">
+                    {if $business.shop_sign}
+                    <img id="show-sign" alt="" width="370" height="95" src="../{$business.shop_sign}" />
+                    {else}
+                    <img id="show-sign" alt="" width="370" height="95" src="../upload/image/no-image.png" />
+                    {/if}
+                </p>
+                <p>
+                    <label class="l-title">主营行业：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="industry" value="{$business.industry_name}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">主营分类：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="category" value="{$business.cate_name}" disabled="disabled"/>
+                </p>
+                {if $business.company}
+                <p>
+                    <label class="l-title">公司名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="company" value="{$business.company}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">公司简介：</label>
+                    <textarea rows="5" cols="80" name="desc" disabled="disabled">{$business.desc}</textarea>
+                </p>
+                {/if}
+                <p>
+                    <label class="l-title">地址：</label>
+                    <textarea rows="5" cols="80" name="address" disabled="disabled">{$business.address}</textarea>
+                </p>
+                <p>
+                    <label class="l-title">负责人：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="contact" value="{$business.contact}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">联系电话：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="mobile" value="{$business.mobile}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">电子邮箱：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="email" value="{$business.email}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">营业执照：</label>
+                    <input type="hidden" name="license" id="license" placeholder="">
+                    <img class="select-image" alt="" src="{$business.license}" width="400px"/>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title">法人身份证：</label>
+                    <input type="hidden" name="identity" id="identity" placeholder="">
+                    <img class="select-image" alt="" src="{$business.identity}" width="400px"/>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="exam" />
+                    <input type="hidden" name="account" value="{$business.business_account}" />
+                    <button class="btn btn-primary" type="submit">通过</button> &nbsp;
+                    <a href="business.php?act=reject&account={$business.business_account}" class="btn btn-primary">驳回</a>&nbsp;
+                    <a href="business.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

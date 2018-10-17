@@ -1,0 +1,117 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">微信客服管理</h5>
+        <div class="pull-right">
+            <a href="?act=add" class="btn-primary btn">添加规则</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    显示
+                    <select name="count" class="w75">
+                        <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                        <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                        <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                        <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                    </select>
+                    项结果
+                </div>
+                <div class="pull-right">
+                    <label>搜索：</label>
+                    <input class="text-input w150" type="text" id="small-input" name="keyword" value="{$keyword}">&nbsp;
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </div>
+                </p>
+            </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>规则名称</th>
+                <th>匹配模式</th>
+                <th>匹配规则</th>
+                <th>状态</th>
+                <th>优先级</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if count($rule_list) neq 0}
+            {foreach from=$rule_list item=rule}
+            <tr>
+                <td>{$rule.name}</td>
+                <td>{if $rule.match_mode eq 0}模糊匹配{else}精确匹配{/if}</td>
+                <td>{$rule.rule}</td>
+                <td>{if $rule.enabled eq 0}停用{else}启用{/if}</td>
+                <td>{$rule.order_view}</td>
+                <td>
+                    <a href="?act=edit&id={$rule.id}">编辑</a> |
+                    <a href="?act=delete&id={$rule.id}" onclick="return confirm('您确定要删除该规则吗?');">删除</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="4" align="center">
+                    尚未定义回复规则
+                </td>
+            </tr>
+            {/if}
+            <tr>
+                <td colspan="9">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&keyword={$keyword}&count={$count}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&keyword={$keyword}&count={$count}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&keyword={$keyword}&count={$count}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&keyword={$keyword}&count={$count}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&keyword={$keyword}&count={$count}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

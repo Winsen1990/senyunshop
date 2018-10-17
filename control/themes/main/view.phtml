@@ -1,0 +1,27 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">首页</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="start-main">
+        <h3>网站概要</h3>
+        <p>目前有 <i>{$member_count}</i> 位会员, 并有 <i>{$business_count}</i> 家商户, <i>{$admin_count}</i> 个管理员.</p>
+        <p>点击下面的链接快速开始:</p>
+        <ul class="start-link">
+            <li><a href="member.php">会员管理</a></li>
+            <li><a href="business.php">商户管理</a></li>
+            <li><a href="withdraw.php">提现管理</a></li>
+            <li><a href="product.php">产品管理</a></li>
+        </ul>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

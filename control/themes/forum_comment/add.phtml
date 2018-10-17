@@ -1,0 +1,81 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">发布帖子</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <form id="sectionForm" name="sectionForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">板块名称：</label>
+                    <select name="topic_id">
+                        {foreach from=$topic_list item=topic}
+                        <option value="{$topic.id}">{$topic.name}</option>
+                        {/foreach}
+                    </select>                    
+                </p>
+                <p>
+                    <label class="l-title">置顶：</label>
+                    <input type="radio" name="is_top" value="0" checked="checked"/><em>否</em>
+                    <input type="radio" name="is_top" value="1"/><em>是</em>
+                </p>
+                <p>
+                    <label class="l-title">内容：</label>
+                    <textarea name="content" class="w300" rows="10"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add" />
+                    <button class="btn btn-primary" type="submit">添加</button> &nbsp;<a href="topic.php.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K)
+    {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson : '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = '';
+                            width = (width == '') ? '75px' : width + 'px'
+                        }
+                        if( !height ) {
+                            height = '';
+                            height = (height == '') ? '75px' : height + 'px'
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('width', width);
+                        K('#show-image').css('height', height);                        
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+//    prettyPrint();
+    });
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

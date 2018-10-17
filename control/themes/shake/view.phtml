@@ -1,0 +1,58 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">微现场管理</h5>
+        <div class="pull-right">
+            <a href="?act=add" class="btn-primary btn">添加场景</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>场景名称</th>
+                <th>当前轮数</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if count($scene_list) neq 0}
+            {foreach from=$scene_list item=scene}
+            <tr>
+                <td>{$scene.name}</td>
+                <td>{$scene.cycle}</td>
+                <td>
+                    <a href="?act=edit&id={$scene.id}">编辑</a>
+                    | <a href="?act=reward&id={$scene.id}">查看</a>
+                    | <a href="?act=detail&scene_id={$scene.id}">进入场景</a>
+                    | <a href="?act=delete&id={$scene.id}" onclick="return comfirm('确定要删除该场景?');">删除</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="3" align="center">
+                    尚未定义场景
+                </td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

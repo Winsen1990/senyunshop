@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>我要充值</em></h1>
+</header>
+<!-- 我要充值 -->
+<section class="recharge">
+    <div class="recharge-con">
+        <div class="recharge-tips">
+            <i class="icon">&#xe60c;</i>充值金额将充入到余额款项中，余额可用于购物，加盟等费用抵用，充值的款项将无法退回。
+        </div>
+        <!--
+        <div class="recharge-info">
+            <h3>充值到平台</h3>
+            <label><span>所属银行：</span>中国工商银行</label>
+            <label><span>平台账号：</span>44444*******5555</label>
+            <label><span>账户名称：</span>圣宝先</label>
+        </div>
+        -->
+        <div class="recharge-value">
+            <label><span>充值金额：</span><input type="number" value="" placeholder="请填写金额（元）" id="amount"></label>
+        </div>
+        <div class="recharge-btn">
+            <a class="btn" href="javascript:void(0);" onclick="get_pay_link('wechat');">确认充值</a>
+        </div>
+    </div>
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="recommend.php"><em class="icon">&#xe626;</em><span>我要分享</span></a></li>
+<!--        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>-->
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+{if is_weixin()}
+<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+{/if}
+<script type="text/javascript">
+    var global_result = null;
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function get_pay_link(plugins) {
+        switch(plugins)
+        {
+            case "wechat":
+                get_prepay_id();
+                break;
+            default:
+                show_message_dialog("该支付方式暂无接口支持");
+                break;
+        }
+    }
+
+    function get_prepay_id() {
+        var amount = $("#amount").val();
+        amount = parseFloat(amount);
+
+        if(isNaN(amount) || amount <= 0) {
+            show_message_dialog("充值金额必须大于0");
+            return false;
+        }
+
+        var data = { "opera":"wechat", "amount":amount };
+        var url = "recharge.php";
+
+        show_mask();
+        $.post(url, data, get_prepay_id_handler, "json");
+    }
+
+    function get_prepay_id_handler(result) {
+        hide_mask();
+        if(result.error == 0) {
+            global_result = result;
+            wx.chooseWXPay({
+                timestamp: global_result.timestamp,
+                nonceStr: global_result.nonce_str,
+                package: 'prepay_id='+global_result.prepay_id,
+                signType: 'MD5',
+                paySign: global_result.sign,
+                success: function (res) {
+                    // 支付成功后的回调函数
+                    if(res.errMsg == "chooseWXPay:ok") {
+                        show_message_dialog("充值成功");
+                    } else {
+                        show_message_dialog(res.errMsg+":支付失败");
+                    }
+                }
+            });
+        } else {
+            show_message_dialog(result.msg);
+        }
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+
+    {if is_weixin()}
+        wx.config({
+                appId: '{$signPackage.appId}',
+                timestamp: {$signPackage.timestamp},
+                nonceStr: '{$signPackage.nonceStr}',
+                signature: '{$signPackage.signature}',
+                jsApiList: [
+                'chooseWXPay',
+                'closeWindow'
+            ]
+        });
+    {/if}
+</script>
+</body>
+</html>

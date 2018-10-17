@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>选择收货地址</em></h1>
+    <a href="address.php?act=add" class="edit">新增</a>
+</header>
+<!-- 选择收货地址 -->
+<section class="select-address">
+    <div class="address-list">
+        {foreach from=$address_list item=address}
+        <div class="address_item">
+            <input type="radio" name="address_id" class="fl c_checkbox" id="address_{$address.id}" onclick="select_address({$address.id});"/>
+            <div class="detail">
+                <p class="a-name">{$address.consignee}<span class="a-phone">{$address.mobile}</span></p>
+                <p class="a-address">{$address.detail_address}</p>
+                <div class="clear tags">
+                    {if $address.is_default}<span>默认地址</span>{/if}
+                    <a class="garbage" href="address.php?act=edit&id={$address.id}"></a>
+                </div>
+            </div>
+            <div class="bottom_line"></div>
+        </div>
+        {/foreach}
+    </div>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    function select_address(id) {
+        window.localStorage.setItem("address_id", id);
+
+        window.history.back();
+
+        $.post("address.php", { "opera":"select", "address_id":id });
+    }
+
+    $(function() {
+        var address_id = window.localStorage.getItem("address_id");
+
+        document.getElementById("address_"+address_id).checked = true;
+    });
+</script>
+</body>
+</html>

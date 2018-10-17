@@ -1,0 +1,81 @@
+{include file="library/header.lbi"}
+<body xmlns="http://www.w3.org/1999/html">
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">活动设置</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="productExamForm" name="productExamForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">产品编号：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" id="product_sn" name="product_sn" placeholder="请输入产品编号" minlength="2" maxlength="32" value="{$product.product_sn}">
+                </p>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" id="name" name="name" placeholder="请输入产品名称" minlength="5" value="{$product.name}">
+                </p>
+                {if $activity_list}
+                <p class="clear">
+                    <label class="l-title">可参与活动：</label>
+                    <select name="activity" id="activity">
+                    {foreach from=$activity_list item=activity}
+                    <option value="{$activity.id}">{$activity.name}</option>
+                    {/foreach}
+                    </select>
+                    <a class="btn btn-primary" href="javascript:add_activity();">添加</a>
+                </p>
+                {/if}
+                <p class="clear" id="activity_list">
+                    <label class="l-title">参与活动：</label>
+                    {foreach from=$selected_activity item=sa}
+                    <input type="checkbox" name="activity_id[]" value="{$sa.id}" checked="checked"/><em>{$sa.name}</em>
+                    {/foreach}
+                </p>
+                <p class="clear">
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="activity" />
+                    <input type="hidden" name="id" value="{$product.id}"/>
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    var activity_json = {$activity_json};
+    function add_activity() {
+        var select = $("#activity").val().trim();
+        select = parseInt(select);
+
+        if(isNaN(select) || select <= 0) {
+            return false;
+        }
+
+        var ele = $("<input>");
+        ele.attr({ "type":"checkbox", "checked":"checked", "name":"activity_id[]", "value":select });
+
+        $("#activity_list").append(ele);
+        $("#activity_list").append("<em>"+activity_json[select]+"</em>&nbsp;");
+    }
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

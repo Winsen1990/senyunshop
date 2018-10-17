@@ -1,0 +1,98 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑主营分类</h5>
+        <!--        <div class="pull-right"><a class="btn btn-primary" href="?act=passwd">修改密码</a></div>-->
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="categoryEditForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">分类名：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="category_name" name="category_name" value="{$category.name}" placeholder="请输入分类名"/>
+                </p>
+                <p>
+                    <label class="l-title">父级分类：</label>
+                    <select name="parent_id" class="w150" onchange="change_tips(this.value);">
+                        <option value="0">顶级分类</option>
+                        {foreach from=$category_list item=c}
+                        <option value="{$c.id}" {if $category.parent_id eq $c.id}selected="selected"{/if}>{$c.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">图片：</label>
+
+                    <input type="hidden" name="img" id="img" placeholder="{$category.icon}">
+
+                    <img class="select-image" alt="" src="../{$category.icon}" height="120px">&nbsp;
+                    建议尺寸，<span id="tips">280x100</span>像素
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>
+                    <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$category.id}" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+<!-- kindeditor编辑器 -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    function change_tips(id) {
+        if(id == 0) {
+            $("#tips").text("280x100");
+        } else {
+            $("#tips").text("120x120");
+        }
+    }
+
+    KindEditor.ready(function(K) {
+        change_tips({$category.parent_id});
+
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 120 + 'px';
+                        }
+                        if( !height ) {
+                            height = 120 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.select-image').attr('src', url);
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=120&height=120');
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

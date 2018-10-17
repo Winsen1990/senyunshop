@@ -1,0 +1,48 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">物流方式</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;</div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>物流名称</th>
+                <th>描述</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$express_list item=express}
+            <tr>
+                <td>{$express.name}</td>
+                <td>{$express.desc}</td>
+                <td>{$express.show_status}</td>
+                <td>
+                    {if $express.status eq -1}
+                    <a href="express.php?act=install&plugin={$express.plugins}">安装</a>
+                    {else}
+<!--                    <a href="javascript:if(confirm('您确定要卸载该插件？')) window.location.href = 'express.php?act=uninstall&plugin={$express.plugins}';">卸载</a> |-->
+                    <a href="express.php?act=delivery_area&plugin={$express.id}">设置配送区域</a>
+                    {/if}
+                </td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

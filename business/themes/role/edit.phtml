@@ -1,0 +1,55 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加用户组</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminGroup-main">
+        <form id="roleForm" name="roleForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">用户组名称：</label>
+                    <input class="text-input w300" type="text" id="small-input" name="name" placeholder="请输入用户组名称" maxlength="32" value="{$role.name}" />
+                </p>
+            </fieldset>
+            <fieldset>
+                <p>
+                    <label class="l-title">权限管理：</label>
+                    <input type="checkbox" id="all"><em>全选</em>
+                </p>
+                <div class="clear"></div>
+            </fieldset>
+            {foreach from=$purviews item=purview key=key}
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">{$purviewValue.$key}：</label>
+                    <input type="checkbox" name="purviews[{$key}]" value="{$key}" class="purview" id="{$key}" {if $purviewC.$key eq true}checked="checked"{/if}/>
+                </p>
+                <p class="clear">
+                    <label class="l-title"></label>
+                    {foreach from=$purview item=subPurview}
+                    <input type="checkbox" name="purviews[{$key}][]" value="{$subPurview}" class="sub-purview {$key}" data-parent="{$key}" {if $sub_purviewC.$key.$subPurview eq true}checked="checked"{/if}/><em>{$purviewValue[$subPurview]}</em>&nbsp;&nbsp;
+                    {/foreach}
+                </p>
+            </fieldset>
+            {/foreach}
+            <fieldset>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$role.id}" />
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="role.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header" style="position: fixed;">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$title}</em></h1>
+</header>
+
+{if $product_list}
+<!-- 内容开始 -->
+<section class="wishlist">
+    <ul>
+        {foreach from=$product_list item=product}
+        <li>
+            <a href="product.php?id={$product.id}">
+                <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$product.img}" alt=" {$product.name} ">
+                <dl>
+                    <dt> {$product.name} </dt>
+                    <dd>￥{$product.price}</dd>
+                    <span class="p-delete"
+                          onclick="{if $mode eq 'collection'}
+                                    collection('{$product.product_sn}');
+                                   {else}
+                                   {if $mode eq 'distribution'}
+                                    distribution_confirm('{$product.product_sn}');
+                                    {else}
+                                    delete_history('{$product.product_sn}');
+                                    {/if}
+                                   {/if}
+                                   return false;">
+                        删除
+                    </span>
+                </dl>
+            </a>
+        </li>
+        {/foreach}
+    </ul>
+</section>
+{else}
+<div class="empty-con" style="padding-top: 2rem;">
+    <span class="icon">&#xe640;</span>
+    <span class="empty-tips">{$title}空空如也!</span>
+        <span class="empty-btn">
+            <a href="index.php" class="btn">去逛逛</a>
+        </span>
+</div>
+{/if}
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="confirm_dialog" style="display: none;">
+        <p>居然取消分销，沉思啊客官</p>
+        <ul class="cd-buttons">
+            <li><a id="dialog_confirm_btn" href="javascript:void(0);">去意已决</a></li>
+            <li><a href="javascript:close_operation_dialog('confirm_dialog');">留你一命</a></li>
+        </ul>
+        <a href="javascript:close_operation_dialog('confirm_dialog');" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a id="close_dialog_btn" href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" id="close_dialog" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var distribution_flag = true;
+    var operation = 1;
+    function delete_history(product_sn) {
+        var url = "product.php";
+        var data = { "opera":"delete_history", "product_sn":product_sn };
+
+        show_mask();
+        $.post(url, data, delete_history_handler, "json");
+    }
+
+    function delete_history_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#close_dialog_btn").click(function(){
+                window.location.reload();
+            });
+
+            $("#close_dialog").click(function(){
+                window.location.reload();
+            });
+        }
+    }
+
+    function collection(product_sn) {
+        var url = "product.php";
+        var data = { "opera":"collection", "product_sn":product_sn };
+
+        show_mask();
+        $.post(url, data, collection_handler, "json");
+    }
+
+    function collection_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#close_dialog_btn").click(function(){
+                window.location.reload();
+            });
+
+            $("#close_dialog").click(function(){
+                window.location.reload();
+            });
+        }
+    }
+
+    function distribution_confirm(product_sn) {
+        operation = 1;
+        if(distribution_flag) {
+            show_operation_dialog("confirm_dialog");
+            $("#dialog_confirm_btn").click(function () {
+                close_operation_dialog("confirm_dialog");
+                if(distribution_flag && operation--) {
+                    distribution(product_sn);
+                }
+            });
+        } else {
+            distribution(product_sn);
+        }
+    }
+
+    function distribution(product_sn) {
+        var url = "product.php";
+        var data = { "opera":"distribution", "product_sn":product_sn };
+
+        show_mask();
+        $.post(url, data, distribution_handler, "json");
+    }
+
+    function distribution_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#close_dialog_btn").click(function(){
+               window.location.reload();
+            });
+
+            $("#close_dialog").click(function(){
+                window.location.reload();
+            });
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_operation_dialog(id) {
+        if(id == undefined) {
+            id = "dialog";
+        }
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#"+id).show();
+    }
+
+    function close_operation_dialog(id) {
+        if(id == undefined) {
+            id = "dialog";
+        }
+        $(".cd-popup").removeClass("is-visible");
+        $("#"+id).hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加广告位置</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="adpos-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>广告位置</th>
+                <th>宽度</th>
+                <th>高度</th>
+                <th>展示数量</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $adpos_list}
+            {foreach from=$adpos_list item=adpos}
+            <tr>
+                <td>{$adpos.pos_name}</td>
+                <td>{$adpos.width}</td>
+                <td>{$adpos.height}</td>
+                <td>{$adpos.number}</td>
+                <td class="text-right"><a href="?act=edit&id={$adpos.id}">编辑</a>
+                {if $adpos.id gt 4}
+                    | <a href="javascript:delete_adpos({$adpos.id});">删除</a>
+                {/if}
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="6" align="center">您还没有广告位置，立即点击 “<a href="?act=add">这里</a>” 添加广告位置！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+function delete_adpos(id) {
+    if(confirm("确定要删除?")) {
+        window.location.href = "?act=delete&id="+id;
+    }
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>商业会员申请进度</em></h1>
+</header>
+<!-- 新增收货地址 -->
+<section class="address">
+    <h3 style="font-size: 0.8rem; font-weight: normal; text-align: center; line-height: 1.8rem;">您的审核进度</h3>
+
+    <h4 class="apply-status">1</h4>
+    <p class="apply-status-content">提交商家进驻申请</p>
+
+
+    <h4 class="apply-status {if $status lt 1}apply-status-gray{/if}">2</h4>
+    <p class="apply-status-content">平台验证审核</p>
+
+    <h4 class="apply-status {if $status neq 4 and $status neq 2}apply-status-gray{/if}">3</h4>
+    <p class="apply-status-content">平台审核通过<br/>请在会员专区一次性购买10000元产品</p>
+
+    <h4 class="apply-status {if $status neq 2}apply-status-gray{/if}">4</h4>
+    <p class="apply-status-content">申请成功，账号发放 {if $status eq 2}商家编号：{$smarty.session.business_account}{/if}</p>
+
+</section>
+</body>
+</html>

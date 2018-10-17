@@ -1,0 +1,49 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">分类列表</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>分类名称</th>
+                <!--
+                <th>价格区间</th>
+                <th>图标</th>
+                <th>按品牌搜索</th>
+                -->
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $category_list}
+            {foreach from=$category_list item=category}
+            <tr>
+                <td>{$category.name}</td>
+                <!--
+                <td>{$category.price_filter}</td>
+                <td><em class="icon">&#x{$category.icon};</em></td>
+                <td>{$category.search_brand_str}</td>
+                -->
+                <td class="text-right"><a href="?act=edit&id={$category.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$category.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="5" align="center">您还没有产品分类，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加栏目！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

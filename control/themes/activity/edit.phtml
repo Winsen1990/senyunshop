@@ -1,0 +1,103 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adpos-main">
+        <form id="adpos-form" name="adpos-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">活动名称:</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入活动名称" value="{$adpos.name}"/>
+                    <span class="error-input" id="name-error"></span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        修改<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="edit"/>
+                    <input type="hidden" id="eid" name="eid" value="{$adpos.id}"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>                
+            </fieldset>
+        </form> 
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript">
+$(function() {
+    $("#submit-btn").click(do_submit);
+});
+/**
+* 这个解决方案可以作为Ajax提交表单的模板
+* 1、form的提交操作托管给do_submit处理;
+* 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
+* 3、仅支持post方式提交表单;
+* 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
+**/
+function do_submit() {
+    var flag = true;
+    //参数校验
+    var name = $("#name").val().trim();
+    var id = $("#eid").val().trim();
+
+    if(id <= 0) {
+        alert("参数错误");
+        flag = false;
+    }
+
+    if(name == "") {
+        $("#name-error").text("-请输入广告位置名称");
+        flag = false;
+    } else {
+        $("#name-error").text("");
+    }
+
+    if(flag) {
+        flag = true;
+        //启用过渡效果
+        $(".btn-loading-img").show();
+        $("#submit-btn").addClass("btn-disabled");
+        $("#mask").show();
+
+        var params = { "opera":"edit", "name":name, "eid":id};
+        var url = "activity.php";
+        $.post(url, params, do_response, "json");
+    }
+
+    return flag;
+}
+
+function do_response(result) {
+    //关闭过渡效果
+    $(".btn-loading-img").hide();
+    $("#submit-btn").removeClass("btn-disabled");
+    $("#mask").hide();
+    //处理返回结果
+    if(result.error == 0) {
+        alert(result.msg);
+        window.location.reload();
+    } else {
+        if(result.msg != "") {
+            alert(result.msg);
+        }
+
+        if(result.errmsg.length) {
+            for(var id in result.errmsg) {
+                $("#"+id+"-error").text(result.errmsg[id]);
+            }
+        }
+    }
+}
+/*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

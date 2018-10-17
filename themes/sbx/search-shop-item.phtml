@@ -1,0 +1,23 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$shop_list item=shop}
+<li class="search-shop-li">
+    <div class="search-shop-info">
+        <img src="{$shop.shop_logo}" alt="{$shop.shop_name}"/>
+                        <span class="search-shop-detail">
+                            <span class="search-shop-name">{$shop.shop_name}</span>
+                            <span class="search-shop-comment">店铺评价<em>{sprintf("%.1f", $shop.comment)}分</em></span>
+                        </span>
+        <a href="shop.php?sn={$shop.business_account}" class="search-to-shop">进店逛逛</a>
+        <ul class="search-shop-product">
+            {foreach from=$shop.product_list item=product}
+            <li>
+                <a href="product.php?id={$product.id}">
+                    <img src="{$product.img}" alt="{$product.name}"/>
+                    <span class="shop-product-price">￥{$product.price}</span>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</li>
+{/foreach}

@@ -1,0 +1,202 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加管理员</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="admin-form" name="admin-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p>
+                    <label class="l-title">账号：</label>
+                    <input class="text-input w300" type="text" id="account" name="account" placeholder="账号仅能由英文字母、数字及下划线组成" minlength="2" maxlength="32">
+                    @{$smarty.session.business_account}
+                    <span class="error-input" id="account-error"></span>
+                    <br/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <span class="warning">账号一经确定，不能再行修改</span>
+                </p>
+                <p>
+                    <label class="l-title">密码：</label>
+                    <input class="text-input w300" type="password" id="password" name="password" placeholder="请输入密码" minlength="5">
+                    <span class="error-input" id="password-error"></span>
+                </p>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入名称">
+                    <span class="error-input" id="name-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">性别：</label>
+                    <input type="radio" name="sex" value="M" checked="checked"> <em>男</em> &nbsp;
+                    <input type="radio" name="sex" value="F"> <em>女</em>
+                </p>
+                <p class="clear">
+                    <label class="l-title">角色：</label>
+                    <select name="role_id" id="role_id" class="w150">
+                        {foreach from=$roleList item=role}
+                        <option value="{$role.id}">{$role.name}</option>
+                        {/foreach}
+                    </select>
+                    <span class="error-input" id="role_id-error"></span>
+                </p>
+                <p>
+                    <label class="l-title">邮箱：</label>
+                    <input class="text-input w300" type="text" id="email" name="email" placeholder="请输入邮箱">
+                    <span class="error-input" id="email-error"></span>
+                </p>
+                <p>
+                    <label class="l-title">手机号码：</label>
+                    <input class="text-input w300" type="text" id="mobile" maxlength="11" name="mobile" placeholder="请输入手机号码">
+                    <span class="error-input" id="mobile-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">接收业务通知：</label>
+                    <input type="radio" name="business_notice_enabled" value="1" checked="checked"> <em>是</em> &nbsp;
+                    <input type="radio" name="business_notice_enabled" value="0"> <em>否</em> &nbsp;
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add" />
+                    <button class="btn btn-primary" id="submit-btn">
+                        新增<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </button>&nbsp;
+                    <a href="admin.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+{literal}
+<script type="text/javascript">
+    $(function() {
+        $('#submit-btn').click(do_submit);
+    });
+
+    function do_submit() {
+        //参数校验
+        var data = {
+            account: $('#account').val().trim(),
+            password: $('#password').val().trim(),
+            name: $('#name').val().trim(),
+            sex: 'F',
+            role_id: parseInt($('#role_id').val()),
+            email: $('#email').val().trim(),
+            mobile: parseInt($('#mobile').val()),
+            business_notice_enabled: true
+        };
+
+        $('input[name="sex"]').each(function () {
+            if($(this).prop('checked')) {
+                data.sex = $(this).val();
+            }
+        });
+
+        $('input[name="business_notice_enabled"]').each(function () {
+            if($(this).prop('checked')) {
+                data.business_notice_enabled = $(this).val() === '1';
+            }
+        });
+
+        var message = {};
+
+        if(data.account === '') {
+            message.account = '-请填写管理员账号';
+        } else {
+            $('#account-error').text('');
+        }
+
+        if(data.password === '') {
+            message.password = '-请填写密码';
+        } else {
+            $('#password-error').text('');
+        }
+
+        if(data.name === '') {
+            message.name = '-请填写管理员名称'
+        } else {
+            $('#name-error').text('');
+        }
+
+        if(isNaN(data.role_id) || data.role_id <= 0) {
+            message.role_id = '-请选择角色';
+        } else {
+            $('#role_id-error').text('');
+        }
+
+        var email_pattern = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+        if(data.email === '' || !email_pattern.test(data.email)) {
+            message.email = '-请填写有效的邮箱，以便接收业务消息';
+        } else {
+            $('#email-error').text('');
+        }
+
+        var mobile_pattern = /^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$/;
+        if(isNaN(data.mobile) || !mobile_pattern.test(data.mobile)) {
+            message.mobile = '-请填写有效的手机号码，以便接收业务消息';
+        } else {
+            $('#mobile-error').text('');
+        }
+
+        if($.isEmptyObject(message)) {
+            //启用过渡效果
+            $('.btn-loading-img').show();
+            $('#submit-btn').addClass('btn-disabled');
+            $('#mask').show();
+
+            data.opera = 'add';
+
+            var url = 'admin.php';
+            $.post(url, data, do_response, 'json');
+        } else {
+            for(var field in message) {
+                $('#' + field + '-error').text(message[field]);
+            }
+        }
+
+        return false;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $('.btn-loading-img').hide();
+        $('#submit-btn').removeClass('btn-disabled');
+        $('#mask').hide();
+        //处理返回结果
+        if(result.error === 0) {
+            layer.confirm(
+                result.message,
+                {
+                    btn: ['查看管理员列表', '继续新增管理员'],
+                    yes: function () {
+                        window.location.href = 'admin.php'
+                    }
+                }
+            );
+            document.forms['admin-form'].reset();
+        } else {
+            if(result.message !== '') {
+                layer.alert(result.message);
+            }
+
+            if(!$.isEmptyObject(result.validate_message)) {
+                for(var field in result.validate_message) {
+                    $('#' + field + '-error').text(result.validate_message[field]);
+                }
+            }
+        }
+    }
+</script>
+{/literal}
+</body>
+</html>

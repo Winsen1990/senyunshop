@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$section_name}</em></h1>
+</header>
+{if $qrcode}
+<section>
+    <section class="qr-card-con">
+        <img src="{if $qrcode}{$qrcode}{else}{$template_dir}images/qrcode.jpg{/if}" alt="推广二维码" width="100%"/>
+        <!--
+        <div class="qr-header">
+            <img src="{if $user_info.headimg neq ""}{$user_info.headimg}{else}{$template_dir}images/wang.jpg{/if}" />
+            <span class="qr-name">{$user_info.nickname}，</span>
+        </div>
+        <div class="card-img">
+            <img src="{if $qrcode}{$qrcode}{else}{$template_dir}images/qrcode.jpg{/if}" alt="推广二维码"/>
+        </div>
+        -->
+    </section>
+</section>
+<!--
+<section class="qr-card">
+    <section class="qr-card-con">
+        <div class="card-header">
+            <img src="{if $user_info.headimg neq ""}{$user_info.headimg}{else}{$template_dir}images/wang.jpg{/if}" alt="{$user_info.nickname}"/>
+            <div class="card-header-con">
+                <span class="icon">&#xe637;</span>
+                <span>我是{$user_info.nickname}，</span>
+                <span>关注健康、关注养生都在<em style="color: #e60012;font-size: .8rem;">圣宝先</em>！</span>
+            </div>
+        </div>
+        <div class="card-img">
+            <img src="{if $qrcode}{$qrcode}{else}{$template_dir}images/qrcode.jpg{/if}" alt="推广二维码"/>
+        </div>
+        <div class="card-footer">
+            <div class="card-tips">
+                <span>长按此图，识别二维码，添加关注。</span>
+                <span>怪我会读心咯！</span>
+                <span>总能找到你最喜欢的平台。</span>
+            </div>
+            <div class="card-logo">
+                圣宝先
+            </div>
+        </div>
+    </section>
+</section>
+-->
+{/if}
+<!-- 资讯页面 -->
+<section class="article">
+    <section class="article-con">
+        <h1>{$article.title}</h1>
+        <span class="article-time">{date('Y-m-d H:i:s', $article.add_time)}</span>
+        <div>
+            {$article.wap_content}
+        </div>
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+{if is_weixin()}
+{include file="float_icon.phtml"}
+{/if}
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    window.onload = function(){
+        var ele = document.getElementsByClassName("article-con")[0].getElementsByTagName("img");
+        var con_width = document.getElementsByClassName("article-con")[0].offsetWidth;
+        for(var i = 0; i < ele.length; i++) {
+            console.info(i+",width="+ele[i].width);
+            if(ele[i].width > con_width) {
+                ele[i].style.width = "100%";
+                ele[i].removeAttribute("height");
+                ele[i].removeAttribute("width");
+                ele[i].style.height = "";
+            }
+        }
+    }
+</script>
+{if is_weixin()}
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+<script type="text/javascript">
+    wx.config({
+        appId: '{$signPackage.appId}',
+        timestamp: {$signPackage.timestamp},
+        nonceStr: '{$signPackage.nonceStr}',
+        signature: '{$signPackage.signature}',
+        jsApiList: [
+            'chooseWXPay',
+            'closeWindow',
+            'onMenuShareTimeline',
+            'onMenuShareAppMessage',
+            'onMenuShareQQ',
+            'onMenuShareWeibo',
+            'onMenuShareQZone'
+        ]
+    });
+
+    wx.ready(function() {
+        var share_title = '{$article.title}';
+        var share_link = '{$recommend_url}';
+        var share_img = '{$config.domain}{$article.original}';
+        var share_desc = '{$article.description}';
+
+        //分享到朋友圈
+        wx.onMenuShareTimeline({
+            title: share_title, // 分享标题
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到朋友圈成功了呢!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("为什么要取消分享呢，不喜欢人家了吗？");
+            }
+        });
+
+        //分享给朋友
+        wx.onMenuShareAppMessage({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            type: 'link', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享给朋友成功了哦！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("喜欢我就把我推荐给你的朋友嘛~~");
+            },
+            fail: function () {
+                show_message_dialog("调用失败");
+            }
+        });
+
+        //分享到QQ
+        wx.onMenuShareQQ({
+            title: share_link, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ成功！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("听说颜值高的人都会把我分享出去的哦");
+            }
+        });
+
+        //分享到腾讯微博
+        wx.onMenuShareWeibo({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到腾讯微博成功!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("把我分享到微博去玩玩嘛~");
+            }
+        });
+
+        //分享到QQ空间
+        wx.onMenuShareQZone({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ空间成功");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("人家想去QQ空间看看啦~");
+            }
+        });
+
+        $("#float-icon").click(function(){
+            wx.ready(function(){
+                wx.closeWindow();
+            });
+        });
+    });
+    wx.error(function(res){
+        show_message_dialog("页面还没加载完噢,先不要分享哈!");
+    });
+</script>
+{/if}
+</body>
+</html>

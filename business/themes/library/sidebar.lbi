@@ -1,0 +1,90 @@
+<div id="sidebar">
+    <div id="sidebar-wrapper">
+        <ul id="main-nav">
+            <li class="business_menu_index">
+                <a href="main.php" class="nav-top-item">
+                    <em class="icon">&#xe610;</em>首页
+                </a>
+            </li>
+            <li class="menu_message">
+                <a href="javascript:void(0);" class="nav-top-item">
+                    <em class="icon">&#xe60a;</em>系统消息
+                    {if $unread_message_count neq 0}
+                    <sup class="badge">&nbsp;{$unread_message_count}</sup>
+                    {/if}
+                </a>
+                <ul class="submenu" id="id_menu_message" style="display: none">
+                    <li><a href="message.php">未读消息</a></li>
+                    <li><a href="message.php?act=read">已读消息</a></li>
+                </ul>
+            </li>
+            <li class="menu_self">
+            {if $primary_account}
+                <a href="self.php?act=password" class="nav-top-item">
+                    <em class="icon">&#xe60f;</em>修改密码
+                </a>
+            {else}
+                <a href="javascript:void(0);" class="nav-top-item">
+                    <em class="icon">&#xe611;</em>帐号管理
+                </a>
+                <ul class="submenu" id="id_menu_self" style="display: none">
+                    <li><a href="self.php">帐号资料</a></li>
+                    <li><a href="self.php?act=password">修改密码</a></li>
+                </ul>
+            {/if}
+            </li>
+
+            {foreach from=$menus item=menu key=key}
+            <li class="{$key}">
+                <a href="{if isset($menu.children)}javascript:void(0);{else}{$menu.url}{/if}" class="nav-top-item" >
+                    <em class="icon">{$menu.icon}</em>{$menu.title}
+                </a>
+                {if isset($menu.children)}
+                <ul class="submenu" id="id_{$key}" style="display: none">
+                {foreach from=$menu.children item=child}
+                    <li><a href="{$child.url}">{$child.title}</a></li>
+                {/foreach}
+                </ul>
+                {/if}
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript">
+{if $active_nav eq 'main'}
+    $(function () {
+        menu1("", "", ".menu_index a.nav-top-item");
+    })
+{else}
+    {if $active_nav eq 'message'}
+    $(function () {
+        menu1("#id_menu_message", "#id_menu_message a", ".menu_message a.nav-top-item");
+    });
+    {else}
+    $(function() {
+        menu1("#id_{$menu_mark}", "#id_{$menu_mark} a", ".{$menu_mark} a.nav-top-item");
+    });
+    {/if}
+
+{/if}
+</script>
+
+<script type="text/javascript" >
+$(function(){
+    $('#main-nav').children().click(function(){
+        var sub_menu = $(this).children('ul');
+        $('.select-hover').removeClass('select-hover');
+        if( sub_menu ) {
+            if( sub_menu.is(':visible') ) {
+                sub_menu.slideUp();
+                sub_menu.siblings('a').removeClass('select-hover');
+            } else {
+                sub_menu.slideDown();
+                sub_menu.siblings('a').addClass('select-hover');
+            }
+        }
+    });
+});
+</script>

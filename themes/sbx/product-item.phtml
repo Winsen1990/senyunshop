@@ -1,0 +1,10 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$product_list item=p}
+<li>
+    <a href="product.php?id={$p.id}">
+        <img src="{$p.img}" alt="{$p.name}">
+        <span>{$p.name|truncate:7:".."}</span>
+        <em>￥{$p.price}</em>
+    </a>
+</li>
+{/foreach}

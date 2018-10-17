@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>确认支付</em></h1>
+</header>
+<!-- 支付详情 -->
+<section class="paycon">
+    <div class="paydetail">
+        <ul>
+            <li>订单编号：{$order.order_sn}</li>
+            <li>订单详情：</li>
+            {foreach from=$order_detail item=od}
+            <li>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                {$od.product_name}x{$od.count}
+            </li>
+            {/foreach}
+            <li>支付金额：<i class="red_money">{sprintf("%.2f", $order.amount)}元</i></li>
+            <li>支付方式：
+                {foreach from=$payment_list item=payment}
+                <span onclick="get_pay_link('{$payment.plugins}');">{$payment.name}</span>
+                {/foreach}
+            </li>
+        </ul>
+        <div class="paybtn-con">
+            <a href="javascript:topay();" class="paybtn" id="pay_btn">确认支付</a>
+        </div>
+    </div>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+{if is_weixin()}
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+{/if}
+<script type="text/javascript" src="{$template_dir}js/ap.js"></script>
+<script type="text/javascript">
+    var global_result = null;
+
+    $(function() {
+        $(".paydetail ul li span").click(function(){
+            $(this).siblings().removeClass("on");
+            $(this).addClass("on");
+        })
+    });
+
+    function topay() {
+//        show_message_dialog("等待支付接口申请下来");
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function get_pay_link(plugins) {
+        switch(plugins)
+        {
+            case "wechat":
+                get_prepay_id();
+                break;
+            case "alipay":
+                ger_pay_link();
+                break;
+            default:
+                show_message_dialog("该支付方式暂无接口支持");
+                break;
+        }
+    }
+
+    function ger_pay_link() {
+        var data = { "opera":"alipay" };
+        var url = "topay.php";
+
+        show_mask();
+        $.post(url, data, ger_pay_link_handler, "json");
+    }
+
+    function ger_pay_link_handler(result) {
+        hide_mask();
+        if(result.error == 0) {
+            $("body").append(result.content);
+            var queryParam = '';
+            Array.prototype.slice.call(document.querySelectorAll("input[type=hidden]")).forEach(function (ele) {
+                if(ele.name === 'req_data') {
+                    queryParam += ele.name + "=" + ele.value + '&';
+                } else {
+                    queryParam += ele.name + "=" + encodeURIComponent(ele.value) + '&';
+                }
+            });
+            var gotoUrl = document.querySelector("#alipaysubmit").getAttribute('action') + '?' + queryParam;
+
+            _AP.pay(gotoUrl);
+        } else {
+            show_message_dialog(result.msg);
+        }
+    }
+
+    function get_prepay_id() {
+        var data = { "opera":"wechat" };
+        var url = "topay.php";
+
+        show_mask();
+        $.post(url, data, get_prepay_id_handler, "json");
+    }
+
+    function get_prepay_id_handler(result) {
+        hide_mask();
+        if(result.error == 0) {
+            global_result = result;
+            $("#pay_btn").bind("click", function() {
+                wx.chooseWXPay({
+                    timestamp: global_result.timestamp,
+                    nonceStr: global_result.nonce_str,
+                    package: 'prepay_id='+global_result.prepay_id,
+                    signType: 'MD5',
+                    paySign: global_result.sign,
+                    success: function (res) {
+                        // 支付成功后的回调函数
+                        if(res.errMsg == "chooseWXPay:ok") {
+                            window.location.href = "payresult.php";
+                        } else {
+                            show_message_dialog(res.errMsg+":支付失败");
+                        }
+                    }
+                });
+            });
+        } else {
+            show_message_dialog(result.msg);
+        }
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+
+    {if is_weixin()}
+    wx.config({
+        appId: '{$signPackage.appId}',
+        timestamp: {$signPackage.timestamp},
+        nonceStr: '{$signPackage.nonceStr}',
+        signature: '{$signPackage.signature}',
+        jsApiList: [
+            'chooseWXPay',
+            'closeWindow'
+        ]
+    });
+    {/if}
+</script>
+</body>
+</html>

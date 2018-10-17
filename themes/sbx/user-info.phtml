@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>编辑资料</em></h1>
+</header>
+<!-- 编辑资料 -->
+<section class="userinfo">
+    <div class="edit-userinfo">
+        <label><span>会员卡号:</span><i class="red-font">{$user.account}</i></label>
+        <label><span>会员等级:</span><i class="red-font">{$level[{$user.level_id}]}</i></label>
+        <label><span>昵称:</span><i class="red-font">{$user.nickname}</i></label>
+        <label><span>手机号码:</span>
+            <input name="mobile" id="mobile" type="tel" value="{$user.mobile}" placeholder="请输入手机号码" onblur="verify_mobile();"/>
+        </label>
+        <label for="sex"><span>性别:</span>
+            <select id="sex" name="sex">
+                <option value="N" {if $user.sex eq "N"}selected="selected"{/if}>保密</option>
+                <option value="M" {if $user.sex eq "M"}selected="selected"{/if}>男</option>
+                <option value="F" {if $user.sex eq "F"}selected="selected"{/if}>女</option>
+            </select>
+        </label>
+        <label><span>身份证:</span><input name="identity" id="identity" type="text" value="{$user.identity}" placeholder="请输入身份证号码"></label>
+        <div class="info-btn">
+            <a class="btn" href="javascript:;" onclick="edit_profile();">确认修改</a>
+        </div>
+    </div>
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var mobile = "{$user.mobile}";
+
+    function verify_mobile() {
+        var mobile = $("#mobile").val();
+
+        if(mobile == "") {
+            show_message_dialog("请输入手机号码");
+            return false;
+        }
+
+        var url = "data_center.php";
+        var data = { "opera":"verify_mobile", "mobile":mobile, "mode":"unique" };
+
+        show_mask();
+        $.post(url, data, verify_mobile_handler, "json");
+    }
+
+    function verify_mobile_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#mobile-show").text(response.mobile_mask);
+            mobile = response.mobile;
+        } else {
+            show_message_dialog(response.msg);
+            mobile = "";
+        }
+    }
+
+    function edit_profile() {
+        var sex = $("#sex").val();
+        var identity = $("#identity").val();
+
+        var msg = "";
+
+        if(mobile == "") {
+            msg += "-请填写有效的手机号码<br/>";
+        }
+
+        if(sex == "") {
+            msg += "-请选择性别<br/>";
+        }
+
+        if(msg != "") {
+            show_message_dialog(msg);
+        } else {
+            var url = "profile.php";
+            var data = { "opera":"edit", "identity":identity, "sex":sex, "mobile":mobile };
+
+            show_mask();
+            $.post(url, data, edit_profile_handler, "json");
+        }
+    }
+
+    function edit_profile_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#dialig_close_btn").click(function(){
+                close_message_dialog();
+                show_mask();
+                window.location.reload();
+            });
+
+            $("#dialig_close").click(function(){
+                close_message_dialog();
+                show_mask();
+                window.location.reload();
+            });
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").html(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

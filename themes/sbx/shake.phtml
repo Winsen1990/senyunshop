@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body style="background: #333;">
+<!--
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>摇一摇</em></h1>
+</header>
+-->
+
+<section class="product-list" style="background: #333;">
+    <div class="shake-icon">
+        <img src="{$template_dir}images/shake.png"/>
+        <p id="notice">{if isset($notice)}{$notice}{else}用力摇一摇你的手机{/if}</p>
+    </div>
+</section>
+<audio id="ShakeAudio" src="http://www.bama555.com/assets/voice/4.mp3" preload="preload"></audio>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var SHAKE_THRESHOLD = 1000;
+    var last_update = 0;
+    var flag = true;
+    var cycle = {$cycle};
+    var x = y = z = last_x = last_y = last_z = 0;
+    var slogan = [
+        "再大力！",
+        "再大力，再大力！",
+        "快点摇啊，别停！",
+        "快点摇，快点摇！",
+        "看灰机~"
+    ];
+
+    function get_slogan() {
+        var size = slogan.length;
+
+        var i = Math.random()*size;
+        i = parseInt(i);
+
+        if(slogan[i] == undefined) {
+            i = size - 1;
+        }
+
+        return slogan[i];
+    }
+
+    function init() {
+        if(cycle <= 0) {
+            show_message_dialog("活动尚未开始,请稍等片刻");
+        }
+
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', deviceMotionHandler, false);
+        } else {
+            alert('您的手机不支持摇一摇功能');
+        }
+    }
+
+    function deviceMotionHandler(eventData) {
+        var acceleration = eventData.accelerationIncludingGravity;
+        var curTime = new Date().getTime();
+        var media = document.getElementById("ShakeAudio");
+        if ((curTime - last_update) > 100) {
+            var diffTime = curTime - last_update;
+            last_update = curTime;
+            x = acceleration.x;
+            y = acceleration.y;
+            z = acceleration.z;
+            var speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
+            if (speed > SHAKE_THRESHOLD && flag) {
+                //shaking
+                document.getElementById("notice").innerHTML = get_slogan();
+                shake(speed);
+                media.play();
+                media.stop();
+            }
+            last_x = x;
+            last_y = y;
+            last_z = z;
+        }
+    }
+
+    function shake(speed) {
+        if(cycle <= 0) {
+            return false;
+        }
+
+        var progress = 1;
+
+        if(speed > 2000) {
+            progress = 3;
+        }
+
+        if(speed > 3000) {
+            progress = 4;
+        }
+
+        if(speed > 4000) {
+            progress = parseInt(speed/1000);
+        }
+
+        var data = { "opera":"shake", "cycle":{$cycle}, "progress": progress };
+        $.post("shake.php", data, shake_handler, "json");
+    }
+
+    function shake_handler(response) {
+        if(response.msg != "") {
+            $("#notice").html(response.msg);
+        }
+
+        if(response.error == 1) {
+            show_message_dialog(response.msg);
+            flag = false;
+        }
+    }
+
+    $(function(){
+        init();
+    });
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+        window.location.reload();
+    }
+</script>
+</body>
+</html>

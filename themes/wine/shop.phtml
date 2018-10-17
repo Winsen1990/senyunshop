@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <style type="text/css">
+        <!--
+        .shop .user-info:before {
+            background-image: url("{$business.shop_sign}");
+        }
+        -->
+    </style>
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <div class="search_box">
+        <a href="#" >
+            <div class="search">
+                <form method="get" action="shop_search.php?sn={$business.business_account}">
+                    <div class="text_box">
+                        <input id="keyword" name="keyword" type="text" placeholder="本店搜索" class="keyword text" onkeydown="this.style.color='#404040'" autocomplete="off">
+                    </div>
+                    <input type="hidden" name="sn" value="{$business.business_account}"/>
+                    <input type="submit" value="" class="submit" title="搜索">
+                </form>
+            </div>
+        </a>
+    </div>
+    <!-- category -->
+    <div class="category">
+        <dl>
+            <dt>
+                <a id="shop_category" href="javascript:void(0);">分类<i></i></a>
+            </dt>
+        </dl>
+    </div>
+    <!-- 分类菜单-->
+    <div class="category_menu">
+        <ul class="list1">
+            {foreach from=$category item=c}
+            {if count($c.children) eq 0}
+            <li>
+                <a href="product_list.php?id={$c.id}">{$c.name}</a>
+            </li>
+            {else}
+            <li class="hasmore">
+                <a href="javascript:void(0);" onclick="return false;" grade="2">{$c.name}</a>
+                <ul class="list2">
+                    {foreach from=$c.children item=cc}
+                    <li><a href="product_list.php?id={$cc.id}">{$cc.name}</a></li>
+                    {/foreach}
+                </ul>
+            </li>
+            {/if}
+            {/foreach}
+        </ul>
+    </div>
+</header>
+<!-- 用户基本信息 -->
+<section class="shop">
+    <header class="user-info">
+        <section class="user-basic">
+            <img class="user-avatar" src="{$business.shop_logo}" alt="{$business.shop_name}">
+<!--            <div class="user-name">{$business.shop_name}</div>-->
+        </section>
+        <section class="user-stat">
+            <a id="shop_collect_number" href="#"><em>{count($product_list)}</em>全部商品</a>
+            <a id="product_collect_number" href="#"><em>{$new_product_count}</em>上新商品</a>
+            <a id="read_history_count" href="tel:{$business.mobile}"><em class="icon">&#xe600;</em>联系掌柜</a>
+        </section>
+    </header>
+    <!-- 广告轮播区 -->
+    <section id="focus" class="focus">
+        <div class="hd">
+            <ul></ul>
+        </div>
+        <div class="bd">
+            <ul>
+                {foreach from=$cycle_ad item=ad}
+                <li><a href="{$ad.url}"><img _src="{$ad.img}" src="{$template_dir}images/blank.png" /></a></li>
+                {/foreach}
+            </ul>
+        </div>
+    </section>
+    <!-- 商品推荐区 -->
+    <!--
+    <section class="floor">
+        <h2>
+            <a class="title"><i class="icon">&#xe610;</i>店长推荐</a>
+            <a href="index.php" class="more" title="更多">更多</a>
+        </h2>
+        <dl>
+            <dt><a href="#"><img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$template_dir}images/H5.jpg" width="100%" height="auto"></a></dt>
+            <dd><a href="#"><img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$template_dir}images/309x224-1.jpg" width="100%" height="auto"></a></dd>
+            <dd><a href="#"><img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$template_dir}images/309x224-2.jpg" width="100%" height="auto"></a></dd>
+        </dl>
+    </section>
+    -->
+    <!-- 热卖产品 -->
+    <section class="hot-product">
+        <h3>- <i class="red-font">全部产品</i> -</h3>
+        <ul>
+            {foreach from=$product_list item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$p.img}" alt="{$p.name}">
+                    <span>{$p.name|truncate:7:'..'}</span>
+                    <em>会员价: ￥{$p.price}</em>
+                    <em class="market-price-no-float">零售价: <span>¥{$p.shop_price}</span></em>
+                    <em>
+                    {if $p.given_integral gt 0}
+                        送{$p.given_integral|string_format:'%.2f'}积分
+                    {else}
+                        &nbsp;
+                    {/if}
+                    </em>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </section>
+    <!-- 全部产品
+    <section class="all-product">
+        <a href="#" class="arrow">全部商品</a>
+    </section>
+    -->
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+        $("#shop_category").click(function(){
+            if($(this).hasClass("up")){
+                $(".category_menu").slideUp(500);
+                $(this).removeClass("up");
+                $(".hasmore").removeClass("up");
+                $(".hasmore").find("ul").slideUp();
+            }else{
+                $(".category_menu").slideDown(500);
+                $(this).addClass("up");
+            }
+        })
+        $(".hasmore a").click(function(){
+            $(this).parent().siblings().removeClass("up");
+            $(this).parent().siblings().find("ul").slideUp(500);
+            if($(this).parent().hasClass("up")){
+                $(this).parent().find("ul").slideUp(500);
+                $(this).parent().removeClass("up");
+            }else{
+                $(this).parent().find("ul").slideDown(500);
+                $(this).parent().addClass("up");
+            }
+        })
+    });
+</script>
+<script type="text/javascript" src="{$template_dir}js/TouchSlide.1.1.js"></script>
+<script type="text/javascript">
+    TouchSlide({
+        slideCell:"#focus",
+        titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+        mainCell:".bd ul",
+        effect:"left",
+        autoPlay:true,//自动播放
+        autoPage:true, //自动分页
+        switchLoad:"_src" //切换加载，真实图片路径为"_src"
+    });
+</script>
+</body>
+</html>

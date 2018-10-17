@@ -1,0 +1,82 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加导航条</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="nav-main">
+        <form id="navForm" name="navAddForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">导航名称：</label>
+                    <input class="text-input w300" type="text" id="menuName" name="menuName" placeholder="请输入菜单名称" maxlength="32">
+                </p>
+                <p>
+                    <label class="l-title">URL：</label>
+                    <input class="text-input w300" type="text" id="menuUrl" name="menuUrl" placeholder="请输入菜单链接">
+                </p>
+                <p>
+                    <label class="l-title">排序：</label>
+                    <input class="text-input w300" type="text" id="menuSort" name="menuSort" value="50">
+                </p>
+                <p>
+                    <label class="l-title">位置：</label>
+                    <select name="position" class="w150">
+                        <option value="top">顶部</option>
+                        <option value="middle">中部</option>
+                        <option value="bottom">底部</option>
+                    </select>
+                </p>
+<!--                <p class="clear">-->
+<!--                    <label class="l-title">新窗口打开：</label>-->
+<!--                    <input type="radio" name="isOpenNew" value="1"> <em>是</em> &nbsp;-->
+<!--                    <input type="radio" name="isOpenNew" value="0" checked="checked"> <em>否</em>-->
+<!--                </p>-->
+<!--                <p class="clear">-->
+<!--                    <label class="l-title">是否显示：</label>-->
+<!--                    <input type="radio" name="isShow" value="1" checked="checked"> <em>是</em> &nbsp;-->
+<!--                    <input type="radio" name="isShow" value="0"> <em>否</em>-->
+<!--                </p>-->
+                <p class="clear">
+                    <label class="l-title">父级导航栏：</label>
+                    <select name="parentId" class="w150">
+                        <option value="0">顶级导航栏</option>
+                        {foreach from=$navs item=nav}
+                        <option value="{$nav.id}">{$nav.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add"/>
+                    <button class="btn btn-primary" type="submit">添加</button> &nbsp;<a href="nav.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+<script type="text/javascript">
+    $(function(){
+        var navs = {$navs_str};
+        $('select[name=position]').change(function() {
+            var value = $(this).val();
+            $('select[name=parentId]').empty();
+            var option = '<option value="0">顶级导航栏</option>';
+            $('select[name=parentId]').append(option);
+            for(var key in navs){
+                if( navs[key]['position'] == value ) {
+                    option = '<option value="' + navs[key]['id'] + '">' + navs[key]['name'] + '</option>';
+                    $('select[name=parentId]').append(option);
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

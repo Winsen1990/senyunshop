@@ -1,0 +1,21 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$product_list item=product}
+<li>
+    <a href="product.php?id={$product.id}">
+        <img class="lazy" src="{$product.img}" alt="{$product.name}">
+        <dl class="arrow">
+            <dt> {$product.name} </dt>
+            {if $product.integral <= 0}
+            <dd>{if isset($product.join_activity) and $product.join_activity}加盟价{else}会员价{/if}: ￥{$product.price} <p class="market-price">零售价: <span>¥{$product.shop_price}</span></p> </dd>
+            {else}
+            <dd>{$product.integral}积分</dd>
+            {/if}
+            {if $product.given_integral gt 0}
+            <dd>送{$product.given_integral|string_format:'%.2f'}积分</dd>
+            {else}
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</dd>
+            {/if}
+        </dl>
+    </a>
+</li>
+{/foreach}

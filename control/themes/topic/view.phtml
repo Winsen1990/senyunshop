@@ -1,0 +1,43 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">板块管理</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加板块</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>板块名称</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $sectionList}
+            {foreach from=$sectionList item=section}
+            <tr>
+                <td>{$section.name}</td>
+                <td class="text-right">
+                    <a href="?act=edit&id={$section.id}">编辑</a>
+                    |
+                    <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$section.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="2" align="center">您还没有板块，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加板块！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

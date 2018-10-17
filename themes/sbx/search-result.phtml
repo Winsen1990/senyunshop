@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<!-- 搜索框 -->
+<header id="head_search_box" title="结果页头部" class="_pre">
+    <div class="search_header">
+        <a href="javascript:history.back();" class="back search_back" title="返回"></a>
+        <div class="search">
+            <form id="search_form" title="搜索部分" method="get" action="" onsubmit="return submit_search();">
+                <div class="search-select">
+                    <div class="select-text">
+                        <span id="select-text">宝贝</span><i class="icon">&#xe63a;</i>
+                    </div>
+                    <div class="select-detail">
+                        <ul>
+                            <li class="select-product" onclick="select_mode('product');">
+                                <span class="icon">&#xe63c;</span>
+                                宝贝
+                            </li>
+                            <li class="select-shop" onclick="select_mode('shop');">
+                                <span class="icon">&#xe63b;</span>
+                                店铺
+                            </li>
+
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text_box" name="list_search_text_box" title="搜索框" onclick="return 1;">
+                    <input id="_keyword" name="keyword" type="text" placeholder="{$keyword} 共{count($product_list)}个结果" class="text" value="">
+                </div>
+                <input type="hidden" name="mode" value="product" id="mode"/>
+                <input type="submit" value="" class="submit" id="list_search_submit" title="提交">
+            </form>
+        </div>
+        <a class="search_menu filtrate" name="list_go_filter" title="筛选">筛选</a>
+    </div>
+    <div class="clear"></div>
+</header>
+<!-- 排序 -->
+<section class="filtrate_term _pre" id="product_sort" title="商品排序">
+    <ul>
+        <li class="on" id="index_default"><a href="javascript:javascript:sort_products('default');" name="list_sort_index">默认</a></li>
+        <li class="" id="index_sale"><a href="javascript:sort_products('sale');" name="list_sort_sales">销量</a></li>
+        <li class="" id="index_star"><a href="javascript:sort_products('star');" name="list_sort_score">评分</a></li>
+        <li class="" id="index_price"><a href="javascript:sort_products('price');" name="list_sort_price">价格<span class="arrow_up"></span><span class="arrow_down"></a></li>
+        <li class="" id="index_new"><a href="javascript:sort_products('new');" name="list_sort_date">最新</a></li>
+    </ul>
+</section>
+<!-- search result -->
+<section class="goods_list _pre" id="goods_list" name="goods_list" title="商品列表">
+    <div class="clearfix">
+        <ul class="clearfix" id="product_list">
+            {foreach from=$product_list name=product_list item=product}
+            <li>
+                <div>
+                    <a href="product.php?id={$product.id}" name="product_item" title="商品">
+                        <p class="img">
+                            <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$product.img}" alt="{$product.name}"/>
+                        </p >
+                        <p class="name">{$product.name}</p >
+                    </a >
+                    <p class="price"><span class="red">¥{$product.price}</span>
+                        <span name="item_collect" title="收藏" class="span_sc {if $product.collection}span_sc_on{/if}" id="fav_{$product.product_sn}" onclick="javascript:collection('{$product.product_sn}');" flag="add"></span>
+                    </p >
+                </div>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</section>
+<section class="_next" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+    <!-- 筛选 -->
+    <header>
+        <div class="new_header_2" id="filter_header" title="筛选头部">
+            <a href="javascript:;" class="back" id="list_filter_back" title="返回"><span>返回</span></a>
+            <h2>筛选</h2>
+        </div>
+    </header>
+    <section id="filter_content" title="属性筛选列表" class="">
+        <div class="filtrate_price" name="filter_price" title="价格筛选" onclick="return 1;">
+            价格 <input type="number" id="lp" value="">∼
+            <input type="number" id="hp" value="">元
+        </div>
+        <!--
+        <div class="filtrate_category filtrate_category_show" att_id="address">
+            <a href="javascript:;" class="filtrate_category_a filtrate_category_show" name="filter_region_nav" title="供货区域">供货区域<span class="up_down">收起</span></a>
+        </div>
+        <ul class="clearfix filtrate_address filtrate_list addr_item" id="filter_region_list" title="收货地列表" style="margin-top: 0px; display: block; transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+            <li class="" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+                <a href="javascript:;" cid="1" name="1">广东</a>
+            </li>
+            <li class="" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+                <a href="javascript:;" cid="2" aname="2">福建</a>
+            </li>
+            <li class="" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+                <a href="javascript:;" cid="3" aname="3">浙江</a>
+            </li>
+        </ul>
+        -->
+        <div class="filtrate_has">
+            <h2>其他条件</h2>
+            <ul class="clearfix">
+                <li id="displaySalesPromotion" title="免运费" onclick="select_condition(this, 'free_delivery');"><label>免运费</label></li>
+                <li id="displayOutlets" title="积分换购" onclick="select_condition(this, 'integral_exchange');"><label>积分换购</label></li>
+            </ul>
+        </div>
+        <ul class="filtrate_btn">
+            <li><a href="javascript:;" class="reset" id="clear_btn" title="筛选清空">清空筛选条件</a></li>
+            <li><a href="javascript:;" class="submit" id="submit_btn" title="筛选确定">确定</a></li>
+        </ul>
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    var orderby = "up";
+    var mode = "default";
+    var filter = {$filter};
+
+    function select_condition(obj, tag) {
+        if(filter[tag] != undefined) {
+            delete filter[tag];
+            obj.className = "";
+        } else {
+            filter[tag] = 1;
+            obj.className = "on";
+        }
+    }
+
+    $(document).ready(function(){
+        //图片延迟加载
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+        //初始化收藏功能
+
+        //初始化加载更多功能
+
+        //筛选浮层显示控制
+        var filtrate = $(".filtrate"), submit = $(".submit");
+        filtrate.bind("click", function () {
+            $("._next").show();
+            $("._pre").hide();
+            window.scrollTo(0, 0);
+        });
+
+        $(".back").bind("click", function () {
+            $("._next").hide();
+            $("._pre").show();
+            window.scrollTo(0, 0);
+        });
+
+        submit.bind("click", function () {
+            //价格区间
+            var price_l = $("#lp").val();
+            var price_h = $("#hp").val();
+
+            price_l = parseFloat(price_l);
+            price_h = parseFloat(price_h);
+
+            if(price_l > price_h) {
+                show_message_dialog("最低价格不能高于最高价格");
+                return false;
+            }
+
+            if(!isNaN(price_l)) {
+                filter.price_l = price_l;
+            }
+
+            if(!isNaN(price_h)) {
+                filter.price_h = price_h;
+            }
+
+            $("._next").hide();
+            $("._pre").show();
+            sort_products("default");
+        });
+
+        $("#clear_btn").click(function(){
+            for(var i in filter) {
+                if(i != "keyword") {
+                    delete filter[i];
+                }
+            }
+
+            $("#lp").val("");
+            $("#hp").val("");
+            $("#displaySalesPromotion").removeClass("on");
+            $("#displayOutlets").removeClass("on");
+        });
+
+        $(".select-text").bind("click", function () {
+            $(".select-detail").toggle();
+        });
+    });
+
+    function select_mode(mode) {
+        $("#mode").val(mode);
+        if(mode == "product") {
+            $("#select-text").text("宝贝");
+        } else {
+            $("#select-text").text("店铺");
+        }
+        $(".select-detail").toggle();
+    }
+
+    function active_up() {
+        $(".arrow_up").addClass("active_up");
+        $(".arrow_down").removeClass("active_down");
+    }
+
+    function active_down() {
+        $(".arrow_down").addClass("active_down");
+        $(".arrow_up").removeClass("active_up");
+    }
+
+    function sort_products(mode) {
+        var url = "search.php";
+        var data = { "opera":"sort", "mode":mode, "filter":filter, "orderby":orderby };
+
+        if(mode == "price") {
+            if(orderby == "up") {
+                active_up();
+                orderby = "down";
+            } else {
+                active_down();
+                orderby = "up";
+            }
+        }
+
+        show_mask();
+        $("#index_"+mode).siblings().removeClass("on")
+        $("#index_"+mode).addClass("on");
+        $.post(url, data, sort_products_handler, "json");
+    }
+
+    function sort_products_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#product_list").html(response.content);
+            filter = response.filter;
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+
+    function collection(product_sn) {
+        var url = "product.php";
+        var data = { "opera":"collection", "product_sn":product_sn };
+
+        show_mask();
+        $.post(url, data, collection_handler, "json");
+    }
+
+    function collection_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            if(response.status) {
+                $("#fav_"+response.product_sn).addClass("span_sc_on");
+            } else {
+                $("#fav_"+response.product_sn).removeClass("span_sc_on");
+            }
+        }
+    }
+</script>
+</body>
+</html>

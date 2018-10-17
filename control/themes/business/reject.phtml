@@ -1,0 +1,32 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">商户入驻申请驳回</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="rejectForm" method="post" action="" onsubmit="javascript:if(confirm('确认驳回入驻申请？')) return true; else return false;">
+            <fieldset>
+                <label class="l-title">驳回理由：</label>
+                <textarea cols="100" rows="6" name="reason">您的开店申请审核不通过，请重新提交</textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">提交</button>
+                    <a href="javascript:history.go(-1)" class="btn btn-primary">返回</a>
+                    <input type="hidden" name="opera" value="reject" />
+                    <input type="hidden" name="account" value="{$business_account}" />
+                </p>
+            </fieldset>
+        </form>
+    </div>
+
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

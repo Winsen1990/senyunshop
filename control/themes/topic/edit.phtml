@@ -1,0 +1,87 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑资讯分类</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <form id="articleCatForm" name="articleCatEditForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">资讯分类名称：</label>
+                    <input class="text-input w300" type="text" id="articleCatName" name="articleCatName" placeholder="请输入资讯分类名称" maxlength="32" value="{$section.name}" />
+                </p>
+                <p>
+                    <label class="l-title">排序：</label>
+                    <input class="text-input w300" type="text" id="order_view" name="order_view" value="{$section.order_view}">
+                </p>
+                <p>
+                    <label class="l-title">封面：</label>
+                    <input type="button" class="text-input" id="select-image" value="请选择板块封面" style="cursor:pointer">
+                    <input type="hidden" class="" name="img" id="img" value="{$section.img}"/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    {if $section.img eq ''}
+                    <img id="show-image" alt="未选择图片" src="../upload/image/no-image.png">
+                    {else}
+                    <img id="show-image" alt="" src="../{$section.img}"/>
+                    {/if}
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$section.id}" />
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="topic.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K)
+    {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson : '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = '';
+                            width = (width == '') ? '75px' : width + 'px'
+                        }
+                        if( !height ) {
+                            height = '';
+                            height = (height == '') ? '75px' : height + 'px'
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('width', width);
+                        K('#show-image').css('height', height);                        
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+//    prettyPrint();
+    });
+</script>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

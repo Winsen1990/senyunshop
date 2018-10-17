@@ -1,0 +1,47 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">获奖情况</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        {foreach from=$reward_list key=id item=reward}
+        <h2>第{$id}轮</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>排名</th>
+                <th>账号</th>
+                <th>昵称</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$reward.detail item=detail}
+            <tr>
+                <td>{$detail.position}</td>
+                <td>{$detail.account}</td>
+                <td>{$detail.nickname}</td>
+            </tr>
+            {foreachelse}
+            <tr>
+                <td colspan="3">活动进行中</td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+        {foreachelse}
+        没有获奖记录
+        {/foreach}
+    </div>
+</div>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,43 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">主营行业</h5>
+        <div class="pull-right">
+            <a href="?act=add" class="btn btn-primary">添加行业</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>行业名称</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $industry_list}
+            {foreach from=$industry_list item=industry}
+            <tr>
+                <td>{$industry.name}</td>
+                <td class="text-right"><a href="?act=edit&id={$industry.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$industry.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="2" align="center">您还没有主营行业，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加行业！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

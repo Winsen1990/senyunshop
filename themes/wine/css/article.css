@@ -1,0 +1,142 @@
+@media screen and (min-width: 1025px) {
+  body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    background-color: #fff;
+  }
+  .article {
+    width: 740px;
+  }
+}
+.article {
+  padding: 20px;
+  text-align: left;
+}
+.article h1 {
+  line-height: 1.4;
+  font-weight: 400;
+  font-size: 24px;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e7e7eb;
+  text-align: left;
+}
+.article .article-time {
+  margin-bottom: 18px;
+  line-height: 20px;
+  text-align: left;
+  font-size: 15px;
+}
+.article .article-time .site-name {
+  color: #607fa6;
+}
+.article blockquote.article-desc {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 3px solid #dbdbdb;
+  font-size: 17px;
+  color: #7f7f7f;
+  line-height: 1.7;
+}
+.article .article-con {
+  font-size: 17px;
+  line-height: 1.75em;
+  color: #3f3f3f;
+}
+.article .article-con p {
+  font-size: 17px;
+}
+.article .article-qr-code {
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 1px 7px #cecece;
+  border: 1px solid #ddd;
+  width: 60%;
+  margin: 10% auto 0;
+}
+.article .article-qr-code img {
+  width: 100%;
+}
+.float-menu-list {
+  display: block;
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+}
+.float-menu-list .float-main-menu {
+  position: relative;
+}
+.float-menu-list .float-main-menu .float-menu-item {
+  position: absolute;
+  transition: transform 300ms, rotate 300ms, opacity 300ms;
+  display: block;
+  transform: translate(-48px, -48px) rotate(0deg);
+  z-index: 1;
+  opacity: 0;
+}
+.float-menu-list .float-main-menu .float-menu-item a {
+  color: #fff;
+  display: block;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  box-shadow: 0 0 5px #ccc;
+  text-align: center;
+  border: 2px solid #fff;
+  width: 44px;
+  height: 44px;
+}
+.float-menu-list .float-main-menu .float-menu-item .icon {
+  font-size: 1.2rem;
+  line-height: 44px;
+}
+.float-menu-list .float-main-menu .float-menu-item p {
+  font-size: .6rem;
+  margin-top: .2rem;
+  display: none;
+}
+.float-menu-list .float-main-menu .float-menu-item.menu-btn {
+  display: block;
+  z-index: 9;
+  opacity: 1;
+}
+.float-menu-list .float-main-menu .float-menu-item.menu-top-btn.on {
+  opacity: 1;
+  transform: translate(-48px, -108px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-user-btn {
+  opacity: 1;
+  transform: translate(-48px, -200px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-product-btn {
+  opacity: 1;
+  transform: translate(-100px, -184px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-home-btn {
+  opacity: 1;
+  transform: translate(-149px, -149px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-share-btn {
+  opacity: 1;
+  transform: translate(-184px, -100px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-back-btn {
+  opacity: 1;
+  transform: translate(-200px, -48px) rotate(720deg);
+}
+.float-menu-list .float-main-menu.on .float-menu-item a {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.float-menu-list .float-main-menu.on .float-menu-item.menu-btn a {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.float-menu-list .float-main-menu.out .float-menu-item.menu-back-btn,
+.float-menu-list .float-main-menu.out .float-menu-item.menu-user-btn,
+.float-menu-list .float-main-menu.out .float-menu-item.menu-product-btn,
+.float-menu-list .float-main-menu.out .float-menu-item.menu-home-btn,
+.float-menu-list .float-main-menu.out .float-menu-item.menu-share-btn {
+  opacity: 0;
+  transform: translate(-48px, -48px) rotate(0deg);
+}
+.float-menu-list .float-main-menu.out .float-menu-item.menu-btn a {
+  background-color: rgba(0, 0, 0, 0.2);
+}

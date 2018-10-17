@@ -1,0 +1,28 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">首页</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="start-main">
+        <h3>网店概要</h3>
+        <p>目前有 <i>{$category_count}</i> 个产品分类, 并有 <i>{$product_count}</i> 个产品, <i>{$order_count}</i> 张订单，<i>{$message_count}</i> 条未读消息.</p>
+        <p>点击下面的链接快速开始:</p>
+        <ul class="start-link">
+            <li><a href="category.php?act=add">添加分类</a></li>
+            <li><a href="product.php?act=add">添加产品</a></li>
+            <li><a href="order.php">订单列表</a></li>
+            <li><a href="finance.php">账户明细</a></li>
+            <li><a href="message.php">系统消息</a></li>
+        </ul>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

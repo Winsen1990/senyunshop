@@ -1,0 +1,16 @@
+<script type="text/javascript" src="js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<!--[if !IE 6]><!-->
+<script src="js/nanobar.min.js"></script>
+<script>
+    var options = {
+        bg: '#4cb849'
+    };
+    var nanobar = new Nanobar(options );
+    //move bar
+    nanobar.go( 30 ); // size bar 30%
+
+    // Finish progress bar
+    nanobar.go(100);
+</script>
+<!--<![endif]-->

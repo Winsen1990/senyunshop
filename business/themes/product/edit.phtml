@@ -1,0 +1,352 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+<script type="text/javascript" >
+    var data_product_attr = {$json_attr_list};
+    var attributes = {$attributes};
+</script>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑产品</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="productEditForm" name="productEditForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">产品编号：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" id="product_sn" name="product_sn" placeholder="请输入产品编号" value="{$product.product_sn}">
+                </p>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入产品名称" value="{$product.name}">
+                </p>
+                <p class="clear" id="category-option">
+                    <label class="l-title">产品系统分类：</label>
+                    <select name="category[]" class="w150">
+                        <option value="0">|--请选择--|</option>
+                        {foreach from=$category_list item=category}
+                        <option value="{$category.id}" {if $category.id eq $product.category_id}selected="selected"{/if}>{$category.name}</option>
+                        {/foreach}
+                    </select>
+                    <a href="javascript:void(0);" id="add_category_option">关联其他分类</a>
+                </p>
+                {if $category_alias}
+                {foreach from=$category_alias item=category_alias_item}
+                    {if $category_alias_item.category_id neq $product.category_id}
+                    <p class="clear">
+                        <label class="l-title"></label>
+                        <select name="category[]" class="w150">
+                            <option value="0">|--请选择--|</option>
+                            {foreach from=$category_list item=category}
+                            <option value="{$category.id}" {if $category.id eq $category_alias_item.category_id}selected="selected"{/if}>{$category.name}</option>
+                            {/foreach}
+                        </select>
+                        <a href="javascript:void(0);" onclick="remove_category_option(this);">移除此分类</a>
+                    </p>
+                    {/if}
+                {/foreach}
+                {/if}
+                <p class="clear" style="display: none;">
+                    <label class="l-title">产品店铺分类：</label>
+                    <select name="shop_category" class="w150">
+                        <option value="0">|--请选择--|</option>
+                        {foreach from=$shop_category_list item=category}
+                        <option value="{$category.id}" {if $category.id eq $product.shop_category_id}selected="selected"{/if}>{$category.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+<!--                <p class="clear">-->
+<!--                    <label class="l-title">产品类型：</label>-->
+<!--                    <select name="type" id="product_type" class="w150">-->
+<!--                        <option value="0">|--请选择--|</option>-->
+<!--                        {foreach from=$product_type_list item=product_type}-->
+<!--                        <option value="{$product_type.id}" {if $product_type.id eq $product.product_type_id}selected="selected"{/if}>{$product_type.name}</option>-->
+<!--                        {/foreach}-->
+<!--                    </select>-->
+<!--                </p>-->
+<!--                <p class="clear" id="product_attr">-->
+<!--                </p>-->
+                <p class="clear">
+                    <label class="l-title">品牌：</label>
+                    <input class="text-input w150" type="text" id="brand" name="brand" value="{$brand_name}" placeholder="请输入产品品牌">
+                </p>
+<!--                <p>-->
+<!--                    <label class="l-title">库存：</label>-->
+<!--                    <input class="text-input w150" type="text" {if $has_attr}disabled="disabled"{/if} id="inventory" name="single_inventory" placeholder="请输入产品库存" value="{$inventory}"/>-->
+<!--                </p>-->
+                <p style="display: none;">
+                    <label class="l-title">购买积分：</label>
+                    <input class="text-input w150" type="number" name="integral" placeholder="购买积分" value="0">
+                    <span class="error-input">-若购买积分不为0，发布的将是积分产品</span>
+                </p>
+                <p class="price">
+                    <label class="l-title">售价：</label>
+                    <input class="text-input w150 price-input" type="text" id="price" name="price" placeholder="请输入售价" value="{$product.price}">
+                </p>
+                <p class="price">
+                    <label class="l-title">市场价：</label>
+                    <input class="text-input w150 price-input" type="text" id="shop_price" name="shop_price" placeholder="请输入市场价" value="{$product.shop_price}">
+                </p>
+                <p class="price">
+                    <label class="l-title">最低售价：</label>
+                    <input class="text-input w150 price-input" type="text" name="lowest_price" placeholder="请输入最低销售价" value="{$product.lowest_price}">
+                </p>
+                <p>
+                    <label class="l-title">产品图片：</label>
+                    <input type="hidden" name="img" id="img" placeholder="" value="{$product.img}">
+                    {if $product.img}
+                    <img class="select-image" alt="" width="200" height="200" src="{$product.img_src}">&nbsp;
+                    {else}
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" height="200px">&nbsp;
+                    {/if}
+                    <br/>
+                    <label class="l-title"></label>
+                    建议尺寸 600x600像素
+                </p>
+                <p>
+                    <label class="l-title">产品简介：</label>
+                    <textarea name="desc" rows="5" cols="93">{$product.desc}</textarea>
+                </p>
+                <p>
+                    <label class="l-title">产品详情：</label>
+                    <textarea name="detail" id="detail">{$product.detail}</textarea>
+                </p>
+                <p class="price" style="display: none;">
+                    <label class="l-title">促销价：</label>
+                    <input class="text-input w150 price-input" type="text" name="promote_price" placeholder="促销价" value="{$product.promote_price}">
+                </p>
+                <p class="price" style="display: none;">
+                    <label class="l-title">促销开始时间：</label>
+                    <input class="text-input w300 price-input" type="text" name="promote_begin" placeholder="促销开始时间" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"{/literal}  value="{$product.promote_begin}"/>
+                </p>
+                <p class="price" style="display: none;">
+                    <label class="l-title">促销结束时间：</label>
+                    <input class="text-input w300 price-input" type="text" name="promote_end" placeholder="促销结束时间" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"{/literal}  value="{$product.promote_end}">
+                </p>
+                <p>
+                    <label class="l-title">重量：</label>
+                    <input class="text-input w150" type="text" name="weight" placeholder="产品重量" value="{$product.weight}">克
+                </p>
+                <p>
+                    <label class="l-title">产品排序：</label>
+                    <input class="text-input w150" type="text" name="order_view" placeholder="" value="{$product.order_view}">
+                </p>
+                <p class="clear">
+                    <label class="l-title">包邮：</label>
+                    <input type="radio" name="free_delivering" value="0" {if $product.free_delivery eq 0}checked="checked"{/if}> <em>否</em>&nbsp;
+                    <input type="radio" name="free_delivering" value="1" {if $product.free_delivery eq 1}checked="checked"{/if}> <em>是</em>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$product.id}"/>
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+    <div id="modal-product-attr" class="modal modal-large">
+        <div class="modal-dialog">
+            <div class="modal-head">
+                <h1 class="modal-title">产品属性</h1>
+                <a href="javascript: void(0)" class="close-modal" rel="modal:close">&times;</a>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <div class="pull-right">
+                    <button class="btn btn-primary" type="button" id="confirm">确定</button>&nbsp;
+                    <a class="btn btn-primary" rel="modal:close">取消</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-edit-product-attr" class="modal modal-large">
+        <div class="modal-dialog">
+            <div class="modal-head">
+                <h1 class="modal-title">产品属性</h1>
+                <a href="javascript: void(0)" class="close-modal" rel="modal:close">&times;</a>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <div class="pull-right">
+                    <button class="btn btn-primary" type="button" id="edit-confirm">确定</button>&nbsp;
+                    <a class="btn btn-primary" rel="modal:close">取消</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<p class="clear category-alias" id="category-option-template" style="display: none;">
+    <label class="l-title"></label>
+    <select name="category[]" class="w150">
+        <option value="0">|--请选择--|</option>
+        {foreach from=$category_list item=category}
+        <option value="{$category.id}">{$category.name}</option>
+        {/foreach}
+    </select>
+    <a href="javascript:void(0);" onclick="remove_category_option(this);">移除此分类</a>
+</p>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+<!-- kindeditor编辑器 -->
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor1 = K.create("#detail", {
+            height: '400px',
+            width: '60%',
+            cssPath: '../plugins/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php',
+            items : [
+                'undo', 'redo', '|',
+                'cut', 'copy', 'paste', '|',
+                'fontname', 'fontsize', 'forecolor', 'hilitecolor', 'bold', 'italic', 'underline', 'strikethrough', 'removeformat', '|',
+                'insertorderedlist', 'insertunorderedlist', '|',
+                'justifyleft', 'justifycenter', 'justifyright', 'hr', '|',
+                'image','multiimage', '|',
+                'preview'
+            ],
+            allowFileManager: true,
+            afterCreate: function () {
+                var self = this;
+                K.ctrl(document, 13, function () {
+                    self.sync();
+                    K('form[name=productEditForm]')[0].submit();
+                });
+                K.ctrl(self.edit.doc, 13, function () {
+                    self.sync();
+                    K('form[name=productEditForm]')[0].submit();
+                });
+            },
+            afterBlur: function(){
+                this.sync()
+            }
+        });
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 200 + 'px';
+                        }
+                        if( !height ) {
+                            height = 200 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('.select-image').attr('src', url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=600&height=600');
+        });
+    });
+</script>
+<script type="text/javascript">
+$(function() {
+    $('input[name=integral]').change(function() {
+
+        if( $(this).val() == '' ) {
+            $(this).val(0);
+            return;
+        }
+
+        if( parseInt($(this).val()) < 0 ) {
+            $(this).val(0);
+            return;
+        }
+        if( parseInt($(this).val()) > 0 ) {
+            $('.price').slideUp();
+            $('.price-input').attr('disabled', 'disabled');
+        }
+        if( parseInt($(this).val()) == 0 ) {
+            $('.price').slideDown();
+            $('.price-input').removeAttr('disabled');
+            return;
+        }
+    });
+
+    $('input[name=integral]').blur(function() {
+        if( $(this).val() == '' ) {
+            $(this).val(0);
+            return;
+        }
+
+        if( parseInt($(this).val()) < 0 ) {
+            $(this).val(0);
+            return;
+        }
+        if( parseInt($(this).val()) > 0 ) {
+            $('.price').slideUp();
+            $('.price-input').attr('disabled', 'disabled');
+            return;
+        }
+        if( parseInt($(this).val()) == 0 ) {
+            $('.price').slideDown();
+            $('.price-input').removeAttr('disabled');
+            return;
+        }
+
+    });
+
+    $('#add_category_option').click(add_category_option);
+});
+
+
+function add_category_option() {
+    var option_content = $('#category-option-template').html();
+
+    var option_html = '<p class="clear">' + option_content + '</p>';
+
+    $(option_html).insertAfter('#category-option');
+}
+
+function remove_category_option(obj) {
+    $(obj).parent().remove();
+}
+</script>
+<!--<script type="text/javascript" src="js/product/edit.js"></script>-->
+{include file="library/footer.lbi"}
+</body>
+</html>

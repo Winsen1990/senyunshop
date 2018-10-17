@@ -1,0 +1,89 @@
+<div class="float-menu-list">
+    <ul class="float-main-menu">
+        <li class="float-menu-item menu-back-btn">
+            <a href="javascript:back();">
+                <i class="icon">&#xe64f;</i>
+                <p>返回</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-top-btn">
+            <a href="javascript:scroll_top();">
+                <i class="icon">&#xe66f;</i>
+                <p>返回顶部</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-user-btn">
+            <a href="user.php">
+                <i class="icon">&#xe604;</i>
+                <p>会员中心</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-home-btn">
+            <a href="index.php">
+                <i class="icon">&#xe601;</i>
+                <p>首页</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-product-btn">
+            <a href="product_list.php">
+                <i class="icon">&#xe603;</i>
+                <p>产品中心</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-share-btn">
+            <a href="javascript:show_share();">
+                <i class="icon">&#xe66e;</i>
+                <p>分享</p>
+            </a>
+        </li>
+        <li class="float-menu-item menu-btn">
+            <a href="javascript:menu_list_toggle();">
+                <i class="icon">&#xe64c;</i>
+                <p>菜单</p>
+            </a>
+        </li>
+    </ul>
+</div>
+<div id="mcover" onclick="document.getElementById('mcover').style.display='none';">
+    <img src="{$template_dir}images/guide.png">
+</div>
+
+<script type="text/javascript">
+    window.addEventListener('load', function() {
+        window.addEventListener('scroll', function () {
+            if(window.scrollY) {
+                document.querySelector('.float-main-menu .menu-top-btn').classList.add('on');
+            } else {
+                document.querySelector('.float-main-menu .menu-top-btn').classList.remove('on');
+            }
+        });
+    });
+
+    function back() {
+        if(window.history.length === 0) {
+            window.location.href = 'index.php';
+        } else {
+            window.history.back();
+        }
+    }
+
+    function scroll_top() {
+        window.scroll(0, 0);
+    }
+
+    function menu_list_toggle() {
+        var menu_list = document.querySelector('.float-main-menu');
+
+        if(menu_list.classList.contains('on')) {
+            menu_list.classList.remove('on');
+            menu_list.classList.add('out');
+        } else {
+            menu_list.classList.remove('out');
+            menu_list.classList.add('on');
+        }
+    }
+
+    function show_share() {
+        document.getElementById("mcover").style.display = "block";
+    }
+</script>

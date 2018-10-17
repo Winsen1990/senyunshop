@@ -1,0 +1,40 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加管理员角色</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="adminGroup-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>角色名称</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$roleList item=role}
+            <tr>
+                <td>{$role.name}</td>
+                {if $role.id eq 1}
+                <td class="text-right"></td>
+                {else}
+                <td class="text-right"><a href="?act=edit&id={$role.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$role.id}">删除</a></td>
+                {/if}
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

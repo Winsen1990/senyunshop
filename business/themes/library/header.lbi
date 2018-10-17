@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8"/>
+    <title>{$pageTitle}</title>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/layer/layer.js"></script>
+</head>

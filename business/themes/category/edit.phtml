@@ -1,0 +1,63 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑分类</h5>
+        <!--        <div class="pull-right"><a class="btn btn-primary" href="?act=passwd">修改密码</a></div>-->
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="categoryEditForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">分类名：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="category_name" name="category_name" value="{$category.name}" placeholder="请输入分类名"/>
+                </p>
+                <p>
+                    <label class="l-title">父级分类：</label>
+                    <select name="parent_id" class="w150">
+                        <option value="0">顶级分类</option>
+                        {foreach from=$category_list item=c}
+                        <option value="{$c.id}" {if $category.parent_id eq $c.id}selected="selected"{/if}>{$c.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <!--
+                <p>
+                    <label class="l-title">价格区间：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="price_filter" name="price_filter" value="{$category.price_filter}" placeholder=""/>
+                </p>
+                <p>
+                    <label class="l-title">图标：</label>
+                    <input type="radio" name="icon" value="e607" {if $category.icon eq 'e607'}checked="checked"{/if}/><em class="icon">&#xe607;</em>&nbsp;
+                    <input type="radio" name="icon" value="e601" {if $category.icon eq 'e601'}checked="checked"{/if}/><em class="icon">&#xe601;</em>&nbsp;
+                    <input type="radio" name="icon" value="e602" {if $category.icon eq 'e602'}checked="checked"{/if}/><em class="icon">&#xe602;</em>&nbsp;
+                    <input type="radio" name="icon" value="e603" {if $category.icon eq 'e603'}checked="checked"{/if}/><em class="icon">&#xe603;</em>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title">按品牌检索：</label>
+                    <input class="" type="radio" name="search_brand" value="1" {if $category.search_brand eq 1}checked="checked"{/if}/><em>是</em>&nbsp;
+                    <input class="" type="radio" name="search_brand" value="0" {if $category.search_brand eq 0}checked="checked"{/if}/><em>否</em>&nbsp;
+                </p>
+                -->
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>
+                    <input type="hidden" name="price_filter" value="3"/>
+                    <input type="hidden" name="icon" value="e607"/>
+                    <input type="hidden" name="search_brand" value="1"/>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$category.id}" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

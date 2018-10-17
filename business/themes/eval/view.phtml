@@ -1,0 +1,203 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<style>
+    {literal}
+    .star{position:relative;margin:20px auto;height:24px;}
+    .star ul,.star span{float:left;display:inline;height:19px;line-height:19px;}
+    .star ul{margin:0 10px;}
+    .star li{float:left;width:24px;cursor:pointer;text-indent:-9999px;background:url(images/star.png) no-repeat;}
+    .star strong{color:#f60;padding-left:10px;}
+    .star li.on{background-position:0 -28px;}
+    .star p{position:absolute;top:20px;width:159px;height:60px;display:none;background:url(images/icon.gif) no-repeat;padding:7px 10px 0;}
+    .star p em{color:#f60;display:block;font-style:normal;}
+    .comment-response img{
+        width: 24px;
+        height: 24px;
+    }
+    {/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">评价管理</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <div class="article-main-header">
+            <div class="clear"></div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>产品编号</th>
+                <th>
+                    <a href="eval.php?group=time{if $group eq 'time' && $order eq 'asc'}&order=1{/if}">
+                        评论时间
+                        {if $group eq 'time'}
+                            {if $order eq 'asc'}
+                            （顺序排列）
+                            {/if}
+                            {if $order eq 'desc'}
+                            （逆序排列）
+                            {/if}
+                        {/if}
+                    </a>
+                </th>
+                <th>
+                    <a href="eval.php?group=star{if $group eq 'star' && $order eq 'asc'}&order=1{/if}">
+                        星级
+                        {if $group eq 'star'}
+                            {if $order eq 'asc'}
+                            （顺序排列）
+                            {/if}
+                            {if $order eq 'desc'}
+                            （逆序排列）
+                            {/if}
+                        {/if}
+                    </a>
+                </th>
+                <th>已回复</th>
+                <th>晒图</th>
+                <th>客户帐号</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$comment_list item=comment}
+            <tr>
+                <td>{$comment.product_sn}</td>
+                <td>{$comment.add_time_str}</td>
+                <td>
+                    <div class="star" data-value="{$comment.star}">
+                        <ul>
+                            <li><a href="javascript:;">1</a></li>
+                            <li><a href="javascript:;">2</a></li>
+                            <li><a href="javascript:;">3</a></li>
+                            <li><a href="javascript:;">4</a></li>
+                            <li><a href="javascript:;">5</a></li>
+                        </ul>
+                        <span></span>
+                        <p></p>
+                    </div>
+                </td>
+                <td>{$comment.responsed}</td>
+                <td>
+                    {if $comment.img neq ''}
+                    <img width="80" height="60" src="{$comment.img}" alt=""/>
+                    {else}
+                    <img width="80" height="60" src="../upload/image/no-image.png" alt=""/>
+                    {/if}
+                </td>
+                <td>{$comment.account}</td>
+                <td class="text-right">
+                    <a href="?act=response&id={$comment.id}">回复</a>
+                    | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$comment.id}">删除</a></td>
+                </td>
+            </tr>
+            <tr style="">
+                <td>评论：</td>
+                <td colspan="6">{$comment.comment}</td>
+            </tr>
+            {if $comment.response}
+            <tr style="" class="comment-response">
+                <td>回复：</td>
+                <td colspan="6">{$comment.response}</td>
+            </tr>
+            {/if}
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无顾客反馈</td>
+            </tr>
+            {/if}
+
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&group={$group_str}&order={$order_num}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&group={$group_str}&order={$order_num}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&group={$group_str}&order={$order_num}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&group={$group_str}&order={$order_num}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&group={$group_str}&order={$order_num}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    $(function() {
+        var title = [
+            '很不满意',
+            '不满意',
+            '一般',
+            '满意',
+            '非常满意'
+        ];
+        var msg = [
+            "差得太离谱，与卖家描述的严重不符，非常不满",
+            "部分有破损，与卖家描述的不符，不满意",
+            "质量一般，没有卖家描述的那么好",
+            "质量不错，与卖家描述的基本一致，还是挺满意的",
+            "质量非常好，与卖家描述的完全一致，非常满意"
+        ];
+
+        $('.star').each(function() {
+            console.log($(this));
+            var score = $(this).attr('data-value');
+            for( var i = 1 ; i <= score; i++ ) {
+                var temp = i - 1;
+                $(this).find('li:eq(' + temp + ')').addClass('on');
+            }
+        });
+
+
+
+        $('.view_comment').click(function(e) {
+            e.preventDefault();
+            if( $(this).parent().parent().next().is(':visible') ) {
+                $(this).parent().parent().next().slideUp();
+                $(this).parent().parent().next().next().slideUp();
+                $(this).text('查看评论');
+            } else {
+                $(this).parent().parent().next().slideDown();
+                $(this).parent().parent().next().next().slideDown();
+                $(this).text('收起评论');
+
+            }
+        });
+
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

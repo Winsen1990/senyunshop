@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <link rel="apple-touch-icon-precomposed" href="{$template_dir}images/touch/touch-icon-iphone.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$template_dir}images/touch/touch-icon-ipad.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$template_dir}images/touch/touch-icon-iphone4.png">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>合伙人申请</em></h1>
+</header>
+<!-- 新增收货地址 -->
+<section class="address">
+    <div class="add-address">
+        <form method="post" enctype="multipart/form-data">
+            <label for="shop_name"><span>网店名称:</span>
+                <input type="text" id="shop_name" name="shop_name" placeholder="网店名称一旦确定无法更改">
+            </label>
+            <label for="industry"><span>主营行业:</span>
+                <select name="industry" id="industry">
+                    <option value="0">主营行业</option>
+                    {foreach from=$industry item=indust}
+                    <option value="{$indust.id}">{$indust.name}</option>
+                    {/foreach}
+                </select>
+            </label>
+            <label for="category"><span>主营分类:</span>
+                <select name="category" id="category">
+                    <option value="0">主营分类</option>
+                    {foreach from=$category item=cat}
+                    <option value="{$cat.id}">{$cat.name}</option>
+                    {/foreach}
+                </select>
+            </label>
+            <label for="province"><span>选择地区:</span>
+                <select id="province" name="province">
+                    <option value="0">省份</option>
+                    {foreach from=$province item=p}
+                    <option value="{$p.id}">{$p.name}</option>
+                    {/foreach}
+                </select>
+            </label>
+            <label for="city"><span>&nbsp;</span>
+                <select id="city" name="city">
+                    <option value="0">城市</option>
+                </select>
+            </label>
+            <label class="distinct" for="distinct"><span>&nbsp;</span>
+                <select id="district" name="district">
+                    <option value="0">地区</option>
+                </select>
+            </label>
+            <label class="distinct" for="group"><span>&nbsp;</span>
+                <select id="group" name="group">
+                    <option value="0">商圈</option>
+                </select>
+            </label>
+            <label><span>详细地址:</span><input type="text" id="address" name="address"></label>
+            <label style="height: auto; margin-left: 5rem;">
+                <div class="file-btn">
+                    <input type="file" name="license" id="license" onchange="show_pic(this);" accept="image/gif, image/jpeg, image/png"/>
+                    身份证正面
+                </div>
+                <div class="file-btn">
+                    <input type="file" name="identity" id="identity" onchange="show_pic(this);" accept="image/gif, image/jpeg, image/png"/>
+                    身份证反面
+                </div>
+            </label>
+            <label><span>联系人:</span><input type="text" id="contact" name="contact" placeholder="与身份证姓名一致"></label>
+            <label><span>手机号码:</span><input type="tel" id="mobile" name="mobile" placeholder="请输入联系人手机号码"></label>
+            <label><span>邮箱:</span><input type="email" id="email" name="email" placeholder="请输入联系人邮箱"></label>
+            <div class="address-btn">
+                <input type="hidden" name="opera" value="apply"/>
+                <a class="btn" href="javascript:submit_apply();">确定</a>
+            </div>
+        </form>
+    </div>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var city = {$city_json};
+    var district = {$district_json};
+    var group = {$group_json};
+
+    function submit_apply() {
+        var industry = $("#industry").val();
+        var category = $("#category").val();
+        var province = $("#province").val();
+        var city = $("#city").val();
+        var district = $("#district").val();
+        var group = $("#group").val();
+        var address = $("#address").val();
+        var contact = $("#contact").val();
+        var license = $("#license").val();
+        var identity = $("#identity").val();
+        var mobile = $("#mobile").val();
+        var email = $("#email").val();
+        var shop_name = $("#shop_name").val();
+
+        var msg = "";
+
+        if(shop_name == "") {
+            msg += "-请填写网店名称<br/>";
+        }
+
+        if(industry <= 0) {
+            msg += "-请选择主营行业<br/>";
+        }
+
+        if(category <= 0) {
+            msg += "-请选择主营分类<br/>";
+        }
+
+        if(province <= 0 || city <= 0 || district <= 0 || group <= 0) {
+            msg += "-请选择所在地区<br/>";
+        }
+
+        if(address == "") {
+            msg += "-请填写详细地址<br/>";
+        }
+
+        if(license == "") {
+            msg += "-请上传营业执照<br/>";
+        }
+
+        if(identity == "") {
+            msg += "-请上传法人身份证<br/>";
+        }
+
+        if(contact == "") {
+            msg += "-请填写联系人<br/>";
+        }
+
+        if(mobile == "") {
+            msg += "-请填写手机号码<br/>";
+        }
+
+        if(email == "") {
+            msg += "-请填写邮箱<br/>";
+        }
+
+        if(msg == "") {
+            show_mask();
+            document.forms[0].submit();
+        } else {
+            show_message_dialog(msg);
+        }
+
+        return false;
+    }
+
+    function submit_apply_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#dialog_close").bind("click", function() { window.history.back(-1); });
+            $("#dialog_close_btn").bind("click", function() { window.history.back(-1); });
+        }
+    }
+
+    $(function(){
+        $("#province").bind("change", function() { select_province($(this).val()); });
+        $("#city").bind("change", function() { select_city($(this).val()); });
+        $("#district").bind("change", function() { select_district($(this).val()); });
+        {if isset($response)}
+            submit_apply_handler({$response});
+            {/if}
+            });
+
+            function select_province(id) {
+                document.getElementById("city").length = 1;
+                document.getElementById("district").length = 1;
+                document.getElementById("group").length = 1;
+
+                for(var i in city[id]) {
+                    $("#city").append('<option value="'+city[id][i].id+'">'+city[id][i].name+'</option>');
+                }
+            }
+
+            function select_city(id) {
+                document.getElementById("district").length = 1;
+                document.getElementById("group").length = 1;
+
+                for(var i in district[id]) {
+                    $("#district").append('<option value="'+district[id][i].id+'">'+district[id][i].name+'</option>');
+                }
+            }
+
+            function select_district(id) {
+                document.getElementById("group").length = 1;
+
+                for(var i in group[id]) {
+                    $("#group").append('<option value="'+group[id][i].id+'">'+group[id][i].name+'</option>');
+                }
+            }
+
+            function show_message_dialog(message) {
+                $(".cd-popup").addClass("is-visible");
+                $(".progressbar").hide();
+                $("#dialog-message").html(message);
+                $("#message_dialog").show();
+            }
+
+            function close_message_dialog() {
+                $(".cd-popup").removeClass("is-visible");
+                $("#message_dialog").hide();
+            }
+
+            function show_mask() {
+                $(".cd-popup").addClass("is-visible");
+                $(".progressbar").show();
+            }
+
+            function hide_mask() {
+                $(".cd-popup").removeClass("is-visible");
+                $(".progressbar").hide();
+            }
+
+            function show_pic(obj)
+            {
+                var picPath = obj.value;
+                var type = picPath.substring(picPath.lastIndexOf(".")+1,picPath.length).toLowerCase();
+
+                if(type != "jpg" && type != "jpep" && type != "gif" && type != "png")
+                {
+                    return false;
+                }
+
+                if (window.createObjectURL != undefined)
+                {
+                    var img = window.createObjectURL(obj.files[0])
+                }
+                else if (window.URL != undefined) {
+                    var img = window.URL.createObjectURL(obj.files[0])
+                }
+                else if (window.webkitURL != undefined)
+                {
+                    var img = window.webkitURL.createObjectURL(obj.files[0])
+                }
+
+                var filesize = obj.files[0].size;
+
+                if(filesize > 5 * 1024 * 1024)
+                {
+                    console.info('图片不能超过5M');
+                    return false;
+                }
+
+                $(obj).parent('.file-btn').css('background-image','url('+img+')');
+                $(obj).parent('.file-btn').css('background-size','100% 100%');
+            }
+</script>
+</body>
+</html>

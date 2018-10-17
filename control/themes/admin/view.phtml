@@ -1,0 +1,50 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加用户</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>账号</th>
+                <th>昵称</th>
+                <th>邮件</th>
+<!--                <th>手机</th>-->
+                <th>角色</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$adminList item=admin name=admins}
+            <tr>
+                <td>{$smarty.foreach.admins.iteration}</td>
+                <td>{$admin.account}</td>
+                <td>{$admin.name}</td>
+                <td>{$admin.email}</td>
+<!--                <td>{$admin.mobile}</td>-->
+                <td>{$admin.role_name}</td>
+                {if $admin.role_id neq 1}
+                <td class="text-right"><a href="?act=edit&account={$admin.account}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&account={$admin.account}">删除</a></td>
+                {else}
+                <td class="text-right"></td>
+
+                {/if}
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,5 @@
+<meta charset="utf-8"/>
+<div class="forum-footer">
+    <a href="javascript:topic();" class="forum-topic-icon">发话题</a>
+    <a href="javascript:search();" class="forum-search-icon"></a>
+</div>

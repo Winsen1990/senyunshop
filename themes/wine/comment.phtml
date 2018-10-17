@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>发表评价</em></h1>
+</header>
+<!-- 发表评价页面 -->
+{foreach from=$order_detail item=od}
+<section class="product-comment" style="margin-bottom: 1rem;">
+    <section class="comment-con">
+        <div class="comment-header" style="overflow: hidden;">
+            <img src="{$od.img}" alt="{$od.product_name}" />
+            <div class="comment-star" onclick="pcomment('{$od.product_sn}')" style="padding: .5rem;">
+                <p class="product-comment-name">{$od.product_name}</p>
+                <p class="product-comment-operation">
+                {if $od.has_comment lt 1}
+                产品评价
+                {else}
+                追加评价
+                {/if}
+                </p>
+            </div>
+        </div>
+    </section>
+</section>
+{/foreach}
+
+<section class="product-comment">
+    <section class="comment-con">
+        <div class="comment-header">
+            <dl class="comment-star" style="margin-left: 1rem; overflow: hidden;">
+                <dt class="fl">服务评价</dt>
+                {if !$is_comment}
+                <dd class="i-star fl" style="margin-left: .5rem; padding-top: .4rem;">
+                    <i class="icon" onclick="star(1, 'server_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(2, 'server_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(3, 'server_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(4, 'server_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(5, 'server_star');">&#xe638;</i>
+                </dd>
+                {else}
+                <dd class="fl"  style="margin-left: .5rem; padding-top: .5rem; font-size: .8rem; color: green;">
+                    已评价
+                </dd>
+                {/if}
+            </dl>
+        </div>
+        {if !$is_comment}
+        <input type="hidden" name="server_star" value="5"/>
+        <a class="btn" href="javascript:comment('{$order_sn}');">提交评价</a>
+        {/if}
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $(".i-star i").click(function(){
+            $(".i-star i").css("color","#ffce28");
+            $(this).css("color","#ffce28");
+            $(this).nextAll().css("color","#ccc");
+        })
+    })
+</script>
+<script type="text/javascript">
+    function pcomment(product_sn) {
+        if(product_sn != "") {
+            window.location.href = "order.php?act=product_comment&product_sn="+product_sn;
+        }
+    }
+
+    function comment(order_sn) {
+        var star = $("input[name=server_star]").val();
+        star = parseInt(star);
+
+        if(isNaN(star) || star <= 0) {
+            show_message_dialog("请选择评价星级");
+            return false;
+        }
+
+        if(order_sn != '') {
+            var url = "order.php";
+            var data = { "opera":"comment", "order_sn":order_sn, "star":star };
+
+            show_mask();
+            $.post(url, data, comment_handler, "json");
+        }
+    }
+
+    function comment_handler(response) {
+        if(response.error == 0) {
+            window.location.reload();
+        } else {
+            hide_mask();
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function star(num, id) {
+        $("input[name="+id+"]").val(parseInt(num));
+    }
+
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").html(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

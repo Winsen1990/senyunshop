@@ -1,0 +1,127 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">认证信息</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="business.php">全部</a>&nbsp;
+            <a class="btn btn-primary" href="business.php?status=1">待审核</a>&nbsp;
+            <a class="btn btn-primary" href="business.php?status=2">运营中</a>&nbsp;
+            <a class="btn btn-primary" href="business.php?status=3">已冻结</a>&nbsp;
+            <a class="btn btn-primary" href="business.php?act=auth">认证信息</a>&nbsp;
+            <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <div class="article-main-header">
+            <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    显示
+                    <select name="count" class="w75">
+                        <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                        <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                        <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                        <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                    </select>
+                    项结果
+                </div>
+                </p>
+            </fieldset>
+            </form>
+            <div class="clear"></div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>商户帐号</th>
+                <th>公司名称</th>
+                <th>主营行业</th>
+                <th>主营行业</th>
+                <th>负责人</th>
+                <th>联系电话</th>
+                <th>电子邮箱</th>
+                <th>申请日期</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$auth_list item=auth}
+            <tr>
+                <td>{$auth.business_account}</td>
+                <td>{$auth.company}</td>
+                <td>{$auth.industry_name}</td>
+                <td>{$auth.cate_name}</td>
+                <td>{$auth.contact}</td>
+                <td>{$auth.mobile}</td>
+                <td>{$auth.email}</td>
+                <td>{$auth.add_time_str}</td>
+                <td class="text-right">
+                    {if $auth.status eq 0}
+                    <a href="?act=detail&account={$auth.business_account}">详情</a>
+                    {/if}
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="9" align="center">暂无商户记录</td>
+            </tr>
+            {/if}
+            <tr>
+                <td colspan="9">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&count={$count}{if $status}&status={$status}{/if}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&count={$count}{if $status}&status={$status}{/if}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&count={$count}{if $status}&status={$status}{/if}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&count={$count}{if $status}&status={$status}{/if}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&count={$count}{if $status}&status={$status}{/if}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    $(function() {
+        $('select[name=count]').change(function () {
+            var count = $(this).val();
+            var url = 'business.php?count=' + count + '&act=auth';
+            window.location.href = url;
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

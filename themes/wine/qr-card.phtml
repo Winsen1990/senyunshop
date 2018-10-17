@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>会员推广名片</em></h1>
+</header>
+<!-- 推广名片页面 -->
+<section style="height: 100%;">
+    <section class="qr-card-con">
+        <div class="qr-header">
+            <img src="{if $user_info.headimg neq ""}{$user_info.headimg}{else}{$template_dir}images/wang.jpg{/if}" />
+            <p class="qr-name">{$user_info.nickname}</p>
+        </div>
+        <div class="card-img">
+            <img src="{if $qrcode}{$qrcode}{else}{$template_dir}images/qrcode.jpg{/if}" alt="推广二维码"/>
+        </div>
+        <p class="card-slogan">澳臻世Ozonsh微信公众号</p>
+    </section>
+</section>
+
+{if is_weixin()}
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="dialog" style="display: none;">
+        <p>宝贝已成功加入购物车！</p>
+        <ul class="cd-buttons">
+            <li><a href="javascript:back();">继续购物</a></li>
+            <li><a href="javascript:window.location.href='cart.php'">前往结算</a></li>
+        </ul>
+        <a href="javascript:close_operation_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="confirm_dialog" style="display: none;">
+        <p>居然取消分销，沉思啊客官</p>
+        <ul class="cd-buttons">
+            <li><a id="dialog_confirm_btn" href="javascript:void(0);">去意已决</a></li>
+            <li><a href="javascript:close_operation_dialog('confirm_dialog');">留你一命</a></li>
+        </ul>
+        <a href="javascript:close_operation_dialog('confirm_dialog');" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+<script type="text/javascript">
+    wx.config({
+        appId: '{$signPackage.appId}',
+        timestamp: '{$signPackage.timestamp}',
+        nonceStr: '{$signPackage.nonceStr}',
+        signature: '{$signPackage.signature}',
+        jsApiList: [
+            'chooseWXPay',
+            'closeWindow',
+            'onMenuShareTimeline',
+            'onMenuShareAppMessage',
+            'onMenuShareQQ',
+            'onMenuShareWeibo',
+            'onMenuShareQZone'
+        ]
+    });
+
+    wx.ready(function() {
+        var share_title = '快来关注{$config.site_name}吧，健康养生涨知识，只需要动动手指噢';
+        var share_link = 'http://{$config.domain}/api/recommend.php?ticket={$ticket|escape}';
+        var share_img = '{$user_info.headimg|escape}';
+        var share_desc = '{$config.site_name}';
+        //分享到朋友圈
+        wx.onMenuShareTimeline({
+            title: share_title, // 分享标题
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到朋友圈成功了呢!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("为什么要取消分享呢，不喜欢人家了吗？");
+            }
+        });
+
+        //分享给朋友
+        wx.onMenuShareAppMessage({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            type: 'link', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享给朋友成功了哦！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("喜欢我就把我推荐给你的朋友嘛~~");
+            }
+        });
+
+        //分享到QQ
+        wx.onMenuShareQQ({
+            title: share_link, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ成功！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("听说颜值高的人都会把我分享出去的哦");
+            }
+        });
+
+        //分享到腾讯微博
+        wx.onMenuShareWeibo({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到腾讯微博成功!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("把我分享到微博去玩玩嘛~");
+            }
+        });
+
+        //分享到QQ空间
+        wx.onMenuShareQZone({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ空间成功");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("人家想去QQ空间看看啦~");
+            }
+        });
+    });
+</script>
+{/if}
+</body>
+</html>

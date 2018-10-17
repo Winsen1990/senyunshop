@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>订单详情</em></h1>
+</header>
+<!-- 确定订单 -->
+<section class="orderdetail-con">
+    <!-- 订单状态 -->
+    <section class="order-status border_bottom">
+        <div class="status-title red-font"><i class="icon">&#xe629;</i> &nbsp;订单状态：{$order.show_status}</div>
+        {if $order.status eq 1}
+        <a href="topay.php">
+            <div class="status-con">
+                <div class="status-content">
+                    <span>您的订单已经成功提交，为避免心头宝被抢走，赶紧去付款吧！</span>
+                </div>
+            </div>
+        </a>
+        {/if}
+    </section>
+    <!-- 收货地址 -->
+    <div class="colorBar shadow_top" style="margin-top:6px;"></div>
+    <section class="address">
+        <div class="address-title"><i class="icon">&#xe628;</i> &nbsp;收货信息</div>
+        <div class="address-con">
+            <div class="address-user">
+                <span>{$order.consignee}</span>
+                <span>{$order.mobile}</span>
+            </div>
+            <div class="address-detail">
+                <div class="address-content">
+                    {$order.province_name}
+                    {$order.city_name}
+                    {$order.district_name}
+                    {$order.group_name}
+                    {$order.address}
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="colorBar shadow_top"></div>
+    <!-- 订单产品详情 -->
+    <section class="orders">
+        <div class="w_panel border_lr order_main border_top rarrow">
+            <h4 class="h_title">
+                <i class="icon">&#xe610;</i>&nbsp;{$order.shop_name}
+            </h4>
+        </div>
+        <div class="border_lr trans_div order_action_block border_bottom">
+            <div>
+                <div>
+                    <ul class="product_ul">
+                        {foreach from=$order.order_detail item=od}
+                        <li>
+                            <div class="box">
+                                <div class="product_cover">
+                                    <img width="100%" src="{$od.img}">
+                                </div>
+                                <div class="product_info cr_2">
+                                    <p class="product_name">{$od.product_name}</p>
+                                    <p>
+                                        {if $od.integral gt 0}
+                                        <span class="red_money">{$od.integral}积分</span>
+                                        {else}
+                                        <span class="red_money">￥{$od.product_price}</span>
+                                        {/if}
+                                        <span>&nbsp;×{$od.count}</span>
+                                    </p>
+                                    {if $order.status eq 1}
+                                    <a href="topay.php" class="red_btn">付款</a>
+                                    {/if}
+                                </div>
+                            </div>
+                        </li>
+                        {/foreach}
+                    </ul>
+                </div>
+                <hr color="#E5E5E5" class="line_l" size="1">
+                <div class="single_line_div2 border_0" id="shipAndPay">
+                    <span class="t_span">产品总额：</span>
+                    <span class="right_action"><em class="red_money">￥{$order.product_amount}</em></span>
+                    <br/>
+                    {if $order.integral_amount gt 0}
+                    <span class="t_span">积分总额：</span>
+                    <span class="right_action"><em class="red_money">￥{sprintf("%.2f", $order.integral_amount/$config.integral_rate)}</em></span>
+                    <br/>
+                    {/if}
+                    <span class="t_span">运费：</span>
+                    <span class="right_action"><em class="red_money">￥{$order.delivery_fee}</em></span>
+                    <br/>
+                    {if $order.integral_paid gt 0}
+                    <span class="t_span">积分抵用：</span>
+                    <span class="right_action"><em style="color: #787878;">- ￥{sprintf("%.2f", $order.integral_paid/$config.integral_rate)}</em></span>
+                    <br/>
+                    {/if}
+                    {if $order.reward_paid gt 0}
+                    <span class="t_span">佣金抵用：</span>
+                    <span class="right_action"><em style="color: #787878;">- ￥{sprintf("%.2f", $order.reward_paid/$config.reward_rate)}</em></span>
+                    <br/>
+                    {/if}
+                    {if $order.balance_paid gt 0}
+                    <span class="t_span">余额抵用：</span>
+                    <span class="right_action"><em style="color: #787878;">- ￥{$order.balance_paid}</em></span>
+                    <br/>
+                    {/if}
+                    <span class="t_span">实付总额（含运费）：</span>
+                    <span class="right_action"><em class="red_money">￥{$order.amount}</em></span>
+                </div>
+                <div class="single_line_div border_0 leavemessage">
+                    <span>
+                        <input placeholder="要对商家说...（限70字）" value="{$order.remark}" data-original-length="0" type="text" maxlength="70" readonly>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- 订单状态 -->
+    <section class="order-status-detail border_bottom">
+        <div class="order-status-show">
+            <p>订单编号：{$order.order_sn}</p>
+            <p>创建时间：{date("Y-m-d H:i:s", $order.add_time)}</p>
+            <p>付款时间：{if $order.pay_time eq ""}暂无记录{else}{date("Y-m-d H:i:s", $order.pay_time)}{/if}</p>
+        </div>
+    </section>
+    <div style="height: 60px;"></div>
+    <!-- 提交订单 -->
+    {if $order.status lt 2}
+    <section class="order-submit">
+        <div class="order_review">
+            <div style="float:left;width:69%;padding:5px 0;line-height:41px;">
+                <div style="float:left;">
+                    <span style="font-size:12px;display:inline-block;color:#464646;">共{count($order.order_detail)}件商品，总额(含运费)</span>
+                    <a class="red_money" style="margin:0 0 0 5px;font-size:14px;display:inline-block;">￥{$order.amount} </a>
+                    <br>
+                </div>
+            </div>
+            <a href="topay.php" class="yellow_btn">前去付款</a>
+        </div>
+    </section>
+    {/if}
+</section>
+
+</body>
+</html>

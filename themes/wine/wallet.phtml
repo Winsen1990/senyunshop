@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>我的资产</em></h1>
+</header>
+<!-- 我的资产 -->
+<section class="wallet">
+    <!-- 资产列表 -->
+    <section class="f-section">
+        <a class="slide-link" href="balance.php" style="display: none;">
+            <span class="icon" style="background-color: #f29ec2;">&#xe61d;</span>我的余额<em>￥{$user.balance}</em>
+        </a>
+        <a class="slide-link" href="reward.php">
+            <span class="icon" style="background-color: #FFCE28;">&#xe62a;</span>我的佣金<em>￥{$user.reward}</em>
+        </a>
+        <a class="slide-link" href="reward_await.php">
+            <span class="icon" style="background-color: #d0c0a6;">&#xe62a;</span>待发佣金<em>￥{$user.reward_await}</em>
+        </a>
+        <a class="slide-link" href="integral.php">
+            <span class="icon" style="background-color: #fb9065;">&#xe620;</span>我的积分<em>{$user.integral}</em>
+        </a>
+        <a class="slide-link" href="javascript:alert('敬请期待');">
+            <span class="icon" style="background-color: #80c269;">&#xe616;</span>我的优惠券<em>0</em>
+        </a>
+    </section>
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+
+</body>
+</html>

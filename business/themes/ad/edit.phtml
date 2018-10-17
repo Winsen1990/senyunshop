@@ -1,0 +1,247 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">替换文字:</label>
+                    <input class="text-input w300" type="text" id="alt" name="alt" placeholder="请输入替换文字" value="{$ad.alt}"/>
+                    <span class="error-input" id="alt-error">{if isset($error.alt)}{$error.alt}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">广告链接:</label>
+                    <input class="text-input w300" type="text" id="url" name="url" placeholder="请输入广告链接" value="{$ad.url}"/>
+                    <span class="error-input" id="url-error">{if isset($error.url)}{$error.url}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">广告排序:</label>
+                    <input class="text-input w300" type="number" id="order_view" name="order_view" placeholder="请输入广告排序" value="{$ad.order_view}"/>
+                    <span class="error-input" id="order_view-error">{if isset($error.order_view)}{$error.order_view}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">长期有效:</label>
+                    <input type="radio" name="forever" value="1" onclick="check_forever(1);" {if $ad.forever eq 1}checked="checked"{/if}/><em>是</em>&nbsp;&nbsp;
+                    <input type="radio" name="forever" value="0" onclick="check_forever(0);" {if $ad.forever eq 0}checked="checked"{/if}/><em>否</em>
+                    <span class="error-input" id="forever-error">{if isset($error.forever)}{$error.forever}{/if}</span>
+                </p>
+                <p class="clear" id="available-time" {if $ad.forever eq 1}style="display: none"{/if}>
+                <label class="l-title">有效时间:</label>
+                <input class="text-input" type="text" id="begin_time" name="begin_time" placeholder="请选择开始时间" value="{date('Y-m-d', $ad.begin_time)}"/> 至
+                <input class="text-input" type="text" id="end_time" name="end_time" placeholder="请选择结束时间" value="{date('Y-m-d', $ad.end_time)}"/>
+                <span class="error-input" id="time-error">{if isset($error.time)}{$error.time}{/if}</span>
+                </p>
+                <p class="clear" id="img-input">
+                    <label class="l-title">广告图片：</label>
+                    <input type="button" class="text-input" id="select-image" value="请选择广告图片" style="cursor:pointer">
+                    <input type="hidden" class="" name="img" id="img" value="../{$ad.img}"/>
+                    <span class="error-input" id="img-error">{if isset($error.img)}{$error.img}{/if}</span>
+                    <br/>
+                    <label class="l-title"></label>
+                    建议尺寸 320x140像素
+                </p>
+                <p id="img-show">
+                    <label class="l-title"></label>
+                    <img id="show-image" alt="" src="{$ad.img}">
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        修改<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="edit"/>
+                    <input type="hidden" id="eid" name="eid" value="{$ad.id}"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript">
+    function check_forever(value) {
+        if(value) {
+            $("#available-time").hide();
+        } else {
+            $("#available-time").show();
+        }
+    }
+
+    $(function() {
+        $("#submit-btn").click(do_submit);
+    });
+    var start = {
+        elem: '#begin_time',
+        format: 'YYYY-MM-DD',
+        min: laydate.now(), //设定最小日期为当前日期
+        max: '9999-12-31 23:59:59', //最大日期
+        istime: false,
+        istoday: true,
+        choose: function(datas){
+            end.min = datas; //开始日选好后，重置结束日的最小日期
+            end.start = datas //将结束日的初始值设定为开始日
+            end.click;
+        }
+    };
+
+    var end = {
+        elem: '#end_time',
+        format: 'YYYY-MM-DD',
+        min: laydate.now(),
+        max: '9999-12-31 23:59:59',
+        istime: false,
+        istoday: true,
+        choose: function(datas){
+            start.max = datas; //结束日选好后，重置开始日的最大日期
+        }
+    };
+
+    laydate(start);
+    laydate(end);
+    /**
+     * 这个解决方案可以作为Ajax提交表单的模板
+     * 1、form的提交操作托管给do_submit处理;
+     * 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
+     * 3、仅支持post方式提交表单;
+     * 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
+     **/
+    function do_submit() {
+        //参数校验
+        var flag = true;
+        var id = $("#eid").val();
+        var alt = $("#alt").val().trim();
+        var img = $("#img").val().trim();
+        var end_time = $("#end_time").val().trim();
+        var begin_time = $("#begin_time").val().trim();
+        var forever = $("input[name='forever']")[0].checked ?  $("input[name='forever']")[0].value :  $("input[name='forever']")[1].value;
+        var url = $("#url").val();
+        var order_view = $("#order_view").val().trim();
+
+        id = parseInt(id);
+
+        if(id <= 0) {
+            alert("参数错误");
+            flag = false;
+        }
+
+        if(url == "") {
+            $("#url-error").text("-请输入广告链接");
+            flag = false;
+        } else {
+            $("#url-error").text("");
+        }
+
+        if(alt == "") {
+            $("#alt-error").text("-请输入替换文字");
+            flag = false;
+        } else {
+            $("#alt-error").text("");
+        }
+
+        if(img == "") {
+            $("#img-error").text("-请上传广告图片");
+            flag = false;
+        } else {
+            $("#img-error").text("");
+        }
+
+        forever = parseInt(forever);
+        if(forever == 0) {
+            if(begin_time == "" || end_time == "" || begin_time > end_time) {
+                $("#time-error").text("-请选择有效时间");
+                flag = false;
+            } else {
+                $("#time-error").text("");
+                begin_time += " 00:00:00";
+                end_time += " 23:59:59";
+            }
+        } else {
+            forever = 1;
+        }
+
+        order_view = parseInt(order_view);
+
+        if(isNaN(order_view) || order_view < 0) {
+            $("#order_view-error").text("-请输入广告排序");
+            flag = false;
+        } else {
+            $("#order_view-error").text("");
+        }
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $(".btn-loading-img").show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var params = { "opera":"edit", "eid":id, "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view};
+            var url = "ad.php";
+            $.post(url, params, do_response, "json");
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.msg);
+            window.location.reload();
+        } else {
+            if(result.msg != "") {
+                alert(result.msg);
+            }
+
+            if(result.errmsg.length) {
+                for(var id in result.errmsg) {
+                    $("#"+id+"-error").text(result.errmsg[id]);
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson : 'plugin_upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "http://{$config.domain}/"));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=320&height=140');
+        });
+    });
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>确认订单</em></h1>
+</header>
+<!-- 确定订单 -->
+<section class="checkout-con">
+    <!-- 收货地址 -->
+    <div class="colorBar shadow_top" style="margin-top:6px;"></div>
+    <section class="address">
+        <div class="address-title"><i class="icon">&#xe61a;</i> &nbsp;收货信息</div>
+        <a href="address.php?act=select">
+            <div class="address-con rarrow">
+                <div class="address-user">
+                    <span id="consignee">{$address_info.consignee}</span>
+                    <span id="mobile">{$address_info.mobile}</span>
+                </div>
+                <div class="address-detail">
+                    <div class="address-content" id="address_detail">
+                        {$address_info.province_name}
+                        {$address_info.city_name}
+                        {$address_info.district_name}
+                        {$address_info.group_name}
+                        {$address_info.address}
+                    </div>
+                </div>
+            </div>
+        </a>
+        <input type="hidden" name="address_id" value="{$address_info.id}" id="address_id"/>
+    </section>
+    <div class="colorBar shadow_top"></div>
+    <!-- 订单产品详情 -->
+    <section class="orders">
+        {foreach from=$cart_list item=cart}
+        <div class="w_panel border_lr order_main border_top rarrow">
+            <h4 class="h_title">
+               <i class="icon">&#xe610;</i>&nbsp;{$cart.shop_name}
+            </h4>
+        </div>
+        <div class="border_lr trans_div order_action_block border_bottom">
+            <div>
+                <div>
+                    <ul class="product_ul">
+                        {foreach from=$cart.products item=product}
+                        <li>
+                            <div class="box">
+                                <div class="product_cover">
+                                    <img width="100%" src="{$product.img}">
+                                </div>
+                                <div class="product_info cr_2">
+                                    <p class="product_name">{$product.name}</p>
+                                    <p class="product_name">{$product.attributes}</p>
+                                    <p>
+                                        {if $product.integral gt 0}
+                                        <span class="red_money">{sprintf("%.2f", $product.integral)}积分</span>
+                                        {else}
+                                        <span class="red_money">￥{sprintf("%.2f", $product.price)}</span>
+                                        {/if}
+                                        <span>&nbsp;×{$product.number}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        {/foreach}
+                    </ul>
+                </div>
+                <hr color="#E5E5E5" class="line_l" size="1">
+                {if count($cart.delivery_list) gt 1}
+                <div class="single_line_div rarrow border_0" id="delivery_list_{$cart.b_id}" onclick="change_delivery({$cart.b_id});">
+                {else}
+                <div class="single_line_div border_0" id="delivery_list_{$cart.b_id}">
+                {/if}
+                    <span class="t_span">配送方式：</span>
+                    <span class="right_action">{$cart.delivery_list.0.delivery_name}<em class="red_money">￥{sprintf("%.2f", $cart.delivery_list.0.delivery_fee)}</em></span>
+                </div>
+                <div class="single_line_div border_0 leavemessage">
+                    <span><input name="comment[{$cart.b_id}]" id="comment_{$cart.b_id}" placeholder="要对商家说...（限70字）" value="" data-original-length="0" type="text" maxlength="70"></span>
+                </div>
+            </div>
+        </div>
+        {/foreach}
+    </section>
+    {if ($user_info.integral gt 0 or $user_info.reward gt 0 or $user_info.balance gt 0) and $total_amount gt 0}
+    <section class="preferential border_bottom">
+        <ul class="preferential-list">
+            {if $user_info.reward gt 0 and $user_info.level_id gt 0}
+            <li>
+                可用佣金
+                {if $user_info.reward/$config.reward_rate>$total_amount}
+                {$total_amount*$config.reward_rate}
+                {assign var=reward value=$total_amount}
+                {else}
+                {$user_info.reward}
+                {assign var=reward value=$user_info.reward/$config.reward_rate}
+                {/if}
+                元
+                <input name="use_reward" id="use_reward" type="checkbox" class="fr c_checkbox" value="use_reward"/>
+            </li>
+            {/if}
+            {if $user_info.balance gt 0}
+            <li>
+                可用余额
+                {if $user_info.balance>$total_amount}{$total_amount}{else}{$user_info.balance}{/if}
+                元
+                <input name="use_balance" id="use_balance" type="checkbox" class="fr c_checkbox" value="use_balance"/>
+            </li>
+            {/if}
+        </ul>
+    </section>
+    {/if}
+    <div style="height: 60px;"></div>
+    <input type="hidden" name="payment_id" id="payment_id" value="1"/>
+    <!-- 提交订单 -->
+    <section class="order-submit">
+        <div class="order_review">
+            <div style="float:left;width:69%;padding:5px 0;line-height:41px;">
+                <div style="float:left;">
+                    <span style="font-size:12px;display:inline-block;color:#464646;">共{$total_number}件商品，总额(含运费)</span>
+                    <a class="red_money" style="margin:0 0 0 5px;font-size:14px;display:inline-block;" id="order_amount">￥{sprintf("%.2f", $total_amount)} </a>
+                    <br>
+                </div>
+            </div>
+            <a href="javascript:void(0);" id="submit_order_btn" class="yellow_btn">提交订单</a>
+        </div>
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var delivery_list = {$delivery_list_json};
+    var total_amount = {$total_amount};
+    var total_product_amount = {$total_product_amount};
+    var total_number = {$total_number};
+
+    $(function(){
+        hide_mask();
+        var address_id = $("#address_id").val();
+        var tmp_id = window.localStorage.getItem("address_id");
+
+        if(tmp_id != null && address_id != tmp_id) {
+            window.localStorage.setItem("address_id", tmp_id);
+            load_address_info(tmp_id);
+            $("#address_id").val(tmp_id);
+        }
+
+        $("#submit_order_btn").bind("click", function() { submit_order(); });
+
+        if($("#use_integral") != undefined) {
+            $("#use_integral").bind("click", function() { use_mode(); });
+        }
+
+        if($("#use_reward") != undefined) {
+            $("#use_reward").bind("click", function() { use_mode(); });
+        }
+
+        if($("#use_balance") != undefined) {
+            $("#use_balance").bind("click", function() { use_mode(); });
+        }
+
+        {if !$delivery_support}
+        //如果部分商品不支持配送，则提示用户
+        show_message_dialog("部分商品不支持您所在地区的配送或服务，系统已自动为您剔除");
+        {if $target neq ""}
+//        $("#dialog_close_btn").click(function(){
+//            window.location.href = "{$target}";
+//        });
+//
+//        $("#dialog_close").click(function(){
+//            window.location.href = "{$target}";
+//        });
+        {/if}
+        {/if}
+    });
+
+    function submit_order() {
+        var address_id = $("#address_id").val();
+        var payment_id = $("#payment_id").val();
+        var comments = {};
+        var comment_ele = $("input[type='text']");
+        var msg = "";
+
+        if(total_number <= 0) {
+            show_message_dialog("请选择要购买的产品");
+            return false;
+        }
+
+        var data = { "opera":"submit_order", "use_integral": false, "use_reward": false, "use_balance": false, "address_id": address_id, "payment_id": payment_id, "comments": comments, "delivery_list": delivery_list };
+        if($("#use_integral") != undefined && $("#use_integral").is(":checked")) {
+            data.use_integral = true;
+            if(total_amount < 0) {
+                $("#use_integral").attr("checked", false);
+                return false;
+            }
+        }
+
+        if($("#use_reward") != undefined && $("#use_reward").is(":checked")) {
+            data.use_reward = true;
+            if(total_amount < 0) {
+                $("#use_reward").attr("checked", false);
+                return false;
+            }
+        }
+
+        if($("#use_balance") != undefined && $("#use_balance").is(":checked")) {
+            data.use_balance = true;
+            if(total_amount < 0) {
+                $("#use_balance").attr("checked", false);
+                return false;
+            }
+        }
+
+        for(var i = 0; i < comment_ele.length; i++) {
+            comments[comment_ele[i].id.replace("comment_", "")] = comment_ele[i].value;
+        }
+        data.comments = comments;
+        console.info(JSON.stringify(data));
+
+        address_id = parseInt(address_id);
+        payment_id = parseInt(payment_id);
+
+        if(isNaN(address_id) || address_id <= 0) {
+            msg += "-请填写收货地址\n";
+        }
+
+        if(isNaN(payment_id) || payment_id <= 0) {
+            msg += "-请选择支付方式\n";
+        }
+
+        if(msg != "") {
+            show_message_dialog(msg);
+            return false;
+        }
+
+        var url = "checkout.php";
+
+        show_mask();
+        $.post(url, data, submit_order_handler, "json");
+    }
+
+    function submit_order_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            if(response.count == 1) {
+                if(response.order_status == 1) {
+                    window.location.href = "topay.php";
+                } else {
+                    window.location.href = "order.php";
+                }
+            } else {
+                window.location.href = "order.php";
+            }
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function use_mode() {
+        var data = { "opera":"caculate_fee", "use_integral": false, "use_reward": false, "use_balance": false };
+        if($("#use_integral") != undefined && $("#use_integral").is(":checked")) {
+            data.use_integral = true;
+            if(total_amount < 0) {
+                $("#use_integral").attr("checked", false);
+                return false;
+            }
+        }
+
+        if($("#use_reward") != undefined && $("#use_reward").is(":checked")) {
+            data.use_reward = true;
+            if(total_amount < 0) {
+                $("#use_reward").attr("checked", false);
+                return false;
+            }
+        }
+
+        if($("#use_balance") != undefined && $("#use_balance").is(":checked")) {
+            data.use_balance = true;
+            if(total_amount < 0) {
+                $("#use_balance").attr("checked", false);
+                return false;
+            }
+        }
+
+        var url = "checkout.php";
+
+        show_mask();
+        $.post(url, data, use_mode_handler, "json");
+    }
+
+    function use_mode_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#order_amount").text("￥"+response.total_amount.toFixed(2));
+            total_amount = response.total_amount;
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function load_address_info(id) {
+        var url = "address.php";
+        var data = { "opera":"get_info", "address_id":id };
+
+        if(id <= 0) {
+            show_message_dialog("地址信息有误");
+            return false;
+        }
+
+        show_mask();
+        $.post(url, data, load_address_info_handler, "json");
+    }
+
+    function load_address_info_handler(response) {
+        if(response.error == 0) {
+            $("#consignee").text(response.consignee);
+            $("#address_detail").text(response.address);
+            $("#mobile").text(response.mobile);
+        } else {
+            show_message_dialog("读取地址信息失败，请稍后再试");
+        }
+
+        hide_mask();
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

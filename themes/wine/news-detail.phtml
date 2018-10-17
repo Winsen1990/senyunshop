@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/article.css">
+</head>
+<body>
+<!--
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$section_name}</em></h1>
+</header>
+-->
+<!-- 资讯页面 -->
+<section class="article">
+    <section class="article-con">
+        <h1>{$article.title}</h1>
+        <p class="article-time">
+            {date('Y-m-d', $article.add_time)}&nbsp;&nbsp;
+            {$article.author|escape}&nbsp;&nbsp;
+            <a class="site-name" href="#qrcode">{$config.site_name|escape}</a>
+        </p>
+        {if $article.description neq ''}
+        <blockquote class="article-desc">
+            {$article.description|escape}
+        </blockquote>
+        {/if}
+        <div>
+            {$article.wap_content}
+        </div>
+        {if !is_weixin()}
+        <a name="qrcode"></a>
+        <div class="article-qr-code">
+            <img src="{$qrcode|escape}"/>
+            {if !$mobile_agent}
+            扫码关注我们
+            {else}
+                {if is_weixin()}
+                长按二维码，识别关注我们
+                {else}
+                长按保存二维码到相册中，在微信扫一扫中选择从相册识别关注我们
+                {/if}
+            {/if}
+        </div>
+        {/if}
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+{if $mobile_agent}
+{include file="float_icon.phtml"}
+{/if}
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    window.onload = function(){
+        var ele = document.getElementsByClassName("article-con")[0].getElementsByTagName("img");
+        var con_width = document.getElementsByClassName("article-con")[0].offsetWidth;
+        for(var i = 0; i < ele.length; i++) {
+            console.info(i+",width="+ele[i].width);
+            if(ele[i].width > con_width) {
+                ele[i].style.width = "100%";
+                ele[i].removeAttribute("height");
+                ele[i].removeAttribute("width");
+                ele[i].style.height = "";
+            }
+        }
+    }
+</script>
+{if is_weixin()}
+<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+<script type="text/javascript">
+    wx.config({
+        appId: '{$signPackage.appId}',
+        timestamp: '{$signPackage.timestamp}',
+        nonceStr: '{$signPackage.nonceStr}',
+        signature: '{$signPackage.signature}',
+        jsApiList: [
+            'chooseWXPay',
+            'closeWindow',
+            'onMenuShareTimeline',
+            'onMenuShareAppMessage',
+            'onMenuShareQQ',
+            'onMenuShareWeibo',
+            'onMenuShareQZone',
+            'previewImage'
+        ]
+    });
+
+    wx.ready(function() {
+        //图片预览
+        var ele = document.getElementsByClassName("article-con")[0].getElementsByTagName("img");
+        var con_image_list = [];
+        for(var i = 0; i < ele.length; i++) {
+            con_image_list.push(ele[i].src);
+            ele[i].addEventListener('click', function() {
+                wx.previewImage({
+                    current: this.src, // 当前显示图片的http链接
+                    urls: con_image_list // 需要预览的图片http链接列表
+                });
+            });
+        }
+
+        var share_title = '{$article.title}';
+        var share_link = '{$recommend_url}';
+        var share_img = '{$article.original}';
+        var share_desc = '{$article.description}';
+
+        //分享到朋友圈
+        wx.onMenuShareTimeline({
+            title: share_title, // 分享标题
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到朋友圈成功了呢!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("为什么要取消分享呢，不喜欢人家了吗？");
+            }
+        });
+
+        //分享给朋友
+        wx.onMenuShareAppMessage({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            type: 'link', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享给朋友成功了哦！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("喜欢我就把我推荐给你的朋友嘛~~");
+            },
+            fail: function () {
+                show_message_dialog("调用失败");
+            }
+        });
+
+        //分享到QQ
+        wx.onMenuShareQQ({
+            title: share_link, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ成功！");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("听说颜值高的人都会把我分享出去的哦");
+            }
+        });
+
+        //分享到腾讯微博
+        wx.onMenuShareWeibo({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到腾讯微博成功!");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("把我分享到微博去玩玩嘛~");
+            }
+        });
+
+        //分享到QQ空间
+        wx.onMenuShareQZone({
+            title: share_title, // 分享标题
+            desc: share_desc, // 分享描述
+            link: share_link, // 分享链接
+            imgUrl: share_img, // 分享图标
+            success: function () {
+                // 用户确认分享后执行的回调函数
+                show_message_dialog("分享到QQ空间成功");
+            },
+            cancel: function () {
+                // 用户取消分享后执行的回调函数
+                show_message_dialog("人家想去QQ空间看看啦~");
+            }
+        });
+
+        $("#float-icon").click(function(){
+            wx.ready(function(){
+                wx.closeWindow();
+            });
+        });
+    });
+    wx.error(function(res){
+        show_message_dialog("页面还没加载完噢,先不要分享哈!");
+    });
+</script>
+{/if}
+</body>
+</html>

@@ -1,0 +1,7 @@
+.idea/
+*.pem
+*.log
+upload/
+*.sql
+data/
+!no-image.png

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>支付结果</em></h1>
+</header>
+<!-- 支付详情 -->
+<section class="paycon">
+    <div class="paydetail">
+        <ul>
+            <h3 class="s_tips"><i class="icon">&#xe635;</i>支付成功，请等待后台确认</h3>
+            <li>订单编号：{$order.order_sn}</li>
+            <li>订单详情：</li>
+            {foreach from=$order_detail item=od}
+            <li>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                {$od.product_name}x{$od.count}
+            </li>
+            {/foreach}
+            <li>支付金额：<i class="red_money">{sprintf("%.2f", $order.amount)}元</i></li>
+        </ul>
+        <div class="paybtn-con">
+            <a href="order.php?status=6" class="paybtn">确认</a>
+        </div>
+    </div>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+</body>
+</html>

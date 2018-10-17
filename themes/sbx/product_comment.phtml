@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$product.name}</em></h1>
+</header>
+
+<section id="product_comment_form" class="product-comment" style="margin-bottom: 1rem;">
+    <section class="comment-con">
+        <div class="comment-header" style="overflow: hidden;">
+            <img src="{$product.img}" alt="{$product.name}" />
+            <dl class="comment-star">
+                <dt>评分</dt>
+                <dd class="i-star">
+                    <i class="icon" onclick="star(1, 'product_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(2, 'product_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(3, 'product_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(4, 'product_star');">&#xe638;</i>
+                    <i class="icon" onclick="star(5, 'product_star');">&#xe638;</i>
+                </dd>
+            </dl>
+        </div>
+        <div class="comment-detail">
+            <textarea maxlength="500" cols="30" rows="5"  autocomplete="off" id="pcomment" placeholder="写下购买体会或者使用中带来的帮助等，可以为其他小伙伴提供参考~" class="comment-text"></textarea>
+            <input type="hidden" name="product_star" id="pstar" value="5"/>
+            <input type="hidden" name="psn" id="psn" value="{$product.product_sn}"/>
+        </div>
+        <input type="hidden" name="product_star" value="5"/>
+        <a class="btn" href="javascript:product_comment();">提交评价</a>
+    </section>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $(".i-star i").click(function(){
+            $(".i-star i").css("color","#ffce28");
+            $(this).css("color","#ffce28");
+            $(this).nextAll().css("color","#ccc");
+        })
+    })
+</script>
+<script type="text/javascript">
+    function product_comment() {
+        var comment = $("#pcomment").val();
+        var star = $("#pstar").val();
+        var psn = $("#psn").val();
+        var msg = "";
+
+        if(psn == "") {
+            return false;
+        }
+
+        star = parseInt(star);
+
+        if(isNaN(star) || star < 1) {
+            msg += "-请选择评价星级<br/>";
+        }
+
+        if(comment == "") {
+            msg += "-请填写评语<br/>"
+        }
+
+        if(msg != "") {
+            show_message_dialog(msg);
+        } else {
+            var url = "order.php";
+            var data = { "opera":"product_comment", "product_sn":psn, "star":star, "comment":comment };
+
+            show_mask();
+            $.post(url, data, product_comment_handler, "json");
+        }
+    }
+
+    function product_comment_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#dialog_close_btn").click(function(){
+                window.history.back();
+            });
+
+            $("#dialog_close").click(function(){
+                window.history.back();
+            });
+        }
+    }
+
+    function star(num, id) {
+        $("input[name="+id+"]").val(parseInt(num));
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").html(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

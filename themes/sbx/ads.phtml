@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header" style="position:fixed">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$title}</em></h1>
+</header>
+
+<!-- 内容开始 -->
+<section class="newslist">
+    <ul class="newslist-con" id="news-list">
+        {foreach from=$ad_list item=ad}
+        <li>
+            <a href="{$ad.url}" style="padding: 0;">
+                <dl style="padding-right: 0;">
+                    <dt style="height: auto;"><img src="{$ad.img}" width="100%"/></dt>
+                </dl>
+            </a>
+        </li>
+        {/foreach}
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+</body>
+</html>

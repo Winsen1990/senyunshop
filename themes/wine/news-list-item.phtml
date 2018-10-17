@@ -1,0 +1,21 @@
+{if $article_list}
+{foreach from=$article_list item=article}
+<div class="article-list-item">
+    <a href="article.php?id={$article.id}">
+        <img src="{if $article.original}{$article.original|escape}{else}{$template_dir}images/bg_pic.png{/if}"/>
+        <p class="clearfix">{$article.title|truncate:8:'...'}</p>
+    </a>
+</div>
+{/foreach}
+{/if}
+
+{if $section_list and !empty($functions)}
+{foreach from=$section_list item=section}
+<div class="article-list-item">
+    <a href="article_list.php?id={$section.id}">
+        <img src="{if $section.original}{$section.original|escape}{else}{$template_dir}images/bg_pic.png{/if}"/>
+        <p class="clearfix">{$section.section_name|truncate:8:'...'}</p>
+    </a>
+</div>
+{/foreach}
+{/if}

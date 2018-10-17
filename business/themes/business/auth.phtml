@@ -1,0 +1,189 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">认证信息</h5>
+        <div class="pull-right">
+            <button class="btn btn-primary edit" type="button">修改</button>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        {if $edit_disable eq false}
+        <form id="profileAuthForm" method="post" action="" onsubmit="javascript:if(confirm('确认修改认证信息？')) return true; else return false;">
+            <fieldset>
+                {if !empty($business.company)}
+                <p>
+                    <label class="l-title">公司名称：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" maxlength="64" id="company" name="company" value="{$business.company}" placeholder="请输入公司名称">
+                </p>
+                <p>
+                    <label class="l-title">公司简介：</label>
+                    <textarea disabled="disabled" rows="5" cols="80" id="desc" name="desc">{$business.desc}</textarea>
+                </p>
+                {/if}
+                <p>
+                    <label class="l-title">主营行业：</label>
+                    <select disabled="disabled" id="industry" name="industry" class="w300">
+                        <option value="0">请选择行业</option>
+                        {foreach from=$industry_list item=industry}
+                        <option value="{$industry.id}" {if $business.industry_id eq $industry.id}selected="selected"{/if}>{$industry.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">主营分类：</label>
+                    <select disabled="disabled" id="classification" name="classification" class="w150">
+                        <option value="0">请选择分类</option>
+                        {foreach from=$category_list item=category}
+                        <option value="{$category.id}" {if $business.category_id eq $category.id}selected="selected"{/if}>{$category.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">负责人：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" maxlength="64" id="contact" name="contact" value="{$business.contact}" placeholder="请输入负责人">
+                </p>
+                <p>
+                    <label class="l-title">联系电话：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" maxlength="64" id="mobile" name="mobile" value="{$business.mobile}" placeholder="请输入联系电话">
+                </p>
+                <p>
+                    <label class="l-title">电子邮箱：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" maxlength="64" id="email" name="email" value="{$business.email}" placeholder="请输入电子邮箱">
+                </p>
+                <p>
+                    <label class="l-title">{if $business.company}营业执照{else}身份证正面{/if}：</label>
+                    <input disabled="disabled" type="button" class="text-input" id="select-image-license" value="请选择{if $business.company}营业执照{else}身份证正面{/if}" style="cursor:pointer">
+                    <input type="hidden" class="" name="license" id="license" value="{$business.license}"/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    {if $business.license eq ''}
+                    <img id="show-image-license"  style="height:180px;" alt="未选择图片" src="/upload/image/no-image.png">
+                    {else}
+                    <img id="show-image-license"  style="height:180px;" alt="" src="{$business.license_src}" />
+                    {/if}
+                </p>
+                <p>
+                    <label class="l-title">{if $business.company}法人身份证{else}身份证反面{/if}：</label>
+                    <input disabled="disabled" type="button" class="text-input" id="select-image-identity" value="请选择{if $business.company}法人身份证{else}身份证反面{/if}" style="cursor:pointer">
+                    <input type="hidden" class="" name="identity" id="identity" value="../{$business.identity}"/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    {if $business.identity eq ''}
+                    <img id="show-image-identity" style="height:180px;"  alt="未选择图片" src="/upload/image/no-image.png">
+                    {else}
+                    <img id="show-image-identity"  style="height:180px;" alt="" src="{$business.identity_src}" />
+                    {/if}
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary save" type="submit" style="display: none">提交审核</button>
+                    <button class="btn btn-primary cancel" type="button" style="display: none">取消</button>
+                    <input type="hidden" name="opera" value="{if $business.company}auth{else}partner{/if}" />
+                </p>
+            </fieldset>
+        </form>
+        {else}
+        <h1>您的申请已提交，请静候佳音。</h1>
+        {/if}
+    </div>
+</div>
+
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K)
+    {
+        var editor = K.editor({
+            uploadJson : '../plugins/kindeditor/license_upload_json.php'
+        });
+        K('#select-image-license').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            K('#show-image-license').css('width', width);
+                        }
+                        if( !height ) {
+                            K('#show-image-license').css('height', height);
+                        }
+
+                        K('#license').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+//                        K('#select-image').val('');
+                        K('#show-image-license').attr('src', url);
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+
+        var editor1 = K.editor({
+            uploadJson : '../plugins/kindeditor/identity_upload_json.php'
+        });
+        K('#select-image-identity').click(function() {
+            editor1.loadPlugin('image', function() {
+                editor1.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            K('#show-image-identity').css('width', width);
+                        }
+                        if( !height ) {
+                            K('#show-image-identity').css('height', height);
+                            K('#show-image').css('display', 'block');
+                        }
+
+                        K('#identity').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('#show-image-identity').attr('src', url);
+                        editor1.hideDialog();
+                    }
+                });
+            });
+        });
+
+//    prettyPrint();
+    });
+</script>
+
+
+<script type="text/javascript">
+
+    $(function() {
+        $('.edit').click(function() {
+            $('#company').removeAttr('disabled')
+            $('#desc').removeAttr('disabled');
+            $('#industry').removeAttr('disabled');
+            $('#classification').removeAttr('disabled');
+            $('#contact').removeAttr('disabled');
+            $('#mobile').removeAttr('disabled');
+            $('#email').removeAttr('disabled');
+            $('#select-image-license').removeAttr('disabled');
+            $('#select-image-identity').removeAttr('disabled');
+
+            $('.save').show();
+            $(this).hide();
+            $('.cancel').show();
+            $('#company').focus();
+
+        });
+
+        $('.cancel').click(function() {
+            location.reload()
+        });
+    });
+
+    $(function () {
+        menu1("#ud1", "#ud1 a", ".coin_2 a.nav-top-item");
+    })
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

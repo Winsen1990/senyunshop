@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>摇一摇 - 微现场</title>
+    <link rel="stylesheet" type="text/css" href="activity/shake/css/shake_base.css"/>
+    <link rel="stylesheet" type="text/css" href="activity/shake/css/shake_zAlert.css"/>
+    <link rel="stylesheet" type="text/css" href="activity/shake/css/shake_screen.css"/>
+    <style>
+    </style>
+    <script type="text/javascript" src="activity/shake/js/shake_modernizr.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="activity/shake/js/jquery.js" charset="utf-8"></script>
+    <script type="text/javascript" src="activity/shake/js/shake_zAlert.js" charset="utf-8"></script>
+    {literal}
+    <script type="text/javascript">
+        var PATH_ACTIVITY = '/data/scene/';
+        var SCENE_INFO = {"title":"\u5fae\u73b0\u573a\u4f53\u9a8c","top_title":["\u4e00\u8d77\u6447\u4e00\u6447"],"top_font_size":"34","memo":"","top_img":"http:\/\/7.s.bama555.com\/7\/201512\/08\/d1669d973313df06a9fbdde63850722b_550_314.jpg","bg_img":"http:\/\/www.bama555.com\/assets\/img\/scene\/1.jpg","bottom_img":"http:\/\/www.bama555.com\/assets\/img\/scene\/support_default_logo.png","diy_css":"","keyword":"\u5fae\u73b0\u573a","mp_username":"wxsyb88","func":{"wall":"1","lottery":"1","shake":"1","pairup":"1","vote":"1","answer":"1"},"navbar":{"wall":"1","lottery":"1","shake":"1","pairup":"1","vote":"1","answer":"1"}};//
+        var SHAKE_INFO = {"id":"26715","scene_id":"62378","title":"\u664b\u5347\u5feb\u4e501","shake_line":"10","slogan":"\u518d\u5927\u529b\uff01|\u518d\u5927\u529b\uff0c\u518d\u5927\u529b!|\u6447\uff0c\u5927\u529b\u6447\uff01|\u5c0f\u5fc3\u624b\u673a\uff0c\u522b\u98de\u51fa\u53bb\u4f24\u5230\u82b1\u82b1\u8349\u8349|\u770b\u7070\u673a\uff5e\uff5e\uff5e\n","voice":"4","ready_time":"5","countdown":"30","filter_parter":"0","filter_cparter":"0","rank_link":"{\"1\":\"\",\"2\":\"\"}","dt_add":"1442455245","status":"0","is_free":"0","dt_free":"0","slogan_list":["\u518d\u5927\u529b\uff01|\u518d\u5927\u529b\uff0c\u518d\u5927\u529b!|\u6447\uff0c\u5927\u529b\u6447\uff01|\u5c0f\u5fc3\u624b\u673a\uff0c\u522b\u98de\u51fa\u53bb\u4f24\u5230\u82b1\u82b1\u8349\u8349|\u770b\u7070\u673a\uff5e\uff5e\uff5e",""]};//
+        /*当前轮次序号*/
+        var READY_TIME = 5;//默认准备时间
+        var CUTDOWN_TIME = SHAKE_INFO['countdown']*1;//默认倒计时
+        var SHAKE_LINE = SHAKE_INFO['shake_line']*1;//默认赛道数量
+        var CURR_ROUND_ID = 0;//标记Free轮次
+        var SLOGANS = [
+            '再大力！',
+            '再大力,再大力！',
+            '再大力,再大力,再大力！',
+            '摇，大力摇',
+            '快点摇啊，别停！',
+            '摇啊，摇啊，摇啊',
+            '小心手机，别飞出去伤到花花草草',
+            '看灰机～～～'
+        ];
+        var join_status = '0';
+        //var join_status = "0";
+    </script>
+    {/literal}
+    <script type="text/javascript" src="activity/shake/js/shake_base.js" charset="utf-8"></script>
+    <script type="text/javascript" src="activity/shake/js/shake_screen_free.js" charset="utf-8"></script>
+</head>
+<body class="FUN SHAKE_FREE" style="background-image: url(http://www.bama555.com/assets/img/scene/1.jpg)">
+<audio id="Audio_CutdownPlayer" src="http://wxsyb.bama555.com/assets/types_pub/activity/default/screen/audio/shake_cutdown.mp3" preload="preload"></audio>
+<audio id="Audio_NewPlayer" src="http://wxsyb.bama555.com/assets/types_pub/activity/default/screen/audio/shake_new.mp3" preload="preload"></audio>
+<audio id="Audio_Outride" src="http://wxsyb.bama555.com/assets/types_pub/activity/default/screen/audio/shake_outride.mp3" preload="preload"></audio>
+<audio id="Audio_Gameover" src="http://wxsyb.bama555.com/assets/types_pub/activity/default/screen/audio/shake_gameover.mp3" preload="preload"></audio>
+<!-- 开始界面 -->
+<div class="join_user">
+    <div class="label">微信扫一扫，发送<span class="activity_key">微现场</span>即可参与</div>
+    <img class="codeImg" src="http://open.weixin.qq.com/qr/code/?username=sbxhealthy" />
+    <div class="radar">
+        <div class="join_num">当前已有<em>0</em>人加入</div>
+        <div class="round w300">
+            <div class="round w200">
+                <div class="round w100">
+                    <div class="round w1">
+                        <div class="line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="users"></div>
+    </div>
+    <div class="game-start">开始倒计时</div>
+    <!-- <div class="join_user_btn">开始报名</div> -->
+</div>
+<!-- 头部 -->
+<div class="Panel Top">
+    <img class="activity_logo" src="images/logo.png">
+    <div class="top_title" style="font-size: 34px">
+        <div>一起摇一摇</div>        </div>
+    <img class="mp_account_codeimage" src="http://open.weixin.qq.com/qr/code/?username=sbxhealthy">
+</div>
+
+<!-- 开始游戏头部 -->
+<div class="Panel SloganList"></div>
+<!-- 开始游戏 -->
+<div class="Panel Track">
+    <div class="tracklist"></div>
+    <div class="cutdown-end"></div>
+    <div class="track-tool"></div>
+    <div class="track-result"></div>
+</div>
+<!-- 游戏结束 -->
+<div class="result-layer">
+    <div class="result-label">GAME OVER</div>
+    <div class="result-cup">
+<!--        <span class="button nexttound">开始下一轮</span>-->
+        <!--<span class="button allresult">全部排名</span>-->
+        <!--  <span class="button restart">重新报名</span>
+         <span class="button save">保存结果</span> -->
+        <span class="button result">查看结果</span>
+        <span class="button reset">再玩一次</span>
+    </div>
+</div>
+<!-- 底部 -->
+<div class="Panel Bottom">
+    <img class="support_logo" src="images/logo.png"/>
+    <div class="helperpanel pulse">
+        搜索关注<span class="mp_account">sbxhealthy</span><br />发送<span class="activity_key">微现场</span>即可参与
+    </div>
+    <div class="navbar">
+        <a class="navbaritem fullscreen" href="#">
+            <div class="icon"></div>
+            <div class="label">全屏</div>
+        </a>
+        <!--
+        <a class="navbaritem lottery" href="/activity/free_lottery?id=62378">
+            <div class="icon"></div>
+            <div class="label">抽奖</div>
+        </a>
+        <a class="navbaritem rocker hover" href="/activity/free_shake?id=62378">
+            <div class="icon"></div>
+            <div class="label">摇一摇</div>
+        </a>
+        <a class="navbaritem pairup" href="/activity/free_pairup?id=62378">
+            <div class="icon"></div>
+            <div class="label">对对碰</div>
+        </a>
+        <a class="navbaritem vote" href="/activity/free_vote?id=62378">
+            <div class="icon"></div>
+            <div class="label">投票</div>
+        </a>
+        <a class="navbaritem wall" href="/activity/wall?id=62378">
+            <div class="icon"></div>
+            <div class="label">微信上墙</div>
+        </a>
+        <a class="navbaritem answer" href="/activity/free_answer?id=62378">
+            <div class="icon"></div>
+            <div class="label">抢答</div>
+        </a>
+        -->
+    </div>
+</div>
+<!-- 微现场管理密码登录 -->
+<div class="loginform">
+    <div class="activity_title">微现场体验</div>
+    <div><input id="password" class="password" placeholder="请输入微现场的管理密码" type="password"></div>
+    <div class="submitline">
+        <button class="button-login">开启</button>
+    </div>
+</div>
+<!-- 加载logding -->
+<div class="loader"><div class="icon"></div></div>
+<!--round welcome +++++++++++++++++++++++++++++++++++++++++-->
+<div class="round-welcome">
+    <div class="label top">微信扫一扫，发送<span class="activity_key">微现场</span>然后点击“摇一摇”</div>
+    <img src="http://open.weixin.qq.com/qr/code/?username=sbxhealthy">
+    <div class="label bottom"><span class="shake-icon shake"></span>听从现场指挥，游戏开始后不停摇动手机</div>
+    <div class="button-start">开始游戏</div>
+    <div class="button restart">重新报名</div>
+</div>
+<!--round welcome +++++++++++++++++++++++++++++++++++++++++-->
+<!-- 开始游戏倒计时 -->
+<div class="cutdown-start cutdownan-imation"></div>
+</body>
+</html>

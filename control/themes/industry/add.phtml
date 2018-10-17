@@ -1,0 +1,32 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加主营行业</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="industryAddForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">行业名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="industry_name" name="industry_name" value="" placeholder="请输入行业名称"/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>
+                    <input type="hidden" name="opera" value="add" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

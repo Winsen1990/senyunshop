@@ -1,0 +1,96 @@
+.lottery-warning {
+  display: block;
+  width: 80%;
+  margin: 0 auto 10%;
+  border: 1px solid #ddd;
+  padding: 5%;
+  border-radius: 8px;
+  font-size: .8rem;
+  line-height: 1.4rem;
+}
+.lottery-wrapper {
+  display: block;
+  width: 90%;
+  margin: 20% 5%;
+}
+.lottery-wrapper .lottery-box {
+  letter-spacing: -7px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item {
+  letter-spacing: normal;
+  display: inline-block;
+  width: 29%;
+  text-align: center;
+  padding: 2%;
+  border-style: solid;
+  border-color: #ddd;
+  border-width: 0 .1vw .1vw 0;
+  vertical-align: bottom;
+  position: relative;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item img {
+  width: 100%;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item p {
+  font-size: .6rem;
+  line-height: 1.4rem;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(3n) {
+  border-right: 0;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(5) {
+  border-right: 0;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(6) {
+  border-width: 0 .1vw .1vw .1vw;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(7),
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(8),
+.lottery-wrapper .lottery-box .lottery-gift-item:nth-child(9) {
+  border-bottom: 0;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item .mask-on {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border: .1vw solid red;
+  border-radius: 5px;
+  display: none;
+}
+.lottery-wrapper .lottery-box .lottery-gift-item.on .mask-on {
+  display: block;
+}
+.lottery-wrapper .lottery-box .lottery-button {
+  position: absolute;
+  display: block;
+  width: 26%;
+  left: 50%;
+  top: 50%;
+  letter-spacing: normal;
+  transform: translateX(-50%) translateY(-50%);
+  font-size: .8rem;
+  text-align: center;
+  color: #fff;
+  background: green;
+  line-height: 2.4rem;
+  border-radius: 5px;
+}
+.qr-code {
+  background: #333;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: none;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+.qr-code img {
+  width: 80%;
+  margin: 20% 10% 0;
+}

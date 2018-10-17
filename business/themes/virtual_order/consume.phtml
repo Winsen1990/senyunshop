@@ -1,0 +1,116 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="consume-form" name="consume-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">手机号码:</label>
+                    <input class="text-input w300" type="text" id="mobile" name="mobile" placeholder="手机号码" value=""/>
+                    <span class="error-input" id="mobile-error">{if isset($error.mobile)}{$error.mobile}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">消费码:</label>
+                    <input class="text-input w300" type="text" id="code" name="code" placeholder="消费码" value=""/>
+                    <span class="error-input" id="code-error">{if isset($error.code)}{$error.code}{/if}</span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        提交<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="consume"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript">
+
+    $(function() {
+        $("#submit-btn").click(do_submit);
+    });
+
+    /**
+     * 这个解决方案可以作为Ajax提交表单的模板
+     * 1、form的提交操作托管给do_submit处理;
+     * 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
+     * 3、仅支持post方式提交表单;
+     * 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
+     **/
+    function do_submit() {
+        //参数校验
+        var flag = true;
+        var mobile = $("#mobile").val().trim();
+        var code = $("#code").val().trim();
+
+        if(mobile == "") {
+            $("#mobile-error").text("-请输入手机号码");
+            flag = false;
+        } else {
+            if( 11 != mobile.length ) {
+                $("#mobile-error").text("-请输入11位手机号码");
+                flag = false;
+            } else {
+                $("#mobile-error").text("");
+            }
+        }
+
+        if(code == "") {
+            $("#code-error").text("-请输入消费码");
+            flag = false;
+        } else {
+            $("#code-error").text("");
+        }
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $(".btn-loading-img").show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var params = { "opera":"consume", "mobile":mobile, "code":code}
+            var url = "virtual_order.php";
+            $.post(url, params, do_response, "json");
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.msg);
+            window.location.href = 'virtual_order.php?status=2';
+        } else {
+            if(result.msg != "") {
+                alert(result.msg);
+            }
+
+            if(result.errmsg.length) {
+                for(var id in result.errmsg) {
+                    $("#"+id+"-error").text(result.errmsg[id]);
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

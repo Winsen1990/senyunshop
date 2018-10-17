@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <link rel="apple-touch-icon-precomposed" href="{$template_dir}images/touch/touch-icon-iphone.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$template_dir}images/touch/touch-icon-ipad.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$template_dir}images/touch/touch-icon-iphone4.png">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>{$business.shop_name}的店铺</em></h1>
+    <!-- category -->
+    <div class="category">
+        <dl>
+            <dt>
+                <a id="shop_category" href="javascript:void(0);">分类<i></i></a>
+            </dt>
+        </dl>
+    </div>
+    <!-- 分类菜单-->
+    <div class="category_menu">
+        <ul class="list1">
+            {foreach from=$category item=c}
+            {if count($c.children) eq 0}
+            <li>
+                <a href="product_list.php?id={$c.id}">{$c.name}</a>
+            </li>
+            {else}
+            <li class="hasmore">
+                <a href="javascript:void(0);" onclick="return false;" grade="2">{$c.name}</a>
+                <ul class="list2">
+                    {foreach from=$c.children item=cc}
+                    <li><a href="product_list.php?id={$cc.id}">{$cc.name}</a></li>
+                    {/foreach}
+                </ul>
+            </li>
+            {/if}
+            {/foreach}
+        </ul>
+    </div>
+</header>
+<!-- 用户基本信息 -->
+<section class="shop">
+    <header class="user-info">
+        <section class="user-basic">
+            <img class="user-avatar" src="{$business.shop_logo}" alt="商家">
+            <div class="user-name">{$business.shop_name}</div>
+        </section>
+        <section class="user-stat">
+            <a id="shop_collect_number" href="#"><em>{count($product_list)}</em>全部商品</a>
+            <a id="product_collect_number" href="#"><em>{$new_product_count}</em>平台上新</a>
+            <a id="read_history_count" href=""><em class="icon">&#xe600;</em>联系掌柜</a>
+        </section>
+    </header>
+    <!-- 广告轮播区 -->
+    <section id="focus" class="focus">
+        <div class="hd">
+            <ul></ul>
+        </div>
+        <div class="bd">
+            <ul>
+                <li><a href="#"><img _src="{$template_dir}images/m1.jpg" src="{$template_dir}images/blank.png" /></a></li>
+                <li><a href="#"><img _src="{$template_dir}images/m2.jpg" src="{$template_dir}images/blank.png"/></a></li>
+                <li><a href="#"><img _src="{$template_dir}images/m3.jpg" src="{$template_dir}images/blank.png"/></a></li>
+            </ul>
+        </div>
+    </section>
+    <!-- 商品推荐区 -->
+    <!--
+    <section class="floor">
+        <h2>
+            <a class="title"><i class="icon">&#xe610;</i>店长推荐</a>
+            <a href="#" class="more" title="更多">更多</a>
+        </h2>
+        <dl>
+            <dt><a href="#"><img class="lazy" src="images/bg_pic.png" data-original="images/H5.jpg" width="100%" height="auto"></a></dt>
+            <dd><a href="#"><img class="lazy" src="images/bg_pic.png" data-original="images/309x224-1.jpg" width="100%" height="auto"></a></dd>
+            <dd><a href="#"><img class="lazy" src="images/bg_pic.png" data-original="images/309x224-2.jpg" width="100%" height="auto"></a></dd>
+        </dl>
+    </section>
+    -->
+    <!-- 热卖产品 -->
+    <section class="hot-product floor">
+        <h2>
+            <a class="title"><i class="icon">&#xe610;</i>店长推荐</a>
+            <a href="index.php" class="more" title="更多">更多</a>
+        </h2>
+        <ul style="overflow: hidden; margin: 0.5rem 0px;">
+            {foreach from=$product_list item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$p.img}" alt=""/>
+                    <span>{$p.name}</span>
+                    <em>￥{$p.price}</em>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </section>
+    <!-- 猜你喜欢 -->
+    <section class="f-section might-like">
+        <h3><i class="icon">&#xe617;</i>猜你喜欢
+            <a href="javascript:;" onclick="change_fav();"><span class="icon">&#xe618;</span>&nbsp;换一批</a>
+        </h3>
+        <ul id="fav_list">
+            {foreach from=$fav_products item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img src="{$p.img}" alt="产品图">
+                    <span>{$p.name}</span>
+                    <em>￥{$p.price}</em>
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </section>
+    <!-- 全部产品 -->
+    <!--
+    <section class="all-product">
+        <a href="#" class="arrow">全部商品</a>
+    </section>
+    -->
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a href="user.php"><em class="icon">&#xe600;</em><span>我</span></a></li>
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+        $("#shop_category").click(function(){
+            if($(this).hasClass("up")){
+                $(".category_menu").slideUp(500);
+                $(this).removeClass("up");
+                $(".hasmore").removeClass("up");
+                $(".hasmore").find("ul").slideUp();
+            }else{
+                $(".category_menu").slideDown(500);
+                $(this).addClass("up");
+            }
+        })
+        $(".hasmore a").click(function(){
+            $(this).parent().siblings().removeClass("up");
+            $(this).parent().siblings().find("ul").slideUp(500);
+            if($(this).parent().hasClass("up")){
+                $(this).parent().find("ul").slideUp(500);
+                $(this).parent().removeClass("up");
+            }else{
+                $(this).parent().find("ul").slideDown(500);
+                $(this).parent().addClass("up");
+            }
+        })
+    });
+</script>
+<script type="text/javascript" src="{$template_dir}js/TouchSlide.1.1.js"></script>
+<script type="text/javascript">
+    TouchSlide({
+        slideCell:"#focus",
+        titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+        mainCell:".bd ul",
+        effect:"left",
+        autoPlay:true,//自动播放
+        autoPage:true, //自动分页
+        switchLoad:"_src" //切换加载，真实图片路径为"_src"
+    });
+
+    function change_fav() {
+        var url = "data_center.php";
+        var data = { "opera":"get_fav" };
+        $.post(url, data, change_fav_handler, "json");
+    }
+
+    function change_fav_handler(response) {
+        if(response.error == 0) {
+            $("#fav_list").html(response.content);
+        }
+    }
+</script>
+</body>
+</html>

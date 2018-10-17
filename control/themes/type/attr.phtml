@@ -1,0 +1,52 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$type.name}-属性列表</h5>
+        <div class="pull-right">
+            <a href="type.php?act=add-attr&id={$type.id}" class="btn btn-primary">添加属性</a>
+            <a href="type.php" class="btn btn-primary">返回</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>属性名称</th>
+                <th>属性类型</th>
+                <th>必填</th>
+                <th>选项</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $attr_list}
+            {foreach from=$attr_list item=attr}
+            <tr>
+                <td>{$attr.name}</td>
+                <td>{$attr.type}</td>
+                <td>{$attr.needle_str}</td>
+                <td>{$attr.options}</td>
+                <td class="text-right">
+                    <a href="?act=edit-attr&id={$attr.id}">编辑</a>
+                    | <a onclick="javascript:if(confirm('该属性可能跟某个产品关联，确认要删除？')) return true; else return false;" href="?act=delete-attr&id={$attr.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="2" align="center">该产品类型下还没有产品属性，立即点击 “<a href="?act=add-attr&id={$type.id}" target="_blank">这里</a>” 添加产品属性！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

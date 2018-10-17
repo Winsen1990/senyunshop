@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>我的银行卡</em></h1>
+    <a href="bank.php?act=add" class="edit">添加</a>
+</header>
+<!-- 银行卡列表 -->
+<section class="bank">
+    <div class="bank-list">
+        <ul>
+            {foreach from=$bank_list item=bank}
+            <li class="bank-list-item">
+                <div class="bank-title">
+                    <div class="fl">{$bank.bank}</div>
+                    <div class="fr">尾号{substr($bank.bank_card, -4)}<span>储蓄卡</span></div>
+                </div>
+                <div class="bank-con">
+                    <div class="bank-item">
+                        <span class="info">持卡人姓名：***{mb_substr($bank.bank_account, -1)}</span>
+                        <a href="bank.php?act=edit&id={$bank.id}" class="font-gray fr">修改</a>
+                    </div>
+                    <div class="bank-item">
+                        <span class="info">手机号：{substr($bank.mobile, 0, 3)}****{substr($bank.mobile, -4)}</span>
+                        <a href="javascript:delete_bank_confirm({$bank.id});" class="font-gray fr">删除</a>
+                    </div>
+                </div>
+            </li>
+            {/foreach}
+            <li class="quick-add">
+                <a class="quick-add-item" href="bank.php?act=add">
+                    <span class="icon bg">+</span>
+                    添加银行卡
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="confirm_dialog" style="display: none;">
+        <p>确定要删除该银行卡吗？</p>
+        <ul class="cd-buttons">
+            <li><a id="dialog_confirm_btn" href="javascript:void(0);">非删不可</a></li>
+            <li><a href="javascript:close_operation_dialog('confirm_dialog');">说说而已</a></li>
+        </ul>
+        <a href="javascript:close_operation_dialog('confirm_dialog');" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a id="dialog_close_btn" href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" id="dialog_close" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var id = 0;
+    $(function(){
+        $(".bank-list-item").click(function(){
+            $(this).addClass("hover").find(".font-gray").show();
+            $(this).siblings().removeClass("hover").find(".font-gray").hide();
+        })
+
+        $(".font-gray").each(function(i, e){
+            $(e).hide();
+        });
+
+        var need_refresh = window.localStorage.getItem("need_refresh");
+        if(need_refresh == 1) {
+            window.localStorage.setItem("need_refresh", 0);
+            window.location.reload();
+        }
+    });
+
+    function delete_bank_confirm(eid) {
+        id = eid;
+        show_operation_dialog("confirm_dialog");
+        $("#dialog_confirm_btn").click(function() {
+            close_operation_dialog("confirm_dialog");
+            delete_bank(id);
+        });
+    }
+
+    function delete_bank(id) {
+        id = parseInt(id);
+        var msg = "";
+
+        if(isNaN(id) || id <= 0) {
+            msg += "-参数错误<br/>";
+        }
+
+        if(msg == "") {
+            var url = "bank.php";
+            var data = { "opera":"delete", "eid":id };
+
+            show_mask();
+            $.post(url, data, delete_bank_handler, "json");
+        } else {
+            show_message_dialog(msg);
+        }
+    }
+
+    function delete_bank_handler(response) {
+        hide_mask();
+
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            $("#dialog_close_btn").attr("href", "javascript:window.location.reload();");
+            $("#dialog_close").click(function() {
+                window.location.reload();
+            });
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").html(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_operation_dialog(id) {
+        if(id == undefined) {
+            id = "dialog";
+        }
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#"+id).show();
+    }
+
+    function close_operation_dialog(id) {
+        if(id == undefined) {
+            id = "dialog";
+        }
+        $(".cd-popup").removeClass("is-visible");
+        $("#"+id).hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+<script type="text/javascript">
+    $(function(){
+        $(".bank-list-item").click(function(){
+            $(this).addClass("hover").find(".font-gray").show();
+            $(this).siblings().removeClass("hover").find(".font-gray").hide();
+        })
+    });
+</script>
+</body>
+</html>

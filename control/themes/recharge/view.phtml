@@ -1,0 +1,176 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{if $type eq 0}线上-{else}线下-{/if}充值记录</h5>
+        <div class="pull-right">
+            <a href="recharge.php" class="btn btn-primary">
+                线上
+            </a>
+            <a href="recharge.php?type=1" class="btn btn-primary">
+                线下
+                {if $recharge_deal_count neq 0}<sup class="badge">{$recharge_deal_count}</sup>{/if}
+            </a>
+            <a href="recharge.php?act=log" class="btn btn-primary">充值日志</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="" method="get" />
+        <fieldset>
+            <p>
+            <div class="pull-left">
+                显示
+                <select name="count" class="w75">
+                    <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                    <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                    <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                    <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                </select>
+                项结果
+            </div>
+            <div class="pull-right">
+                <label>起始日期：</label>
+                <input class="text-input w150" type="text" id="" name="st" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$st}">&nbsp;
+                <label>结束日期：</label>
+                <input class="text-input w150" type="text" id="" name="et" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$et}">&nbsp;
+                <button type="submit" class="btn btn-default">搜索</button>
+                <input type="hidden" name="type" value="{$type}"/>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+    <div class="recharge-record">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>流水号</th>
+                <th>帐号</th>
+                {if $type eq 1}
+                <th>银行帐号</th>
+                {/if}
+                <th>金额</th>
+                <th>状态</th>
+                <th>充值时间</th>
+                <th>到帐时间</th>
+                {if $type eq 1}
+                <th>操作</th>
+                {/if}
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$recharge_list item=recharge}
+            <tr>
+                <td>{$recharge.recharge_sn}</td>
+                <td>{$recharge.account}</td>
+                {if $type eq 1}
+                <td>
+                    {$recharge.bank}<br />
+                    {$recharge.card_num}
+                </td>
+                {/if}
+                <td>{$recharge.amount}</td>
+                <td>{$recharge.status_str}</td>
+                <td>{$recharge.add_time_str}</td>
+                <td>{$recharge.solve_time_str}</td>
+                {if $recharge.type eq 1}
+                <td>
+                    {if $recharge.status eq 2}
+                    <a href="?act=edit&sn={$recharge.recharge_sn}" onclick="javascript:if(confirm('确认已到帐？')) return true; else return false;">到帐</a>
+                    {/if}
+                </td>
+                {/if}
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="{if $type eq 0}6{else}8{/if}" align="center">尚未有会员充值！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="{if $type eq 0}6{else}8{/if}" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="{if $type eq 0}6{else}8{/if}">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&type={$type}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&type={$type}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&type={$type}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&type={$type}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&type={$type}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+<script type="text/javascript">
+    $(function() {
+        $('select[name=count]').change(function () {
+            var st = $('input[name=st]').val();
+            var et = $('input[name=et]').val();
+
+            var count = $(this).val();
+            var url = 'recharge.php?type={$type}&count=' + count;
+            if( st ) {
+                url += '&st=' + st;
+            }
+            if( et ) {
+                url += '&et=' + et;
+            }
+            window.location.href = url;
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

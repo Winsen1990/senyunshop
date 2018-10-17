@@ -1,0 +1,99 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加主营分类</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="categoryAddForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">分类名：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="category_name" name="category_name" value="" placeholder="请输入分类名"/>
+                </p>
+                <p>
+                    <label class="l-title">父级分类：</label>
+                    <select name="parent_id" class="w150" onchange="change_tips(this.value);">
+                        <option value="0">顶级分类</option>
+                        {foreach from=$category_list item=category}
+                        <option value="{$category.id}">{$category.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">图片：</label>
+                    <input type="hidden" name="img" id="img" placeholder="">
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" height="120px">&nbsp;
+                    建议尺寸，<span id="tips">280x100</span>像素
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>
+                    <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>
+                    <input type="hidden" name="opera" value="add" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+<!-- kindeditor编辑器 -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    function change_tips(id) {
+        if(id == 0) {
+            $("#tips").text("280x100");
+        } else {
+            $("#tips").text("120x120");
+        }
+    }
+
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 120 + 'px';
+                        }
+                        if( !height ) {
+                            height = 120 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.select-image').attr('src', url);
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=120&height=120');
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,98 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">帖子审核</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <form id="articleCatForm" name="articleCatEditForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">会员编号：</label>
+                    <input class="text-input w300" type="text" id="articleCatName" name="articleCatName" placeholder="帖子标题" maxlength="32" value="{$section.account}" readonly="true"/>
+                </p>
+                <p>
+                    <label class="l-title">状态：</label>
+                    <em>
+                        {if $section.status eq 0}未审核{else}{if $section.status eq 1}审核通过{else}不通过{/if}{/if}
+                    </em>
+                </p>
+                <p>
+                    <label class="l-title">标题：</label>
+                    <input class="text-input w300" type="text" id="articleCatName" name="articleCatName" placeholder="帖子标题" maxlength="32" value="{$section.title}" readonly="true"/>
+                </p>
+                <p>
+                    <label class="l-title">内容：</label>
+                    <textarea readonly="true" class="w300" rows="10">{$section.content}</textarea>
+                </p>
+                <p>
+                    <label class="l-title">赠送积分：</label>
+                    <input class="text-input w300" type="text" id="integarl" name="integral" placeholder="请输入赠送积分" maxlength="32" value="{$section.integral}"/>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$section.id}" />
+                    <input type="hidden" name="status" value="1" id="status"/>
+                    <button class="btn btn-primary" type="submit">通过</button> 
+                    <button class="btn btn-primary" type="submit" onclick="refund();">不通过</button> 
+                    &nbsp;<a href="forum.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+function refund() {
+    var form = $("form");
+    $("#status").val(-1);
+    form.submit();
+}
+</script>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K)
+    {
+        var editor = K.editor({
+            allowFileManager : true,
+            uploadJson : '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = '';
+                            width = (width == '') ? '75px' : width + 'px'
+                        }
+                        if( !height ) {
+                            height = '';
+                            height = (height == '') ? '75px' : height + 'px'
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('width', width);
+                        K('#show-image').css('height', height);                        
+                        K('#show-image').css('display', 'block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+//    prettyPrint();
+    });
+</script>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

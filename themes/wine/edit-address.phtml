@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>编辑收货地址</em></h1>
+</header>
+<!-- 编辑收货地址 -->
+<section class="address">
+    <div class="edit-address">
+        <label for="name"><span>收货人:</span><input type="text" id="consignee" name="name" placeholder="" value="{$address.consignee}"></label>
+        <label for="province"><span>选择地区:</span>
+            <select id="province" name="province">
+                <option value="0">省份</option>
+                {foreach from=$province item=p}
+                <option value="{$p.id}">{$p.name}</option>
+                {/foreach}
+            </select>
+        </label>
+        <label for="city"><span>&nbsp;</span>
+            <select id="city" name="city">
+                <option value="0">城市</option>
+            </select>
+        </label>
+        <label class="distinct" for="distinct"><span>&nbsp;</span>
+            <select id="district" name="district">
+                <option value="0">地区</option>
+            </select>
+        </label>
+        <label class="distinct" for="group"><span>&nbsp;</span>
+            <select id="group" name="group">
+                <option value="0">商圈</option>
+            </select>
+        </label>
+        <label><span>街道地址:</span><input type="text" id="address" name="address" value="{$address.address}"></label>
+        <label><span>手机号码:</span><input type="text" id="mobile" name="cellphone" value="{$address.mobile}"></label>
+        <label><span>设为默认地址</span><input type="checkbox" id="is_default" class="c_checkbox" {if $address.is_default}checked="checked"{/if}></label>
+        <input type="hidden" name="address_id" value="{$address.id}" id="address_id"/>
+        <div class="address-btn">
+            <a class="btn" href="address.php?act=add"><i class="icon">&#xe62b;</i> 新增</a>
+            <a class="btn" href="javascript:save_address();">保存</a>
+        </div>
+    </div>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var city = {$city_json};
+    var district = {$district_json};
+    var group = {$group_json};
+
+    function save_address() {
+        var province = $("#province").val();
+        var city = $("#city").val();
+        var district = $("#district").val();
+        var group = $("#group").val();
+        var mobile =$("#mobile").val();
+        var consignee = $("#consignee").val();
+        var address = $("#address").val();
+        var is_default = document.getElementById("is_default").checked;
+        var msg = "";
+        var address_id = $("#address_id").val();
+
+        province = parseInt(province);
+        city = parseInt(city);
+        district = parseInt(district);
+        group = parseInt(group);
+        address_id = parseInt(address_id);
+
+        if(isNaN(address_id) || address_id <= 0) {
+            msg += "403:参数错误\n";
+        }
+
+        if(consignee == "") {
+            msg += "-请填写收货人\n";
+        }
+
+        if(isNaN(province) || province <= 0) {
+            msg += "-请选择省份\n";
+        }
+
+        if(isNaN(city) || city <= 0) {
+            msg += "-请选择城市\n";
+        }
+
+        if(isNaN(district) || district <= 0) {
+            msg += "-请选择地区\n";
+        }
+
+        if(address == "") {
+            msg += "-请填写街道地址\n";
+        }
+
+        if(mobile == "") {
+            msg += "-请填写手机号码\n";
+        }
+
+        if(msg != "") {
+            show_message_dialog(msg);
+        } else {
+            show_mask();
+
+            var url = "address.php";
+            var data = { "opera":"edit", "province":province, "city":city, "district":district, "group":group, "address":address,
+                "mobile":mobile, "consignee":consignee, "is_default":is_default, "address_id":address_id };
+
+            $.post(url, data, save_address_handler, "json");
+        }
+    }
+
+    function save_address_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            window.localStorage.setItem("need_refresh", 1);
+            $("#dialog_close").bind("click", function() { window.history.back(); });
+            $("#dialog_close_btn").bind("click", function() { window.history.back(); });
+        }
+    }
+
+    $(function(){
+        $("#province").val({$address.province});
+
+    for(var i in city[{$address.province}]) {
+        $("#city").append('<option value="'+city[{$address.province}][i].id+'">'+city[{$address.province}][i].name+'</option>');
+    }
+
+    $("#city").val({$address.city});
+
+    for(var i in district[{$address.city}]) {
+        $("#district").append('<option value="'+district[{$address.city}][i].id+'">'+district[{$address.city}][i].name+'</option>');
+    }
+
+    $("#district").val({$address.district});
+
+    for(var i in group[{$address.district}]) {
+        $("#group").append('<option value="'+group[{$address.district}][i].id+'">'+group[{$address.district}][i].name+'</option>');
+    }
+
+    $("#group").val({$address.group});
+
+    $("#province").bind("change", function() { select_province($(this).val()); });
+    $("#city").bind("change", function() { select_city($(this).val()); });
+    $("#district").bind("change", function() { select_district($(this).val()); });
+    });
+
+    function select_province(id) {
+        document.getElementById("city").length = 1;
+        document.getElementById("district").length = 1;
+        document.getElementById("group").length = 1;
+
+        for(var i in city[id]) {
+            $("#city").append('<option value="'+city[id][i].id+'">'+city[id][i].name+'</option>');
+        }
+    }
+
+    function select_city(id) {
+        document.getElementById("district").length = 1;
+        document.getElementById("group").length = 1;
+
+        for(var i in district[id]) {
+            $("#district").append('<option value="'+district[id][i].id+'">'+district[id][i].name+'</option>');
+        }
+    }
+
+    function select_district(id) {
+        document.getElementById("group").length = 1;
+
+        for(var i in group[id]) {
+            $("#group").append('<option value="'+group[id][i].id+'">'+group[id][i].name+'</option>');
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

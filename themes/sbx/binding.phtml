@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>绑定手机号码</em></h1>
+</header>
+<section class="binding-con">
+    <div class="binding-phone">
+        <span class="ico"></span>
+        <span class="input"><input type="tel" id="mobile" placeholder="请输入你的手机号"></span>
+    </div>
+    <div class="clear" style="margin-bottom: .5rem; overflow: hidden;">
+        <div class="verify-phone">
+            <span class="input"><input type="text" id="verify" placeholder="请输入验证码"></span>
+        </div>
+        <button id="reget" class="new" type="button" on="获取验证码" off="重新获取" time="60">
+            <em>获取验证码</em>
+            <i id="timer" style="display: none;">60</i>
+        </button>
+        <div class="binding-tips" style="display: none;">
+            <i class="icon" style="color: #FF8948">&#xe613;</i>&nbsp;绑定手机号码需短信确认，验证号码已发送成功！
+        </div>
+    </div>
+    <div class="binding-phone clear" style="margin-top: 10px;">
+        <span class="input"><input type="password" id="password" placeholder="请设置密码"></span>
+    </div>
+    <div class="binding-phone" style="margin-top: 10px;">
+        <span class="input"><input type="password" id="confirm_passwd" placeholder="请确认密码"></span>
+    </div>
+    <a class="btn" href="javascript:void(0);" onclick="submit_verify();">完成</a>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var interval = null;
+    var timer = 0;
+
+    $(function() {
+        $("#reget").click(function () {
+            get_message_code();
+        });
+    });
+
+    function get_message_code() {
+        if(timer == 0) {
+            var mobile = $("#mobile").val();
+
+            if (mobile == "") {
+                show_message_dialog("请输入手机号码");
+                return false;
+            }
+
+            var url = "data_center.php";
+            var data = { "opera":"get_message_code", "mobile": mobile };
+
+            show_mask();
+            $.post(url, data, get_message_code_handler, "json");
+        }
+    }
+
+    function get_message_code_handler(response) {
+        if(response.error == 0) {
+            timer = response.timer;
+            $("#reget").removeClass("new");
+            $("#reget").html("<em>重新获取</em><i id='timer'>"+timer+"</i>");
+            interval = setInterval(trick, 1000);
+            show_message_dialog("验证码已发送");
+            $(".binding-tips").show();
+        } else {
+            show_message_dialog(response.msg);
+            if(response.timer != undefined) {
+                timer = response.timer;
+                $("#reget").removeClass("new");
+                $("#reget").html("<em>重新获取</em><i id='timer'>" + timer + "</i>");
+                interval = setInterval(trick, 1000);
+                $(".binding-tips").show();
+            }
+        }
+    }
+
+    function trick() {
+        if(timer) {
+            timer--;
+            $("#timer").text(timer);
+        } else {
+            clearInterval(interval);
+            $("#reget").addClass("new");
+            $("#reget").html("<em>获取短信验证码</em>");
+        }
+    }
+
+    function submit_verify() {
+        var mobile = $("#mobile").val();
+        var verify = $("#verify").val();
+        var password = $("#password").val();
+        var confirm_passwd = $("#confirm_passwd").val();
+
+        var msg = "";
+
+        if(mobile == "") {
+            msg += "-请输入手机号码<br/>";
+        }
+
+        if(verify == "") {
+            msg += "-请输入验证码<br/>";
+        }
+
+        if(password == "") {
+            msg += "-请设置密码<br/>";
+        } else {
+            if(confirm_passwd == "") {
+                msg += "-请确认密码<br/>";
+            } else if(password != confirm_passwd) {
+                msg += "-两次输入的密码不一致<br/>";
+            }
+        }
+
+        if(msg != "") {
+            show_message_dialog(msg);
+            return false;
+        }
+
+        var url = "bind_mobile.php";
+        var data = { "opera":"bind", "verify":verify, "mobile":mobile, "password": password };
+        show_mask();
+        $.post(url, data, submit_verify_handler, "json");
+    }
+
+    function submit_verify_handler(response) {
+        hide_mask();
+        show_message_dialog(response.msg);
+        if(response.error == 0) {
+            window.history.go(-1);
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").html(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+<!-- 绑定手机 -->
+</body>
+</html>

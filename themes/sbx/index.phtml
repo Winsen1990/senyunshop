@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body id="index">
+<!-- 首页头部 -->
+<!--
+<header class="header">
+    <div class="logo">
+        <a href="#">圣宝先</a>
+    </div>
+    <div class="search_box">
+        <a href="#" >
+            <div class="search">
+                <form method="get" action="search.php">
+                    <div class="text_box">
+                        <input id="keyword" name="keyword" type="text" placeholder="搜索商品/店铺" class="keyword text" onkeydown="this.style.color='#404040'" autocomplete="off">
+                    </div>
+                    <input type="submit" value="" class="submit" sbs_name="搜索">
+                </form>
+            </div>
+        </a>
+    </div>
+    <div class="header_service">
+        <a href="#"><span class="icon">&#xe600;</span><em>客服</em></a>
+    </div>
+</header>
+-->
+<!-- 广告轮拨区 -->
+<section id="focus" class="focus">
+    <div class="hd">
+        <ul></ul>
+    </div>
+    <div class="bd">
+        <ul>
+            {foreach from=$cycle_ad item=ad}
+            <li><a href="{$ad.url}"><img _src="{$ad.img}" src="{$template_dir}images/blank.png" /></a></li>
+            {/foreach}
+        </ul>
+    </div>
+</section>
+<!-- 首页功能区 -->
+<ul class="index-nav">
+    <li><a href="ads.php?id=12"><i class="icon" style="background-color: #54b0e9;">&#xe62e;</i><span>健康管理</span></a></li>
+    <li><a href="ads.php?id=11"><i class="icon" style="background-color: #76bd3d;">&#xe62d;</i><span>商学院</span></a></li>
+    <li><a href="ads.php?id=13"><i class="icon" style="background-color: #f15a5a;">&#xe630;</i><span>名家护航</span></a></li>
+    {if $parent_mobile}
+    <li><a href="javascript:show_message_dialog('确定拨打电话<a href=\'tel://{$parent_mobile}\'>{$parent_mobile}</a>?如有疑问可另联系售后服务热线<a href=\'tel://4006358378\'>4006358378</a>。')"><i class="icon" style="background-color: #8d85ee;">&#xe62c;</i><span>联系掌门人</span></a></li>
+    {else}
+    <li><a href="javascript:show_message_dialog('确认拨打售后服务热线<a href=\'tel://4006358378\'>4006358378</a>吗？')"><i class="icon" style="background-color: #8d85ee;">&#xe62c;</i><span>联系掌门人</span></a></li>
+    {/if}
+    <li><a href="javascript:show_copartner();"><i class="icon" style="background-color: #ffb721;">&#xe62f;</i><span>合伙人入口</span></a></li>
+    <li><a href="ads.php?id=14"><i class="icon" style="background-color: #69c0f7;">&#xe606;</i><span>公益联盟</span></a></li><!-- CMS -->
+    <li><a href="ads.php?id=15"><i class="icon" style="background-color: #ffb221;">&#xe605;</i><span>美好人生VIP</span></a></li>
+    <li><a href="ads.php?id=16"><i class="icon" style="background-color: #ff5757;">&#xe631;</i><span>梦想新空间</span></a></li>
+</ul>
+<!-- 首页公告区 -->
+<section class="index-news clearfix">
+    <div class="index-news-l fl"></div>
+    <div id="myscroll" class="index-news-r fr">
+        <ul id="notice" class="news-title">
+            {foreach from=$notice item=n}
+            <li><a href="article_list.php?id=1">{$n.title}</a></li>
+            {/foreach}
+        </ul>
+    </div>
+</section>
+<!-- 首页视频介绍 -->
+<section class="index-video">
+    <div class="video-con">
+        <video controls="controls" style="width: 100%;" poster="{$template_dir}images/video_bg.png">
+            <source src="upload/video20151216.mp4?rand=6515" type="video/mp4"/>
+        </video>
+    </div>
+</section>
+
+<!-- 专区 -->
+{foreach from=$perform_ad item=ad}
+<section class="index-floor">
+    <div class="floor-con">
+        <a href="{$ad.url}"><img src="{$ad.img}" alt="{$ad.alt}"></a>
+    </div>
+</section>
+{/foreach}
+
+<header class="header">
+    <div class="logo">
+        <a href="#">圣宝先</a>
+    </div>
+    <div class="search_box">
+        <a href="#" >
+            <div class="search">
+                <form method="get" action="search.php">
+                    <div class="text_box">
+                        <input id="keyword" name="keyword" type="text" placeholder="搜索商品/店铺" class="keyword text" onkeydown="this.style.color='#404040'" autocomplete="off">
+                    </div>
+                    <input type="submit" value="" class="submit" sbs_name="搜索">
+                </form>
+            </div>
+        </a>
+    </div>
+    <div class="header_service">
+        <a href="#"><span class="icon">&#xe600;</span><em>客服</em></a>
+    </div>
+</header>
+<!-- 猜你喜欢 -->
+<section class="f-section might-like">
+    <h3>
+        <i class="icon">&#xe617;</i>猜你喜欢
+        <a href="javascript:change_fav();"><span class="icon">&#xe618;</span>&nbsp;换一批</a>
+    </h3>
+    <ul id="fav_list">
+        {foreach from=$fav_products item=p}
+        <li>
+            <a href="product.php?id={$p.id}">
+                <img src="{$p.img}" alt="{$p.name}">
+                <span>{$p.name|truncate:7:".."}</span>
+                <em>￥{$p.price}</em>
+            </a>
+        </li>
+        {/foreach}
+    </ul>
+</section>
+<div style="height:1rem; "></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a class="active" href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<div class="cd-popup" role="alert" id="alert-dialog">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();" id="dialog_close_btn">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog_cancel();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<style>
+{literal}
+.dialog-content {height: 12rem;}
+.dialog-header {background: #ffce28; height: 1rem; padding-top: 0.8rem;border-radius: .25rem}
+.dialog-body p{text-align: left}
+.dialog-footer {}
+.dialog-footer a {padding: 10px;background-color: #e60012;color: #ffffff}
+{/literal}
+</style>
+<div class="cd-popup" role="alert" id="tip-dialog" style="">
+    <div class="dialog-content cd-popup-container" style="display: block;">
+        <a href="javascript:close_message_dialog_cancel();" class="cd-popup-close img-replace" id="dialog_close">X</a>
+        <div class="dialog-header">
+            <h5>合伙人入口</h5>
+        </div>
+        <div class="dialog-body">
+            <p>
+                点击“精品专区”<br />
+                任选以下精品专区的一款产品确认支付<br />
+                即可成为平台合伙人
+            </p>
+        </div>
+        <div class="dialog-footer">
+            <a href="activity.php?id=4">精品专区</a>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+    });
+</script>
+<script type="text/javascript" src="{$template_dir}js/TouchSlide.1.1.js"></script>
+<script type="text/javascript">
+    TouchSlide({
+        slideCell:"#focus",
+        titCell:".hd ul", //开启自动分页 autoPage:true ，此时设置 titCell 为导航元素包裹层
+        mainCell:".bd ul",
+        effect:"left",
+        autoPlay:true,//自动拨放
+        autoPage:true, //自动分页
+        switchLoad:"_src" //切换加载，真实图片路径为"_src"
+    });
+</script>
+<script type="text/javascript" src="{$template_dir}js/scrolltext.js"></script>
+<script type="text/javascript">
+    var newsHeight = $(".index-news").height();
+    if(document.getElementById("notice")){
+        var scrollup = new ScrollText("notice");
+        scrollup.LineHeight =  (newsHeight ==120)?40:20;//单排文字滚动的高度
+        scrollup.Amount = 1;            //注意:子模块(LineHeight)一定要能整除Amount.
+        scrollup.Delay = 35;           //延时
+        scrollup.Start();             //文字自动滚动
+        scrollup.Direction = "down"; //文字向下滚动
+    }
+</script>
+<script type="text/javascript">
+    var page = 2;
+    function change_fav() {
+        var url = "data_center.php";
+        var data = { "opera":"get_fav", "page" : page, "count": 30 };
+        $.post(url, data, change_fav_handler, "json");
+    }
+
+    function change_fav_handler(response) {
+        if(response.error == 0) {
+            $("#fav_list").html(response.content);
+            page = response.page;
+        }
+    }
+    function show_message_dialog(message) {
+        $("#alert-dialog").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").empty();
+        $("#dialog-message").append(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $("#alert-dialog").removeClass("is-visible");
+        $("#message_dialog").hide();
+        var phone = $('#message_dialog').find('a:eq(0)').text();
+        window.location.href="tel://"+phone;
+    }
+
+    function close_message_dialog_cancel() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+        $('.dialog-content').hide();
+    }
+
+    function show_copartner() {
+        $('#tip-dialog').addClass('is-visible');
+        $('.dialog-content').show();
+    }
+
+</script>
+</body>
+</html>

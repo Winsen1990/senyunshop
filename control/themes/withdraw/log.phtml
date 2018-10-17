@@ -1,0 +1,137 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{if $type eq 0}会员-{else}商户-{/if}提现明细</h5>
+        <div class="pull-right">
+            <a href="withdraw.php?act=log&type=0" class="btn btn-primary">会员</a>
+            <a href="withdraw.php?act=log&type=1" class="btn btn-primary">商户</a>
+            <a href="withdraw.php" class="btn btn-primary">返回</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="" method="get" />
+        <fieldset>
+            <p>
+            <div class="pull-left">
+                显示
+                <select name="count" class="w75">
+                    <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                    <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                    <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                    <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                </select>
+                项结果
+            </div>
+            <div class="pull-right">
+                <label>起始日期：</label>
+                <input class="text-input w150" type="text" id="" name="st" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$st}">&nbsp;
+                <label>结束日期：</label>
+                <input class="text-input w150" type="text" id="" name="et" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$et}">&nbsp;
+                <button type="submit" class="btn btn-default">搜索</button>
+                <input type="hidden" name="type" value="{$type}"/>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+    <div class="withdraw-record">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>流水号</th>
+                <th>操作时间</th>
+                <th>是否到帐</th>
+                <th>操作员</th>
+                <th>备注</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$log_list item=log}
+            <tr>
+                <td>{$log.withdraw_sn}</td>
+                <td>{$log.add_time_str}</td>
+                <td>{$log.status_str}</td>
+                <td>{$log.operator}</td>
+                <td>{$log.remark}</td>
+            </tr>
+            {/foreach}
+            <tr>
+                <td colspan="5">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?act=log&page=1&st={$st}&count={$count}&et={$et}&type={$type}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&type={$type}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?act=log&page={$pageNum}&st={$st}&count={$count}&et={$et}&type={$type}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?act=log&page={$totalPage}&st={$st}&count={$count}&et={$et}&type={$type}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?act=log&page={$page + 1}&st={$st}&count={$count}&et={$et}&type={$type}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+
+<script type="text/javascript">
+    $(function() {
+        $('select[name=count]').change(function () {
+            var st = $('input[name=st]').val();
+            var et = $('input[name=et]').val();
+
+            var count = $(this).val();
+            var url = 'withdraw.php?act=log&type={$type}&count=' + count;
+            if( st ) {
+                url += '&st=' + st;
+            }
+            if( et ) {
+                url += '&et=' + et;
+            }
+            window.location.href = url;
+        });
+    });
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

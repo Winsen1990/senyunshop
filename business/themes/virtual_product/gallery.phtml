@@ -1,0 +1,120 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">产品相册</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="galleryForm" name="galleryForm" method="post">
+            <fieldset>
+                <p>
+                    <div style="padding-left: 80px;">
+
+                        {foreach from=$gallery_list item=gallery}
+                            <div class="pull-left" style="height: 262px;">
+                                <p class="clear" style="display: inline-block">
+                                    <input type="hidden" name="id[]" value="{$gallery.id}" />
+                                    <input type="hidden" name="img[]" class="image-value" placeholder="" value="../{$gallery.original_img}">
+                                    <img class="select-image" alt="" width="200" height="150" src="../{$gallery.original_img_src}">&nbsp;
+                                    <br/>
+                                    建议尺寸 300x300像素
+                                </p>
+                                <p>
+                                    <input class="text-input w180" type="text" name="order_view[]" placeholder="排序，默认50"  value="{$gallery.order_view}"/>
+                                </p>
+                                <p style="text-align: center">
+                                    {if $gallery.id neq ''}
+                                    <a href="virtual_product.php?act=del-gallery&id={$gallery.id}" onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" class="btn btn-primary">删除</a>
+                                    {/if}
+                                    {if $gallery.id eq ''}
+                                    <button class="btn btn-primary cancel-image" type="button" style="display:none">取消</button>
+                                    {/if}
+                                </p>
+                            </div>
+                        {/foreach}
+
+                    </div>
+                </p>
+            </fieldset>
+            <fieldset>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="gallery" />
+                    <input type="hidden" name="sn" value="{$product_sn}"/>
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<link href="../plugins/kindeditor/plugins/code/prettify.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+
+<script type="text/javascript">
+
+    $(function() {
+        $('.select-image').on('click', function() {
+            $('.select-image').removeClass('editing-image');
+            $(this).addClass('editing-image');
+            
+            $('.image-value').removeClass('editing-image-value');
+            $(this).prev().addClass('editing-image-value');
+        });
+
+        $('.cancel-image').on('click', function() {
+            var second = $(this).parent().prev();
+            var first = second.prev();
+            first.children('input').val('');
+            first.children('img').attr('src', '../upload/image/no-image.png');
+            second.children('input').val('');
+            $(this).css('display', 'none');
+        });
+
+    });
+
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 200 + 'px';
+                        }
+                        if( !height ) {
+                            height = 150 + 'px';
+                        }
+
+                        K('.editing-image-value').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.editing-image').attr('src', "../"+url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        $('.editing-image').parent().next().next().children('button').css('display', 'inline-block');
+                        editor.hideDialog();
+                    }
+                });
+            });
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

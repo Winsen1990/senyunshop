@@ -1,0 +1,67 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">申请提现</h5>
+        <h5 class="pull-left">账户余额：{$business.balance}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="withdrawForm" method="post" action="" onsubmit="return luhmCheck($('#bank_card').val())">
+            <fieldset>
+                <p>
+                    <label class="l-title">银行(具体开户行)：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="bank" name="bank" value="" placeholder="请填写具体开户行">
+                </p>
+                <p>
+                    <label class="l-title">收款人：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="bank_account" name="bank_account" value="" placeholder="必须是银行卡持有人">
+                </p>
+                <p>
+                    <label class="l-title">卡号：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="bank_card" name="bank_card" value="" placeholder="请填写银行卡号">
+                </p>
+                <p>
+                    <label class="l-title">金额：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="amount" name="amount" value="" placeholder="请填写提现金额" onblur="caculate_fee(this.value);">
+                </p>
+                <p>
+                    <label class="l-title">手续费：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="fee" name="fee" value="" placeholder="0.00" disabled="disabled">
+                </p>
+                <p>
+                    <label class="l-title">备注：</label>
+                    <textarea cols="50" rows="10" id="remark" name="remark" value="" placeholder="备注"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">提交</button>
+                    <input type="hidden" name="opera" value="withdraw" />
+                </p>
+            </fieldset>
+        </form>
+    </div>
+
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+<script type="text/javascript" src="js/finance/yhk.js"></script>
+<script type="text/javascript">
+    var fee_rate = {$config.fee_rate};
+    function caculate_fee(amount) {
+        amount = parseFloat(amount);
+
+        if(isNaN(amount) || amount <= 0) {
+            $("#amount").val(0);
+            alert("请填写正确的提现金额");
+            return false;
+        }
+
+        $("#fee").val((fee_rate*amount).toFixed(2));
+    }
+</script>
+</body>
+</html>

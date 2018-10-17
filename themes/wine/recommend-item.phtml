@@ -1,0 +1,23 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{if $article_list}
+<ul>
+{foreach from=$article_list item=article}
+<li>
+    <a href="article.php?id={$article.id}">
+        <img class="lazy" src="{$article.original}" data-original="{$article.original}" alt="{$article.title}">
+        <dl class="arrow">
+            <dt> {$article.title} </dt>
+            <dd style="color: #3c3c46"> {$article.last_modify} </dd>
+        </dl>
+    </a>
+</li>
+{/foreach}
+</ul>
+{else}
+<section class="empty">
+<div class="empty-con" style="font-size: 30px">
+    <span class="icon">&#xe624;</span>
+    <span class="empty-tips">暂无相应的软文!</span>
+</div>
+</section>
+{/if}

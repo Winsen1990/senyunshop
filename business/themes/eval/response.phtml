@@ -1,0 +1,52 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">回复评论</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="withdrawForm" method="post" action="" onsubmit="return luhmCheck($('#bank_card').val())">
+            <fieldset>
+                <p>
+                    <label class="l-title">评论：</label>
+                    <textarea name="comment" cols="100" rows="6" disabled="disabled">{$comment.comment}</textarea>
+                </p>
+                    <label class="l-title">回复：</label>
+                    <textarea cols="100" rows="6" name="response">{$comment.response}</textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">提交</button>
+                    <input type="hidden" name="opera" value="response" />
+                    <input type="hidden" name="id" value="{$comment.id}" />
+                </p>
+            </fieldset>
+        </form>
+    </div>
+
+</div>
+<!-- END content -->
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<link rel="stylesheet" href="../plugins/kindeditor/themes/default/default.css" />
+<script charset="utf-8" src="../plugins/kindeditor/lang/zh_CN.js"></script>
+<script>
+    var editor;
+    KindEditor.ready(function(K) {
+        editor = K.create('textarea[name="response"]', {
+            resizeType : 1,
+            allowPreviewEmoticons : false,
+            width:"64%",
+            items : [
+                'emoticons', 'link']
+        });
+    });
+</script>
+
+
+{include file="library/footer.lbi"}
+</body>
+</html>

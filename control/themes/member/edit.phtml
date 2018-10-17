@@ -1,0 +1,54 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑会员-{$member.account}</h5>
+        <!--        <div class="pull-right"><a class="btn btn-primary" href="?act=passwd">修改密码</a></div>-->
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="memberEditForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="real_name" name="real_name" value="{$member.real_name}" />
+                </p>
+                <p>
+                    <label class="l-title">手机：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="mobile" name="mobile" value="{$member.mobile}" />
+                </p>
+                <p>
+                    <label class="l-title">佣金：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="reward" name="reward" value="{$member.reward}" />
+                </p>
+                <p>
+                    <label class="l-title">积分：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="integral" name="integral" value="{$member.integral}" />
+                </p>
+                <p>
+                    <label class="l-title">等级：</label>
+                    <select name="level_id" class="w150">
+                        <option value="0" {if $member.level_id eq 0}selected="selected"{/if}>普通会员</option>
+                        <option value="1" {if $member.level_id eq 1}selected="selected"{/if}>商业会员</option>
+                        <option value="2" {if $member.level_id eq 2}selected="selected"{/if}>招商会员</option>
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>
+                    <a class="btn btn-primary" href="member.php">返回</a>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="account" value="{$member.account}" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

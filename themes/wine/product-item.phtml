@@ -1,0 +1,15 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$product_list item=p}
+<li>
+    <a href="product.php?id={$p.id}">
+        <img src="{$p.img}" alt="{$p.name}">
+        <span>{$p.name|truncate:7:".."}</span>
+        <em>￥{$p.price}</em>
+        {if $p.given_integral gt 0}
+        <em>送{$p.given_integral|string_format:'%.2f'}积分</em>
+        {else}
+        <em style="display: block">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</em>
+        {/if}
+    </a>
+</li>
+{/foreach}

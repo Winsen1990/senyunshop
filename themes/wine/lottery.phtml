@@ -1,0 +1,192 @@
+{extends file="template.phtml"}
+{block name="header"}
+<link href="{$template_dir}css/lottery.css" type="text/css" rel="stylesheet"/>
+{/block}
+
+{block name="content"}
+<section class="lottery-bg">
+    <div class="lottery-wrapper">
+        <div class="lottery-box">
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <div class="lottery-gift-item">
+                <img src="http://m.wjnwh.com/upload/image/B179079/20170927/20170927034524_65468.jpg"/>
+                <p>舞娇娘</p>
+                <div class="mask-on"></div>
+            </div>
+            <a class="lottery-button" href="javascript:void(0);">
+                开始抽奖
+            </a>
+        </div>
+    </div>
+
+    <div class="lottery-warning">
+        活动时间：2017-12-8 ~ 2017-12-15<br/>
+        活动规则：<br/>
+        1. 所有实物奖品请动动手指填写一下收货信息，我们将于活动结束后2日内统一安排配送；<br/>
+        2. 积分可用于购买舞娇娘健康俱乐部商城中的任何商品，1积分=1元；<br/>
+        3. 关注公众号实时关注奖品的发货状态，且可额外获赠10积分；<br/>
+        4. 本次活动的最终解释权归广东舞娇娘文化传播有限公司所有
+    </div>
+</section>
+<section class="qr-code">
+    <img src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=gQGi8DwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyZGhuTVFOakpkRjExZG9xTWhxMUsAAgTYnydaAwSAOgkA"/>
+</section>
+{/block}
+
+{block name="script"}
+{literal}
+<script type="text/javascript">
+    var gift_list = [
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0},
+        {name: '舞娇娘', unit: '瓶', number: '1', 'is_virtual' : 0}
+    ];
+
+    $(function () {
+       $('.lottery-button').bind('click', function () {
+           if($(this).hasClass('on')) {
+               return false;
+           } else {
+               $(this).addClass('on');
+               lottery();
+           }
+       })
+    });
+
+    var timeout;
+    var seq = [0, 1, 2, 5, 8, 7, 6, 3];
+    var delay = 1000;
+    var max_delay = 1000, min_delay = 100;
+    var speed_up = (max_delay - min_delay)/6;
+    var start = parseInt(Math.random() * seq.length - 1);
+
+    function lottery() {
+        console.info('call lottery');
+        start = Math.min(start, seq.length - 1);
+
+        move(start, delay);
+
+        setTimeout(function () {
+            stop(0);
+        }, 10000);
+    }
+
+    function move(cursor, next_delay) {
+        var from = seq[cursor++];
+        cursor = cursor%seq.length;
+        var to = seq[cursor];
+        var delay = next_delay;
+        start = cursor;
+
+        if(next_delay >= max_delay) {
+            speed_up *= -1;
+        }
+
+        if(next_delay > min_delay) {
+            next_delay += speed_up;
+        }
+
+
+
+        document.querySelectorAll('.lottery-gift-item')[from].classList.remove('on');
+        document.querySelectorAll('.lottery-gift-item')[to].classList.add('on');
+
+        timeout = setTimeout(function() {
+            move(cursor, next_delay);
+        }, delay)
+    }
+
+    function move_to_target(cursor, target, next_delay) {
+        var from = seq[cursor++];
+        cursor = cursor%seq.length;
+        var to = seq[cursor];
+        var delay = next_delay;
+        start = cursor;
+
+        if(next_delay <= min_delay) {
+            speed_up *= -1;
+        }
+
+        if(next_delay < max_delay) {
+            next_delay += speed_up;
+        }
+
+        document.querySelectorAll('.lottery-gift-item')[from].classList.remove('on');
+        document.querySelectorAll('.lottery-gift-item')[to].classList.add('on');
+
+        if(cursor !== target || next_delay < max_delay) {
+            timeout = setTimeout(function () {
+                move_to_target(cursor, target, next_delay);
+            }, delay)
+        } else {
+            $('.lottery-button').removeClass('on');
+            get_lottery_reward(target);
+        }
+    }
+
+    function stop(target) {
+        clearTimeout(timeout);
+
+        speed_up = -1* (max_delay - min_delay)/12;
+        move_to_target(start, target, min_delay);
+    }
+
+    function get_lottery_reward(target) {
+        var gift = gift_list[target];
+
+        var message = '恭喜您获得: ' + gift.name + gift.number + gift.unit;
+
+        if(!gift.is_virtual) {
+            message += ',请留下您的收货地址方便我们发货给您';
+        }
+        alert(message);
+
+        document.querySelector('.qr-code').style.display = 'block';
+        alert('兑奖成功，我们将尽快发货。动动手指关注我们公众号，实时为您提供奖品的物流情况，还可获赠10积分噢！');
+    }
+</script>
+{/literal}
+{/block}

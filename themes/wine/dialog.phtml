@@ -1,0 +1,120 @@
+<div class="cd-popup" role="alert" id="dialog-mask" style="display: none;">
+    <div class="cd-popup-container" id="popup-confirm-dialog" style="display: none;">
+        <p id="popup-confirm-dialog-content"></p>
+        <ul class="cd-buttons">
+            <li><a id="popup-cancel-btn" href="javascript:void(0);">确定</a></li>
+            <li><a id="popup-confirm-btn" href="javascript:void(0);">取消</a></li>
+        </ul>
+        <a href="javascript:void(0);" class="cd-popup-close img-replace" id="popup-close-btn">X</a>
+    </div>
+
+    <div class="cd-popup-container" id="popup-message-dialog" style="display: none;">
+        <p id="popup-message-dialog-content"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button">
+                <a id="popup-confirm-message-btn" href="javascript:void(0);">确认</a>
+            </li>
+        </ul>
+        <a href="javascript:void(0);" id="popup-message-close-btn" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar" id="popup-processor">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function popup_confirm(message, onConfirm, onCancel, confirmText, cancelText) {
+        message = message || '';
+        confirmText = confirmText || '确定';
+        cancelText = cancelText || '取消';
+
+        var dialog = document.getElementById('popup-confirm-dialog');
+        var mask = document.getElementById('dialog-mask');
+        mask.style.display = 'block';
+        mask.style.visibility = 'visible';
+
+        dialog.style.display = 'block';
+
+        document.getElementById('popup-confirm-dialog-content').innerHTML = message;
+        document.getElementById('popup-confirm-btn').innerText = confirmText;
+        document.getElementById('popup-cancel-btn').innerText = cancelText;
+
+        document.getElementById('popup-confirm-btn').onclick = function () {
+            dialog.style.display = 'none';
+            mask.style.display = 'none';
+
+            if(typeof onConfirm === 'function') {
+                onConfirm.apply(this);
+            }
+        };
+
+        document.getElementById('popup-cancel-btn').onclick = function () {
+            dialog.style.display = 'none';
+            mask.style.display = 'none';
+
+            if(typeof onCancel === 'function') {
+                onCancel.apply(this);
+            }
+        };
+
+        document.getElementById('popup-close-btn').onclick = function () {
+            dialog.style.display = 'none';
+            mask.style.display = 'none';
+
+            if(typeof onCancel === 'function') {
+                onCancel.apply(this);
+            }
+        };
+    }
+
+    function popup_message(message, onConfirm, confirmText, onCancel) {
+        confirmText = confirmText || '确认';
+        message = message || '';
+
+        var dialog = document.getElementById('popup-message-dialog');
+        var mask = document.getElementById('dialog-mask');
+        mask.style.display = 'block';
+        mask.style.visibility = 'visible';
+
+        dialog.style.display = 'block';
+
+        document.getElementById('popup-message-dialog-content').innerHTML = message;
+        document.getElementById('popup-confirm-message-btn').innerText = confirmText;
+
+        document.getElementById('popup-confirm-message-btn').onclick = function () {
+            dialog.style.display = 'none';
+            mask.style.display = 'none';
+
+            if(typeof onConfirm === 'function') {
+                onConfirm.apply(this);
+            }
+        };
+
+        document.getElementById('popup-message-close-btn').onclick = function () {
+            dialog.style.display = 'none';
+            mask.style.display = 'none';
+
+            if(typeof onCancel === 'function') {
+                onCancel.apply(this);
+            }
+        };
+    }
+
+    function popup_progressor(operation) {
+        operation = operation || 'show';
+
+        var dialog = document.getElementById('popup-processor');
+        var mask = document.getElementById('dialog-mask');
+        if(operation === 'show') {
+            mask.style.display = 'block';
+            mask.style.visibility = 'visible';
+
+            dialog.style.display = 'block';
+            dialog.style.visibility = 'visible';
+        } else {
+            mask.style.display = 'none';
+            dialog.style.display = 'none';
+        }
+    }
+</script>

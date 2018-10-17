@@ -1,0 +1,235 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+<script type="text/javascript" >
+    var virtual_contents = {$virtual_contents};
+</script>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑虚拟产品</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="productEditForm" name="productEditForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">产品编号：</label>
+                    <input disabled="disabled" class="text-input w300" type="text" id="product_sn" name="product_sn" placeholder="请输入产品编号" value="{$product.product_sn}">
+                </p>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入产品名称" value="{$product.name}">
+                </p>
+                <p class="clear">
+                    <label class="l-title">产品分类：</label>
+                    <select name="category" class="w150">
+                        <option value="0">|--请选择--|</option>
+                        {foreach from=$category_list item=category}
+                        <option value="{$category.id}" {if $category.id eq $product.category_id}selected="selected"{/if}>{$category.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <!--
+                <p class="clear">
+                    <label class="l-title">消费内容：</label>
+                    <input style="cursor: pointer;" class="text-input" type="button" id="add-content" value="增加消费内容" />
+                </p>
+                -->
+                <p class="clear" id="show-content">
+                </p>
+                <p class="clear">
+                    <label class="l-title">库存：</label>
+                    <input class="text-input w150" type="text" id="inventory" name="single_inventory" placeholder="请输入产品库存" value="{$inventory}"/>
+                </p>
+                <p>
+                    <label class="l-title">购买积分：</label>
+                    <input class="text-input w150" type="number" name="integral" placeholder="购买积分" value="0">
+                    <span class="error-input">-若购买积分不为0，发布的将是积分产品</span>
+                </p>
+                <p class="price">
+                    <label class="l-title">售价：</label>
+                    <input class="text-input w150 price-input" type="text" id="price" name="price" placeholder="请输入售价" value="{$product.price}">
+                </p>
+                <p class="price">
+                    <label class="l-title">市场价：</label>
+                    <input class="text-input w150 price-input" type="text" id="shop_price" name="shop_price" placeholder="请输入市场价" value="{$product.shop_price}">
+                </p>
+                <p class="price">
+                    <label class="l-title">最低售价：</label>
+                    <input class="text-input w150 price-input" type="text" name="lowest_price" placeholder="请输入最低销售价" value="{$product.lowest_price}">
+                </p>
+                <p>
+                    <label class="l-title">产品图片：</label>
+                    <input type="hidden" name="img" id="img" placeholder="" value="{$product.img}">
+                    {if $product.img}
+                    <img class="select-image" alt="" width="200" height="200" src="../{$product.img_src}">&nbsp;
+                    {else}
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" height="200px">&nbsp;
+                    {/if}
+                    <br/>
+                    <label class="l-title"></label>
+                    建议尺寸 300x300像素
+                </p>
+                <p>
+                    <label class="l-title">产品简介：</label>
+                    <textarea name="desc" rows="5" cols="93">{$product.desc}</textarea>
+                </p>
+                <p>
+                    <label class="l-title">产品详情：</label>
+                    <textarea name="detail">{$product.detail}</textarea>
+                </p>
+                <p class="price">
+                    <label class="l-title">促销价：</label>
+                    <input class="text-input w150 price-input" type="text" name="promote_price" placeholder="促销价" value="{$product.promote_price}">
+                </p>
+                <p>
+                    <label class="l-title">开始时间：</label>
+                    <input class="text-input w300" type="text" name="promote_begin" placeholder="促销开始时间" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"{/literal}  value="{$product.promote_begin}"/>
+                </p>
+                <p>
+                    <label class="l-title">结束时间：</label>
+                    <input class="text-input w300" type="text" name="promote_end" placeholder="促销结束时间" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"{/literal}  value="{$product.promote_end}">
+                </p>
+                <p>
+                    <label class="l-title">产品排序：</label>
+                    <input class="text-input w150" type="text" name="order_view" placeholder="" value="{$product.order_view}">
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="id" value="{$product.id}"/>
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+<!-- kindeditor编辑器 -->
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor1 = K.create("textarea[name='detail']", {
+            height: '400px',
+            width: '60%',
+            cssPath: '../plugins/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php',
+            allowFileManager: true,
+            afterCreate: function () {
+                var self = this;
+                K.ctrl(document, 13, function () {
+                    self.sync();
+                    K('form[name=productEditForm]')[0].submit();
+                });
+                K.ctrl(self.edit.doc, 13, function () {
+                    self.sync();
+                    K('form[name=productEditForm]')[0].submit();
+                });
+            }
+        });
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 200 + 'px';
+                        }
+                        if( !height ) {
+                            height = 200 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.select-image').attr('src', "../"+url.replace("{$smarty.const.BASE_DIR}", ""));
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=300&height=300');
+        });
+    });
+</script>
+<script type="text/javascript">
+    $(function() {
+        $('input[name=integral]').change(function() {
+
+            if( $(this).val() == '' ) {
+                $(this).val(0);
+                return;
+            }
+
+            if( parseInt($(this).val()) < 0 ) {
+                $(this).val(0);
+                return;
+            }
+            if( parseInt($(this).val()) > 0 ) {
+                $('.price').slideUp();
+                $('.price-input').attr('disabled', 'disabled');
+            }
+            if( parseInt($(this).val()) == 0 ) {
+                $('.price').slideDown();
+                $('.price-input').removeAttr('disabled');
+                return;
+            }
+        });
+
+        $('input[name=integral]').blur(function() {
+            if( $(this).val() == '' ) {
+                $(this).val(0);
+                return;
+            }
+
+            if( parseInt($(this).val()) < 0 ) {
+                $(this).val(0);
+                return;
+            }
+            if( parseInt($(this).val()) > 0 ) {
+                $('.price').slideUp();
+                $('.price-input').attr('disabled', 'disabled');
+                return;
+            }
+            if( parseInt($(this).val()) == 0 ) {
+                $('.price').slideDown();
+                $('.price-input').removeAttr('disabled');
+                return;
+            }
+
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

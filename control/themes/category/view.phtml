@@ -1,0 +1,88 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+{literal}
+    .hidden {
+        display: none;
+    }
+{/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">分类列表</h5>
+        <div class="pull-right">
+            <a href="?act=add" class="btn btn-primary">添加分类</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>分类名称</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $category_list}
+            {foreach from=$category_list item=category}
+            <tr id="cate-{$category.id}" class="cate {if $category.parent_id eq 0}displaying{else}hidden children-{$category.parent_id}{/if}" data-id="{$category.id}" data-count="{$category.count}">
+                <td class="cate-name" style="cursor: pointer;">
+                    {$category.prefix}<img src="../{$category.icon}" width="120px"/><br />
+                    {$category.prefix}<span style="text-align: center; width: 120px; display: inline-block">{if $category.count neq 0}<span id="icon-{$category.id}">[+]</span>{/if}{$category.name}</span>
+                </td>
+                <td class="text-right"><a href="?act=edit&id={$category.id}">编辑</a> | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$category.id}">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="2" align="center">您还没有主营分类，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加栏目！</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+{literal}
+$(function() {
+    $('.cate td:first-child').click(function(e) {
+        e.preventDefault();
+        var parent_id = $(this).parent().attr('data-id');
+        $('#icon-' + parent_id).text('[-]');
+        if( $('.children-' + parent_id).first().is(':visible') ) {
+            hide_children(parent_id);
+        } else {
+            $('.children-' + parent_id).removeClass('hidden');
+            $('.children-' + parent_id).each(function() {
+                var id = $(this).attr('data-id');
+//
+            })
+        }
+    });
+
+    function hide_children(id) {
+        if( $('.children-' + id).length == 0 ) {
+            return;
+        }
+        $('#icon-' + id).text('[+]');
+        $('.children-' + id).addClass('hidden');
+        $('.children-' + id).each(function() {
+            var parent_id = $(this).attr('data-id');
+            hide_children(parent_id);
+        });
+
+
+    }
+
+});
+
+{/literal}
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

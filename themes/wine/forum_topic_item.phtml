@@ -1,0 +1,9 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$topic_list item=topic}
+<div class="article-list-item">
+    <a href="forum.php?act=list&id={$topic.id}">
+        <img src="{if $topic.img}./{$topic.img}{else}{$template_dir}image/bg_pic.png{/if}"/>
+        <p class="clearfix">{$topic.name|truncate:8:'...'}</p>
+    </a>
+</div>
+{/foreach}

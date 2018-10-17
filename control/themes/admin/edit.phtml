@@ -1,0 +1,60 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">编辑管理员</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="adminForm" name="adminForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">账号：</label>
+                    <input class="text-input w300" type="text" id="userName" name="userName" placeholder="请输入账号" minlength="2" maxlength="32" value="{$admin.account}" disabled="disabled" />
+                </p>
+                <p>
+                    <label class="l-title">密码：</label>
+                    <input class="text-input w300" type="password" id="password" name="passwordNoRequired" placeholder="请输入密码" minlength="5">
+                </p>
+                <p>
+                    <label class="l-title">昵称：</label>
+                    <input class="text-input w300" type="text" id="screenName" name="screenName" placeholder="请输入昵称" value="{$admin.name}">
+                </p>
+                <p class="clear">
+                    <label class="l-title">性别：</label>
+                    <input type="radio" name="sex" value="M" {if $admin.sex eq 'M'}checked="checked"{/if}> <em>男</em> &nbsp;
+                    <input type="radio" name="sex" value="F" {if $admin.sex eq 'F'}checked="checked"{/if}> <em>女</em>
+                </p>
+                <p class="clear">
+                    <label class="l-title">用户组：</label>
+                    <select name="roleId" class="w150">
+                        {foreach from=$roleList item=role}
+                        <option value="{$role.id}" {if $admin.role_id eq $role.id}selected="selected"{/if}>{$role.name}</option>
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title">邮箱：</label>
+                    <input class="text-input w300" type="text" id="small-input" name="email" placeholder="请输入邮箱" value="{$admin.email}" />
+                </p>
+<!--                <p>-->
+<!--                    <label class="l-title">手机号码：</label>-->
+<!--                    <input class="text-input w300" type="text" id="phone" maxlength="11" name="phone" placeholder="请输入手机号码" value="{$admin.mobile}" />-->
+<!--                </p>-->
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="current-account" value="{$admin.account}" />
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="admin.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

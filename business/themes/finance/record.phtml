@@ -1,0 +1,81 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">提现记录</h5>
+        <h5 class="pull-left">账户余额：{$business.balance}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=withdraw">申请提现</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="withdraw-record">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>流水号</th>
+                <th>银行帐号</th>
+                <th>金额</th>
+                <th>手续费</th>
+                <th>是否到帐</th>
+                <th>申请时间</th>
+                <th>备注</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$withdraw_list item=withdraw}
+            <tr>
+                <td>{$withdraw.withdraw_sn}</td>
+                <td>{$withdraw.bank}<br />{$withdraw.bank_card}<br />{$withdraw.bank_account}</td>
+                <td>{$withdraw.amount}</td>
+                <td>{$withdraw.fee}</td>
+                <td>{$withdraw.status_str}</td>
+                <td>{$withdraw.add_time_str}</td>
+                <td>{$withdraw.remark}</td>
+            </tr>
+            {/foreach}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

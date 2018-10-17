@@ -1,0 +1,226 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加资讯</h5>
+        <div class="clear"></div>
+    </div>
+    <form method="post" name="articleAddForm">
+        <div class="addArticleMain">
+            <div class="addArticleMainL pull-left">
+                <fieldset>
+                    <p>
+                        <input class="text-input w-90" type="text" id="small-input" name="title" placeholder="请输入资讯标题">
+                    </p>
+                    <h5>PC端内容：</h5>
+                    <p>
+                        <script id="pc_content" name="content" type="text/plain" class="rn w-90" style="height: 400px;"></script>
+                    </p>
+                    <h5>手机端内容：</h5>
+                    <p>
+                        <script id="wap_content" name="wap_content" type="text/plain" class="rn w-90" style="height: 400px;"></script>
+                    </p>
+                    <p>
+                        <input type="hidden" name="opera" value="add" />
+                        <button class="btn btn-primary" >提交</button> &nbsp;<a href="content.php" class="btn btn-primary">返回</a>
+                    </p>
+            </div>
+            <div class="addArticleMainR pull-left">
+                <fieldset>
+                    <h5>默认设置</h5>
+                    <p>
+                        <span>作者：</span>
+                        <input class="text-input w-100" type="text" id="small-input" name="author" value="{$defaultAuthor}" />
+                    </p>
+                    <p>
+                        <span>排序(升序)：</span>
+                        <input class="text-input w-100" type="text" id="small-input" name="order-view" value="50" />
+                    </p>
+                    <p>
+                        <span>原文连接：</span>
+                        <input class="text-input w-100" type="text" id="small-input" name="original-url" placeholder="原创文章请留空" />
+                    </p>
+                    <p class="clear">
+                        <span>自动发布：</span>
+                        <input type="radio" name="isAutoPublish" value="1"> <em>是</em> &nbsp;
+                        <input type="radio" name="isAutoPublish" value="0" checked="checked"> <em>否</em>
+                    </p>
+                    <p class="clear" style="display:none">
+                        <span>发布时间：</span>
+                        <input class="text-input w-100" placeholder="请输入日期" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"{/literal} name="publishTime">
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <h5>SEO</h5>
+                    <p>
+                        <span>关键词：</span>
+                        <input class="text-input w-100" type="text" id="small-input" name="keywords"  placeholder='多个关键字以英文逗号","隔开'>
+                    </p>
+                    <p>
+                        <span>描述：</span>
+                        <textarea class="rn w-100" rows="5" name="description"></textarea>
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <h5>资讯分类</h5>
+                    <p>
+                        <select name="articleCatId" class="w-100">
+                            {foreach from=$sectionList item=section}
+                            <option value="{$section.id}">{$section.name}</option>
+                            {/foreach}
+                        </select>
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <h5>封面设置</h5>
+                    <p>
+                        <input type="button" class="text-input" id="select-image" value="请选择资讯封面" style="cursor:pointer">
+                        <input type="hidden" name="img" id="img" value="" />
+                        <p class="clear"></p>
+                        <img src="../upload/image/no-image.png" id="show-image" width="120" height="120" style="" />
+                        <br />
+                        <span class="error-input" id="img-notice">80*80，图片大小不要超过100k</span>
+                    </p>
+                </fieldset>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </form>
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+<!-- UEditor编辑器 -->
+<!-- 秀米插件 -->
+<script type="text/javascript" src="../plugins/UEditor/ueditor.config.min.js"></script>
+<script type="text/javascript" src="../plugins/UEditor/ueditor.all.min.js"></script>
+<script type="text/javascript">
+    UE.registerUI('dialog', function (editor, uiName) {
+        var btn = new UE.ui.Button({
+            name   : 'xiumi-connect',
+            title  : '秀米',
+            onclick: function () {
+                var dialog = new UE.ui.Dialog({
+                    iframeUrl: '../plugins/UEditor/dialogs/xiumi/xiumi-ue-dialog-v5.html',
+                    editor   : editor,
+                    name     : 'xiumi-connect',
+                    title    : "秀米图文消息助手",
+                    cssRules : "width: " + (window.innerWidth - 60) + "px;" + "height: " + (window.innerHeight - 60) + "px;",
+                });
+                dialog.render();
+                dialog.open();
+            }
+        });
+
+        return btn;
+    });
+</script>
+<link rel="stylesheet" type="text/css" href="../plugins/UEditor/dialogs/xiumi/xiumi-ue-v5.css"/>
+<script type="text/javascript">
+    var wap_editor = UE.getEditor('wap_content');
+    var pc_editor = UE.getEditor('pc_content');
+</script>
+<!-- UEditor编辑器 end -->
+<!-- kindeditor编辑器 -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        /*
+        var editor1 = K.create("textarea[name='content']", {
+            height: '400px',
+            width: '93%',
+            cssPath: '../plugins/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php',
+            allowFileManager: true,
+            afterCreate: function () {
+                var self = this;
+                K.ctrl(document, 13, function () {
+                    self.sync();
+                    K('form[name=articleAddForm]')[0].submit();
+                });
+                K.ctrl(self.edit.doc, 13, function () {
+                    self.sync();
+                    K('form[name=articleAddForm]')[0].submit();
+                });
+            }
+        });
+
+        var editor2 = K.create("textarea[name='wap_content']", {
+            height: '400px',
+            width: '93%',
+            cssPath: '../plugins/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php',
+            allowFileManager: true,
+            afterCreate: function () {
+                var self = this;
+                K.ctrl(document, 13, function () {
+                    self.sync();
+                    K('form[name=articleAddForm]')[0].submit();
+                });
+                K.ctrl(self.edit.doc, 13, function () {
+                    self.sync();
+                    K('form[name=articleAddForm]')[0].submit();
+                });
+            }
+        });
+        */
+
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('#select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 120 + 'px';
+                        }
+                        if( !height ) {
+                            height = 120 + 'px';
+                        }
+
+                        K('#img').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('#show-image').attr('src', url);
+                        K('#show-image').css('display', 'block');
+                        K('#show-image').attr('width', width);
+                        K('#show-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=80&height=80');
+        });
+    });
+    $('input[name=isAutoPublish]').click(function(){
+        console.log($(this).is(':checked'));
+        if( $(this).val() == 1 ) {
+            $(this).parent().next().slideDown()
+        } else {
+            $(this).parent().next().slideUp();
+        }
+    });
+</script>
+<!-- END kindeditor编辑器 -->
+{include file="library/footer.lbi"}
+</body>
+</html>

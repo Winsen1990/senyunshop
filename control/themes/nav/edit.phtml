@@ -1,0 +1,84 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加导航条</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="nav-main">
+        <form id="navForm" name="navAddForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">菜单名称：</label>
+                    <input class="text-input w300" type="text" id="menuName" name="menuName" placeholder="请输入菜单名称" maxlength="32" value="{$nav.name}">
+                </p>
+                <p>
+                    <label class="l-title">URL：</label>
+                    <input class="text-input w300" type="text" id="menuUrl" name="menuUrl" placeholder="请输入菜单链接" value="{$nav.url}">
+                </p>
+                <p>
+                    <label class="l-title">排序：</label>
+                    <input class="text-input w300" type="text" id="menuSort" name="menuSort" value="{$nav.order_view}">
+                </p>
+                <p>
+                    <label class="l-title">位置：</label>
+                    <select name="position" class="w150">
+                        <option value="top" {if $nav.position eq 'top'}selected="selected"{/if}>顶部</option>
+                        <option value="middle" {if $nav.position eq 'middle'}selected="selected"{/if}>中部</option>
+                        <option value="bottom" {if $nav.position eq 'bottom'}selected="selected"{/if}>底部</option>
+                    </select>
+                </p>
+<!--                <p class="clear">-->
+<!--                    <label class="l-title">新窗口打开：</label>-->
+<!--                    <input type="radio" name="isOpenNew" value="1" {if $nav.isOpenNew eq 1}checked="checked"{/if}> <em>是</em> &nbsp;-->
+<!--                    <input type="radio" name="isOpenNew" value="0" {if $nav.isOpenNew eq 0}checked="checked"{/if}> <em>否</em>-->
+<!--                </p>-->
+<!--                <p class="clear">-->
+<!--                    <label class="l-title">是否显示：</label>-->
+<!--                    <input type="radio" name="isShow" value="1" {if $nav.isShow eq 1}checked="checked"{/if}> <em>是</em> &nbsp;-->
+<!--                    <input type="radio" name="isShow" value="0" {if $nav.isShow eq 0}checked="checked"{/if}> <em>否</em>-->
+<!--                </p>-->
+                <p class="clear">
+                    <label class="l-title">父级导航栏：</label>
+                    <select name="parentId" class="w150">
+                        <option value="0">顶级导航栏</option>
+                        {foreach from=$navs item=n}
+                        {if $nav.position eq $n.position}
+                        <option value="{$n.id}" {if $nav.parent_id eq $n.id}selected="selected"{/if}>{$n.name}</option>
+                        {/if}
+                        {/foreach}
+                    </select>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="edit"/>
+                    <input type="hidden" name="id" value="{$nav.id}">
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;<a href="nav.php" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+{include file="library/footer.lbi"}
+<script type="text/javascript">
+    $(function(){
+        var navs = {$navs_str};
+        $('select[name=position]').change(function() {
+            var value = $(this).val();
+            $('select[name=parentId]').empty();
+            var option = '<option value="0">顶级导航栏</option>';
+            $('select[name=parentId]').append(option);
+            for(var key in navs){
+                if( navs[key]['position'] == value ) {
+                    option = '<option value="' + navs[key]['id'] + '">' + navs[key]['name'] + '</option>';
+                    $('select[name=parentId]').append(option);
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

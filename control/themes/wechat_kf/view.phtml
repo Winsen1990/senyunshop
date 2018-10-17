@@ -1,0 +1,57 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">微信客服管理</h5>
+        <div class="pull-right">
+            <a href="?act=add" class="btn-primary btn">添加客服</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>客服账号</th>
+                <th>客服昵称</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if count($kf_list) neq 0}
+            {foreach from=$kf_list item=kf}
+            <tr>
+                <td>{$kf.kf_account}</td>
+                <td>{$kf.nickname}</td>
+                <td>
+                    <a href="?act=edit&id={$kf.id}">
+                    编辑
+                    </a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="4" align="center">
+                    尚未定义客服
+                </td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

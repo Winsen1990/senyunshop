@@ -1,0 +1,103 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="sysconf-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>系统参数</th>
+                <th>值</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$sysconf item=conf}
+            <form id="sysconfForm" name="sysconfForm" method="post">
+                <tr>
+                    <td>{$conf.name}</td>
+                    {if $conf.type eq 'text'}
+                    <td>
+                        <input class="text-input w300" type="{$conf.type}" id="siteName" name="value" value="{$conf.value}">
+                    </td>
+                    {/if}
+                    {if $conf.type eq 'img'}
+                    <td>
+                        <input class="text-input" style="cursor: pointer;" type="button" id="select-image-{$conf.key}" value="请选择图片"/>
+                        <input type="hidden" name="value" id="{$conf.key}" value="{$conf.value}" />
+                        <br /><img {if $conf.value eq ''}style="display: none"{/if} id="show-image-{$conf.key}" src="{$conf.value}" alt="{$conf.name}" />
+                        <script type="text/javascript">
+                            KindEditor.ready(function(K)
+                            {
+                                var editor = K.editor({
+                                    allowFileManager : true,
+                                    uploadJson : '../plugins/kindeditor/upload_json.php',
+                                    fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
+                                });
+                                K('#select-image-{$conf.key}').click(function() {
+                                    editor.loadPlugin('image', function() {
+                                        editor.plugin.imageDialog({
+                                            imageUrl : '',
+                                            clickFn : function(url, title, width, height, border, align) {
+                                                if( !width ) {
+                                                    width = 187 + 'px';
+                                                }
+                                                if( !height ) {
+                                                    height = 140 + 'px';
+                                                }
+
+                                                K('#{$conf.key}').val(url);
+                                                K('#show-image-{$conf.key}').attr('src', url);
+                                                K('#show-image-{$conf.key}').css('display', 'block');
+                                                editor.hideDialog();
+                                            }
+                                        });
+                                    });
+                                });
+//    prettyPrint();
+                            });
+                        </script>
+                    </td>
+                    {/if}
+                    {if $conf.type eq 'radio'}
+                    <td class="clear">
+                        <input type="radio" name="value" value="1" {if $conf.value eq 1}checked="checked"{/if}> <em>是</em> &nbsp;
+                        <input type="radio" name="value" value="0" {if $conf.value eq 0}checked="checked"{/if}> <em>否</em>
+                    </td>
+                    {/if}
+                    {if $conf.type eq 'textarea'}
+                    <td>
+                        <textarea rows="5" class="rn w-60" name="value">{$conf.value}</textarea>
+                    </td>
+                    {/if}
+                    <td>{$conf.remark}</td>
+                    <td><button class="btn btn-primary" type="submit">保存</button></td>
+                    <input type="hidden" name="opera" value="edit" />
+                    <input type="hidden" name="key" value="{$conf.key}" />
+                    <input type="hidden" name="type" value="{$conf.type}" />
+                </tr>
+            </form>
+            {/foreach}
+            <!--                <tr>-->
+            <!--                    <td  colspan="3"><button class="btn btn-primary" type="submit">保存设置</button></td>-->
+            <!--                </tr>-->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

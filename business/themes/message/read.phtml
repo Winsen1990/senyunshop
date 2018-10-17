@@ -1,0 +1,93 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .b-l-ico{*display:inline;float:left;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;width:80px;height:22px;background-color:#5b9fe2;color:#fff;font-family:Arial,"Hiragino Sans GB",simsun;text-align:center;line-height:22px}
+    .b-l-m-title{font-size:14px}
+    .b-l-m-info{margin-top:3px;color:#a5a5a5}
+    .b-l-date{*display:inline;float:right;color:#a5a5a5}
+    .b-l-msg{*display:inline;float:left;width:670px;margin-left:8px}
+    {/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">系统消息</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="nav-main">
+
+        <ul class="tabs-without-js">
+            <li><a href="message.php">未读消息</a></li>
+            <li class="active"><a href="message.php?act=read">已读消息</a></li>
+        </ul>
+        <div class="tab_container">
+            <div id="tab2" class="tab_content" style="display: block; ">
+                <table class="table">
+                    <tbody>
+                    {if $total neq 0}
+                    {foreach from=$message_list item=message}
+                    <tr>
+                        <td style="width: 20px">
+                            <em class="b-l-ico">系统消息</em>
+                        </td>
+                        <td>
+                            <div class="b-l-msg" style="width: 95%">
+                                <p class="b-l-m-title">{$message.title}</p>
+                                <p class="b-l-m-info">{$message.content}</p>
+                            </div>
+                            <span class="b-l-date">{$message.add_time_str}</span>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    {else}
+                    <tr>
+                        <td style="padding: 50px 0" colspan="2" align="center">您还没有系统消息</td>
+                    </tr>
+                    {/if}
+                    <tr>
+                        <td colspan="2">
+                            <div class="pull-right">
+                                <div class="pages">
+                                    <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                                    {if $go_first}
+                                    <a href="?page=1&act=read">首页</a>
+                                    {/if}
+                                    {if $has_prev}
+                                    <a href="?page={$page - 1}&act=read">上一页</a>
+                                    {/if}
+                                    {if $has_many_prev}
+                                    ...
+                                    {/if}
+                                    {foreach from=$show_page item=pageNum}
+                                    {if $pageNum eq $page}
+                                    <b>{$page}</b>
+                                    {else}
+                                    <a href="?page={$pageNum}&act=read">{$pageNum}</a>
+                                    {/if}
+                                    {/foreach}
+                                    {if $has_many_next}
+                                    ...
+                                    {/if}
+                                    {if $go_last}
+                                    <a href="?page={$totalPage}&act=read">末页</a>
+                                    {/if}
+                                    {if $has_next}
+                                    <a href="?page={$page + 1}&act=read">下一页</a>
+                                    {/if}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

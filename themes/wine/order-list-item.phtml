@@ -1,0 +1,80 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{if $order_list}
+{foreach from=$order_list item=order}
+<div class="block">
+    <div class="order_list">
+        <!--非当当自营显示店铺入口-->
+        <div class="shop_title">
+            <a href="shop.php?sn={$order.business_account}">
+                <!--店铺名称-->
+                <div class="fl">
+                    {$order.shop_name}
+                </div>
+                <span class="fr right_arrow"></span>
+            </a>
+
+        </div>
+        <!--分包商品信息-->
+        <div class="cart_item prd_ebook">
+            <a href="order.php?act=detail&sn={$order.order_sn}">
+                <!--电子书加签-->
+                {foreach from=$order.order_detail item=od}
+                <!--包裹图片-->
+                <img src="{$od.img}" class="fl pro_pic">
+                {/foreach}
+                <!--包裹详情-->
+                <div class="detail">
+                    <!--包裹状态-->
+                    <div class="fr prd_state">
+                        <!--状态文字-->
+                        <div class="prd_state_title">
+                            {$order.show_status}
+                        </div>
+                    </div>
+                    <!--包裹名称显示，多件产品，显示包裹编号，一件产品显示产品名称-->
+                    <p class="fl prd_tit">
+                        {if count($order.order_detail) eq 1}
+                        {$order.order_detail.0.product_name}
+                        {else}
+                        {/if}
+                    </p>
+                </div>
+            </a>
+            <!--数量价格信息-->
+            <div class="detail2">
+                共<span>{count($order.order_detail)}</span>件商品
+                <span>　总价：</span><span class="order_price">￥{$order.amount}</span>
+            </div>
+            <!--操作按键-->
+            <div class="detail3">
+                {if $order.status eq 7}
+                <a href="javascript:comment('{$order.order_sn}');" class="orange_hollow">晒单评论</a>
+                <a href="javascript:rollback('{$order.order_sn}');">申请退单</a>
+                {/if}
+                {if $order.status eq 6}
+                <a href="order.php?act=express_info&order_sn={$order.order_sn}">查看物流</a>
+                <a href="javascript:receive('{$order.order_sn}');" class="orange_hollow">确认收货</a>
+                {/if}
+                {if $order.status eq 4}
+                <a href="javascript:rollback('{$order.order_sn}');">取消订单</a>
+                {/if}
+                {if $order.status eq 1}
+                <a href="javascript:pay_now('{$order.order_sn}');" class="orange_hollow">立即支付</a>
+                <a href="javascript:cancel_order('{$order.order_sn}');">取消订单</a>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+{/foreach}
+{else}
+<div class="block">
+    <div class="empty-con">
+        <span class="icon">&#xe63d;</span>
+        <span class="empty-tips">找不到任何订单!</span>
+            <span class="empty-btn">
+                <a href="index.php" class="btn">去逛逛</a>
+            </span>
+    </div>
+</div>
+{/if}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>我的团队</em></h1>
+</header>
+
+<!-- 内容开始 -->
+<section class="myteam">
+    <section class="myteam-con">
+        <div class="myteam-header">
+            <div class="myteam-header-info">
+                <img src="{if $user_info.headimg neq ""}{$user_info.headimg}{else}{$template_dir}images/wang.jpg{/if}" alt="{$user_info.nickname}" />
+                <span>{$user_info.nickname}</span>
+                <em>{$user_info.account}</em>
+            </div>
+        </div>
+    </section>
+    <!-- 产品详情 -->
+    <section class="detail-con">
+        <a class="arrow_con title" id="arrow_con1">
+            <div class="arrow_d" id="arrow_d1">一级分销团队<span class="fr red-font" style="margin-right:1rem;">{count($member_list)}</span></div>
+        </a>
+        <section id="detail-con1" style="display: none;background: #f8f8f8;">
+            <div class="detail-content">
+                {foreach from=$member_list item=member name=member_list}
+                <section class="myteam-con">
+                    <div class="myteam-header">
+                        <div class="myteam-header-info">
+                            <img src="{if $member.headimg neq ""}{$member.headimg}{else}{$template_dir}images/wang.jpg{/if}" alt="{$member.nickname}" />
+                            <span>{$member.nickname}</span>
+                            <em>关注时间:{date('Y-m-d H:i:s', $member['add_time'])}{*$member.account*}</em>
+                        </div>
+                    </div>
+                </section>
+                {/foreach}
+            </div>
+        </section>
+    </section>
+
+    <section class="detail-con">
+        <a class="arrow_con title" id="arrow_con2">
+            <div class="arrow_d" id="arrow_d2">二级分销团队<span class="fr red-font" style="margin-right:1rem;">{count($member_list2)}</span></div>
+        </a>
+        <section id="detail-con2" style="display: none;background: #f8f8f8;">
+            <div class="detail-content">
+                {foreach from=$member_list2 item=member name=member_list}
+                <section class="myteam-con">
+                    <div class="myteam-header">
+                        <div class="myteam-header-info">
+                            <img src="{if $member.headimg neq ""}{$member.headimg}{else}{$template_dir}images/wang.jpg{/if}" alt="{$member.nickname}" />
+                            <span>{$member.nickname}</span>
+                            <em>关注时间:{date('Y-m-d H:i:s', $member['add_time'])}{*$member.account*}</em>
+                        </div>
+                    </div>
+                </section>
+                {/foreach}
+            </div>
+        </section>
+    </section>
+</section>
+
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+
+        $("#arrow_con1").click(function(){
+            if($("#arrow_d1").hasClass("up")){
+                $("#detail-con1").slideUp();
+                $("#arrow_d1").removeClass("up");
+            }else{
+                $("#detail-con1").slideDown();
+                $("#arrow_d1").addClass("up");
+            }
+        });
+
+        $("#arrow_con2").click(function(){
+            if($("#arrow_d2").hasClass("up")){
+                $("#detail-con2").slideUp();
+                $("#arrow_d2").removeClass("up");
+            }else{
+                $("#detail-con2").slideDown();
+                $("#arrow_d2").addClass("up");
+            }
+        });
+    });
+</script>
+</body>
+</html>

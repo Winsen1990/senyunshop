@@ -1,0 +1,381 @@
+{include file="library/header.lbi"}
+<body xmlns="http://www.w3.org/1999/html">
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div class="content" id="content">
+    <div class="content-title">
+        <h5 class="pull-left">菜单管理</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <div class="custom-menu-list">
+            <div class="custom-menu-toolbar">
+                <span class="fl">菜单管理</span>
+                <a href="javascript:void(0);" id="add-item"></a>
+            </div>
+            <div class="custom-menu-item" id="custom-menu-item">
+            </div>
+        </div>
+        <fieldset>
+        <div class="custom-menu-content">
+            <div class="custom-menu-toolbar">菜单设置</div>
+            <div class="custom-menu-preview" id="custom-menu-preview">
+            </div>
+            <div class="custom-menu-add-form" id="custom-menu-add-form" style="display: none;">
+                <p class="menu-form-item" id="menu-notice" style="padding: 0px 20px 20px;"></p>
+                <fieldset>
+                    <p>
+                        <label class="l-title">菜单名称</label>
+                        <span class="menu-input-wrapper">
+                            <input type="text" class="text-input w300" name="name" id="name" onkeyup="checkLength(this.value);"/>
+                        </span>
+                        <span class="menu-input-error" id="name-error"></span>
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <p>
+                        <label class="l-title">菜单类型</label>
+                        <span class="menu-input-wrapper">
+                            <select class="input-select" id="type" name="type">
+                                <option value="view">链接</option>
+                                <option value="click">事件</option>
+                            </select>
+                        </span>
+                        <span class="menu-input-error" id="type-error"></span>
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <p>
+                        <label class="l-title">菜单值</label>
+                        <span class="menu-input-wrapper">
+                            <input type="text" class="text-input w300" id="key" name="key"/>
+                        </span>
+                        <span class="menu-input-error" id="key-error"></span>
+                    </p>
+                </fieldset>
+                <fieldset>
+                    <p>
+                        <label class="l-title"></label>
+                        <a href="javascript:void(0);" id="get-url-btn" class="btn btn-primary">生成授权链接</a>
+                        <a href="javascript:void(0);" id="save-btn" class="btn btn-primary">保存</a>
+                    </p>
+                </fieldset>
+                <input type="hidden" name="index" value="0" id="index"/>
+                <input type="hidden" name="eid" value="0" id="eid"/>
+                <input type="hidden" name="parent_id" value="0" id="parent_id"/>
+                <input type="hidden" name="opera" value="add" id="opera"/>
+            </div>
+        </div>
+        </fieldset>
+    </div>
+    <fieldset>
+        <p>
+            <label class="l-title"></label>
+            <button class="btn btn-primary" type="submit" id="post-btn" >发布</button>
+        </p>
+    </fieldset>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    var menu_temp = [{$wechat_menus}];
+
+    function get_oauthor_url() {
+        var key = $("#key").val();
+        var type = $("#type").val();
+
+        if(type == "click") {
+            alert("只有链接型菜单才能使用该功能");
+            return false;
+        }
+
+        {literal}
+        var pattern = /((http|ftp|https):\/\/)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(\/[a-zA-Z0-9\&%_\./-~-]*)?/;
+        {/literal}
+        if(pattern.test(key)) {
+            $.ajax({
+                "dataType": "json",
+                "type": "post",
+                "url" : "wechat_menu.php",
+                "data": { "opera":"get_oa_url", "url": key },
+                "success" : function(response) {
+                    if(response.error == 0) {
+                        $("#key").val(response.msg);
+                    }
+                }
+            });
+        } else {
+            alert("链接必须以http://或https://开头");
+        }
+    }
+
+    {literal}
+    window.onload = function() {
+        if(menu_temp != "") {
+            console.info(menu_temp);
+            menu_temp = menu_temp[0];
+        } else {
+            menu_temp = new Array();
+        }
+
+        $("#get-url-btn").click(function (){
+            get_oauthor_url();
+        });
+        var save = $("#save-btn");
+        save.bind("click", function() {
+            var eid = $("#eid").val();
+            var index = $("#index").val();
+            var parent_id = $("#parent_id").val();
+            var opera = $("#opera").val();
+            if(validate()) {
+                var name = $("#name").val();
+                var type = $("#type").val();
+                var key = $("#key").val();
+
+                var o = {"name":name,"type":type,"key":key,"parent_id":parent_id,"id":eid, "opera":opera};
+                menu_temp[index] = o;
+                $.ajax({
+                    "url" : "wechat_menu.php",
+                    "type": "post",
+                    "dataType" : "JSON",
+                    "data" : {"opera":"save", "data":o},
+                    "success": function(response) {
+                        if(response.error == 0) {
+                            data = response.data;
+                            console.info(data.id);
+                            menu_temp[data.id] = data;
+                            console.info(menu_temp[data.id]);
+                            $("#eid").val(data.id);
+                            $("#parent_id").val(data.parent_id);
+                            perform(data);
+
+                            $("#name").val("");
+                            $("#type").val("view");
+                            $("#key").val("");
+                            $("#eid").val(0);
+                            $("#opera").val("add");
+                        }
+                        alert(response.msg);
+                    }
+                });
+            }
+        });
+
+        $("#post-btn").bind("click", function() {
+            $.ajax({
+                "url" : "wechat_menu.php",
+                "type": "post",
+                "dataType": "json",
+                "data" : {"opera":"post"},
+                "success": function(response) {
+                    alert(response.msg);
+                }
+            });
+        });
+
+        for(var i in menu_temp) {
+            perform(menu_temp[i]);
+        }
+
+        $("#add-item").bind("click", function() {
+            if($(".menu-group").length >= 3) {
+                {/literal}
+                alert("一级菜单只能设置3个");
+                {literal}
+                return;
+            }
+            showForm();
+            $("#name").val("");
+            $("#type").val("view");
+            $("#key").val("");
+            $("#parent_id").val(0);
+            $("#eid").val(0);
+            $("#opera").val("add");
+        });
+    }
+
+    function showForm() {
+        $("#custom-menu-add-form").show();
+        $("#custom-menu-preview").hide();
+    }
+
+    function edit(id) {
+        showForm();
+        if(menu_temp[id]) {
+            $("#name").val(menu_temp[id].name);
+            $("#type").val(menu_temp[id].type);
+            $("#key").val(menu_temp[id].key);
+            $("#parent_id").val(menu_temp[id].parent_id);
+            $("#eid").val(menu_temp[id].id);
+            $("#opera").val("edit");
+
+            $(".menu-group-item-hover").removeClass("menu-group-item-hover");
+            $("#menu-"+id).addClass("menu-group-item-hover");
+
+            if(menu_temp[id].parent_id == 0 && $("#menu-"+id).siblings("dd").length) {
+                {/literal}
+                $("#menu-notice").text("添加子菜单后，一级菜单的菜单值将不起作用");
+                {literal}
+            } else {
+                $("#menu-notice").text("");
+            }
+        }
+    }
+
+    function addSub(id) {
+        if($("#menu-"+id).siblings("dd").length >= 5) {
+            {/literal}
+            alert("二级菜单只能设置5个");
+            return false;
+            {literal}
+        }
+        $("#menu-notice").text("");
+        showForm();
+        if(menu_temp[id]) {
+            $("#name").val("");
+            $("#type").val("view");
+            $("#key").val("");
+            $("#parent_id").val(id);
+            $("#eid").val(0);
+            $("#opera").val("add");
+        }
+    }
+
+    function remove(id) {
+        if(menu_temp[id]) {
+            if(menu_temp[id].parent_id == 0) {
+                if($("#menu-"+id).siblings("dd").length > 0) {
+                    {/literal}
+                    alert("该菜单有子菜单，不能被移除");
+                    {literal}
+                    return false;
+                }
+            }
+            {/literal}
+            if(confirm("您确定要删除该菜单？")) {
+                {literal}
+                $.ajax({
+                    "url" : "wechat_menu.php",
+                    "type": "post",
+                    "dataType": "json",
+                    "data" : {"opera":"remove","id":id},
+                    "success": function(response) {
+                        if(response.error == 0) {
+                            if(menu_temp[id].parent_id == 0) {
+                                $("#menu-"+id).parent().remove();
+                            } else {
+                                $("#menu-"+id).remove();
+                            }
+                            $("#name").val("");
+                            $("#type").val("view");
+                            $("#key").val("");
+                            $("#parent_id").val(0);
+                            $("#eid").val(0);
+                            $("#opera").val("add");
+                            delete(menu_temp[id]);
+                        } else {
+                            alert(response.msg);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    function perform(json) {
+        var ele = null;
+        var parent = null;
+        var inner = '';
+        ele = $("#menu-"+json.id);
+
+        if(ele.length > 0) {
+            if(json.parent_id > 0) {
+                inner = '<span class="fl">'+json.name+'</span><p class="menu-item-toolbar"><a href="javascript:remove('+json.id+');" class="menu-remove"></a></p>';
+                ele.html(inner);
+            } else {
+                inner = '<span class="fl">'+json.name+'</span><p class="menu-item-toolbar"><a class="menu-add" href="javascript:addSub('+json.id+');"></a>';
+                inner += '<a href="javascript:remove('+json.id+');" class="menu-remove"></a></p>';
+                ele.html(inner);
+            }
+
+            return true;
+        }
+
+        if(json.parent_id > 0) {
+            inner = '<span class="fl">'+json.name+'</span><p class="menu-item-toolbar"><a href="javascript:remove('+json.id+');" class="menu-remove"></a></p>';
+            ele = $("<dd id='menu-"+json.id+"' onclick='edit("+json.id+");' class='menu-group-subitem clearfix'></dd>");
+            parent = "#menu-"+json.parent_id;
+            ele.html(inner);
+            ele.insertAfter(parent);
+        } else {
+            ele = $("<dt id='menu-"+json.id+"' onclick='edit("+json.id+");' class='menu-group-item clearfix'></dt>");
+            parent = "#custom-menu-item";
+            inner = '<span class="fl">'+json.name+'</span><p class="menu-item-toolbar"><a class="menu-add" href="javascript:addSub('+json.id+');"></a>';
+            inner += '<a href="javascript:remove('+json.id+');" class="menu-remove"></a></p>';
+            ele.html(inner);
+            ele = $('<dl class="menu-group"></dl>').html(ele);
+            $(parent).append(ele);
+        }
+    }
+
+    function countLength(str) {
+        var length = 0;
+        for(var i = 0; i < str.length; i++) {
+            var c = str.charCodeAt(i);
+            if((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) {
+                length += 0.5;
+            } else {
+                length += 1;
+            }
+        }
+        return length;
+    }
+    function validate() {
+        var name = $("#name").val();
+        var type = $("#type").val();
+        var key = $("#key").val();
+        var flag = true;
+        var parent_id = $("#parent_id").val();
+
+        if(type != "click" && type != "view") {
+            $("#type").val("view");
+            type = "view";
+        }
+        {/literal}
+        if(name == "") {
+            document.getElementById("name-error").innerHTML = "菜单名不能为空";
+            flag = false;
+        } else if(parent_id == 0 && countLength(name) > 4) {
+            document.getElementById("name-error").innerHTML = "菜单名不能超过4个汉字";
+            flag = false;
+        } else if(parent_id > 0 && countLength(name) > 8) {
+            document.getElementById("name-error").innerHTML = "菜单名不能超过7个汉字";
+            flag = false;
+        } else {
+            document.getElementById("name-error").innerHTML = "";
+        }
+
+        if(key == "") {
+            document.getElementById("key-error").innerHTML = "菜单值不能为空";
+            flag = false;
+        } else {
+            document.getElementById("key-error").innerHTML = "";
+        }
+
+        return flag;
+    }
+    function checkLength(str) {
+        var type = document.getElementById("parent_id").value;
+
+        if(type == 0 && countLength(str) > 4) {
+            document.getElementById("name-error").innerHTML = "菜单名不能超过4个汉字";
+        } else if(type > 0 && countLength(str) > 8) {
+            document.getElementById("name-error").innerHTML = "菜单名不能超过7个汉字";
+        } else {
+            document.getElementById("name-error").innerHTML = "";
+        }
+    }
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

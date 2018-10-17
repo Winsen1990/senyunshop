@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=yes, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    {block name="head"}
+    {/block}
+</head>
+<body>
+{block name="header"}
+{/block}
+{block name="content"}
+{/block}
+{block name="footer"}
+{/block}
+</body>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+{block name="script"}
+{/block}
+</html>

@@ -1,0 +1,81 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加管理员</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>账号</th>
+                <th>昵称</th>
+                <th>邮件</th>
+                <th>手机</th>
+                <th>角色</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$adminList item=admin name=admins}
+            <tr>
+                <td>{$admin.account|escape}</td>
+                <td>{$admin.name|escape}</td>
+                <td>{$admin.email|escape}</td>
+                <td>{$admin.mobile|escape}</td>
+                <td>{$admin.role_name|escape}</td>
+                <td class="text-right">
+                    <a href="?act=edit&account={$admin.account|escape}">编辑</a> |
+                    <a href="javascript:void(0);" class="delete-admin" data-id="{$admin.account|escape}">删除</a>
+                </td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+{literal}
+<script type="text/javascript">
+    $(function () {
+        $('.delete-admin').click(function () {
+            var self = $(this);
+            layer.confirm(
+                '您确定要删除该管理员?',
+                function () {
+                    var account = self.attr('data-id').trim();
+
+                    if(account === '') {
+                        layer.alert('参数错误');
+                    } else {
+                        var data = {
+                            opera: 'delete',
+                            account: account
+                        };
+
+                        $.post('admin.php', data, function (response) {
+                            layer.alert(
+                                response.message,
+                                function () {
+                                    if(response.error === 0) {
+                                        window.location.reload();
+                                    }
+                                }
+                            );
+                        }, 'json');
+                    }
+                }
+            );
+        });
+    });
+</script>
+{/literal}
+</body>
+</html>

@@ -1,0 +1,65 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$type.name}-添加产品属性</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="attrAddForm" method="post" action="">
+            <fieldset>
+                <p>
+                    <label class="l-title">属性名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="attr_name" name="attr_name" value="" placeholder="请输入类型名"/>
+                </p>
+                <p>
+                    <label class="l-title">类型：</label>
+                    <select id="type" name="type" class="w150">
+                        <option value="text">text</option>
+                        <option value="select">select</option>
+                    </select>
+                </p>
+                <p id="options" style="display: none;">
+                    <label class="l-title">取值选项(请用,分隔多个选项)：</label>
+                    <textarea name="options" rows="5" cols="80"></textarea>
+                </p>
+                <p>
+                    <label class="l-title">必填：</label>
+                    <input class="" type="radio" name="needle" value="1" checked="checked"/><em>是</em>&nbsp;
+                    <input class="" type="radio" name="needle" value="0"/><em>否</em>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title">作为筛选项：</label>
+                    <input class="" type="radio" name="filter" value="1" checked="checked"/><em>是</em>&nbsp;
+                    <input class="" type="radio" name="filter" value="0"/><em>否</em>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">保存</button>&nbsp;
+                    <a class="btn btn-primary" href="javascript:history.go(-1)">返回</a>
+                    <input type="hidden" name="opera" value="add-attr" />
+                    <input type="hidden" name="id" value="{$type.id}" />
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    $(function(){
+        $('#type').change(function(){
+            if( $(this).val() != 'text' ) {
+                $('#options').slideDown();
+            } else {
+                $('#options').slideUp();
+            }
+        });
+    });
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

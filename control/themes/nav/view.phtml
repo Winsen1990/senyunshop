@@ -1,0 +1,136 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">添加导航条</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="nav-main">
+
+        <ul class="tabs">
+            <li class="active"><a href="#tab1">顶部导航</a></li>
+            <li><a href="#tab2">中部导航</a></li>
+            <li><a href="#tab3">底部导航</a></li>
+        </ul>
+        <div class="tab_container">
+            <div id="tab1" class="tab_content" style="display: block; ">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>URL</th>
+                        <th>排序(升序排列)</th>
+                        <th>页面位置</th>
+<!--                        <th>是否显示</th>-->
+                        <th class="text-right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {$exists = false}
+                    {foreach from=$navs item=n}
+                    {if $n.position eq 'top'}
+                    {$exists = true}
+                    <tr>
+                        <td>{$n.name}</td>
+                        <td>{$n.url}</td>
+                        <td>{$n.order_view}</td>
+                        <td>{$n.position}</td>
+                        <td class="text-right"><a href="?act=edit&id={$n.id}">编辑</a> | <a href="javascript:if(confirm('确认删除该导航栏?')) window.location.href='nav.php?act=delete&id={$n.id}';">删除</a></td>
+                    </tr>
+                    {/if}
+                    {/foreach}
+                    {if $exists neq true}
+                    <tr>
+                        <td style="padding: 50px 0" colspan="6" align="center">您还没有导航条记录，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加导航条！</td>
+                    </tr>
+                    {/if}
+                    <!--                    </tbody>-->
+                    <!--                    <tbody>-->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="tab2" class="tab_content" style="display: none; ">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>URL</th>
+                        <th>排序(升序排列)</th>
+                        <th>页面位置</th>
+                        <th class="text-right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {$exists = false}
+                    {foreach from=$navs item=n}
+                    {if $n.position eq 'middle'}
+                    {$exists = true}
+                    <tr>
+                        <td>{$n.name}</td>
+                        <td>{$n.url}</td>
+                        <td>{$n.order_view}</td>
+                        <td>{$n.position}</td>
+                        <td class="text-right"><a href="?act=edit&id={$n.id}">编辑</a> | <a href="javascript:if(confirm('确认删除该导航栏?')) window.location.href='nav.php?act=delete&id={$n.id}';">删除</a></td>
+                    </tr>
+                    {/if}
+                    {/foreach}
+                    {if $exists neq true}
+                    <tr>
+                        <td style="padding: 50px 0" colspan="6" align="center">您还没有导航条记录，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加导航条！</td>
+                    </tr>
+                    {/if}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="tab3" class="tab_content" style="display: none; ">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>URL</th>
+                        <th>排序(升序排列)</th>
+                        <th>页面位置</th>
+<!--                        <th>是否显示</th>-->
+                        <th class="text-right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {$exists = false}
+                    {foreach from=$navs item=n}
+                    {if $n.position eq 'bottom'}
+                    {$exists = true}
+                    <tr>
+                        <td>{$n.name}</td>
+                        <td>{$n.url}</td>
+                        <td>{$n.order_view}</td>
+                        <td>{$n.position}</td>
+
+                        <td class="text-right">
+                            <a href="?act=edit&id={$n.id}">编辑</a> | 
+                            <a href="javascript:if(confirm('确认删除该导航栏?')) window.location.href='nav.php?act=delete&id={$n.id}';">删除</a>
+                        </td>
+                    </tr>
+                    {/if}
+                    {/foreach}
+                    {if $exists neq true}
+                    <tr>
+                        <td style="padding: 50px 0" colspan="6" align="center">您还没有导航条记录，立即点击 “<a href="?act=add" target="_blank">这里</a>” 添加导航条！</td>
+                    </tr>
+                    {/if}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

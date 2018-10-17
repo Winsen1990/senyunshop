@@ -1,0 +1,16 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+{foreach from=$product_list name=product_list item=product}
+<li>
+    <div>
+        <a href="product.php?id={$product.id}" name="product_item" title="商品">
+            <p class="img">
+                <img class="lazy" src="{$product.img}" alt="{$product.name}"/>
+            </p >
+            <p class="name">{$product.name}</p >
+        </a >
+        <p class="price"><span class="red">¥{$product.price}</span>
+            <span name="item_collect" title="收藏" class="span_sc {if $product.collection}span_sc_on{/if}" id="fav_{$product.product_sn}" onclick="javascript:collection('{$product.product_sn}');" flag="add"></span>
+        </p >
+    </div>
+</li>
+{/foreach}

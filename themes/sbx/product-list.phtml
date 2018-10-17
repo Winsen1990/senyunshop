@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header" style="position:fixed">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>商品列表</em></h1>
+</header>
+
+<!-- 筛选开始 -->
+<section class="filter">
+    <ul>
+        <li class="on" id="index_default">
+            <a href="javascript:javascript:sort_products('default');" name="list_sort_index">
+                <em>默认</em>
+            </a>
+        </li>
+
+        <li class="" id="index_sale">
+            <a href="javascript:sort_products('sale');" name="list_sort_sales">
+                <em>销量</em>
+            </a>
+        </li>
+
+        <li class="" id="index_star">
+            <a href="javascript:sort_products('star');" name="list_sort_score">
+                <em>评分</em>
+            </a>
+        </li>
+
+        <li class="" id="index_price">
+            <a href="javascript:sort_products('price');" name="list_sort_price">
+                <em>价格</em><!--<span class="arrow_up"></span><span class="arrow_down">  class添加active_up或者active_down </span>-->
+            </a>
+        </li>
+
+        <li class="" id="index_new">
+            <a href="javascript:sort_products('new');" name="list_sort_date">
+                <em>最新</em>
+            </a>
+        </li>
+    </ul>
+</section>
+<!-- 内容开始 -->
+<section class="product-list">
+    <ul>
+        {foreach from=$product_list item=product}
+        <li>
+            <a href="product.php?id={$product.id}">
+                <img class="lazy" src="{$template_dir}images/bg_pic.png" data-original="{$product.img}" alt="{$product.name}">
+                <dl class="arrow">
+                    <dt> {$product.name} </dt>
+                    <dd>￥{$product.price}</dd>
+                </dl>
+            </a>
+        </li>
+        {/foreach}
+    </ul>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    var filter = {$filter};
+
+    function sort_products(mode) {
+        var url = "product_list.php";
+        var data = { "opera":"sort", "mode":mode, "filter":filter };
+
+        show_mask();
+        $("#index_"+mode).siblings().removeClass("on")
+        $("#index_"+mode).addClass("on");
+        $.post(url, data, sort_products_handler, "json");
+    }
+
+    function sort_products_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#product_list").html(response.content);
+            filter = response.filter;
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+<script type="text/javascript">
+    $(function() {
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+    });
+</script>
+</body>
+</html>

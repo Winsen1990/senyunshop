@@ -1,0 +1,87 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+    {literal}
+    .select-image {
+        cursor: pointer;
+    }
+    {/literal}
+</style>
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加品牌</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="brandAddForm" name="brandAddForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">名称：</label>
+                    <input class="text-input w200" type="text" id="name" name="name" placeholder="请输入品牌名称">
+                </p>
+                <p>
+                    <label class="l-title">图片：</label>
+                    <input type="hidden" name="img" id="img" placeholder="">
+                    <img class="select-image" width="120px" height="60px" alt="" src="../upload/image/no-image.png">&nbsp;
+                    <span class="error-input" id="img-notice">120*60px，图片大小不要超过100k</span>
+                </p>
+                <p>
+                    <label class="l-title">品牌简介：</label>
+                    <textarea name="desc" rows="8" cols="80"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="add" />
+                    <button class="btn btn-primary" type="submit">添加</button> &nbsp;<a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- kindeditor编辑器 -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    {literal}
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/platform_file_manager_json.php'
+        });
+        K('.select-image').click(function() {
+            editor.loadPlugin('image', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 120 + 'px';
+                        }
+                        if( !height ) {
+                            height = 60 + 'px';
+                        }
+
+                        K('#img').val(url);
+                        K('.select-image').attr('src', url);
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=120&height=60');
+        });
+    });
+    {/literal}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

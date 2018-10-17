@@ -1,0 +1,24 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+{if $order_info.status eq 200}
+{foreach from=$order_info.data item=data name=express_info}
+{if $smarty.foreach.express_info.first}
+{if $order_info.state eq 3}
+<div class="express-complete">
+{else}
+<div class="express-incomplete">
+{/if}
+{else}
+{if $smarty.foreach.express_info.last}
+<div class="express-start">
+{else}
+<div class="experss-middle">
+{/if}
+{/if}
+    <i></i>
+    <span class="express-time">{$data.time}</span>
+    <span class="express-context">{$data.context}</span>
+</div>
+{/foreach}
+{else}
+当前没有物流信息
+{/if}

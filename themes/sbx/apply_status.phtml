@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <link rel="apple-touch-icon-precomposed" href="{$template_dir}images/touch/touch-icon-iphone.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{$template_dir}images/touch/touch-icon-ipad.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{$template_dir}images/touch/touch-icon-iphone4.png">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>商家进驻进度</em></h1>
+</header>
+<!-- 新增收货地址 -->
+<section class="address">
+    <h3 style="font-size: 0.8rem; font-weight: normal; text-align: center; line-height: 1.8rem;">您的审核进度</h3>
+
+    <h4 class="apply-status">1</h4>
+    <p class="apply-status-content">提交商家进驻申请</p>
+
+
+    <h4 class="apply-status {if $status lt 1}apply-status-gray{/if}">2</h4>
+    <p class="apply-status-content">平台验证审核</p>
+
+
+    <h4 class="apply-status {if $status lt 2}apply-status-gray{/if}">3</h4>
+    <p class="apply-status-content">申请成功，账号发放 {if $status gt 1}商机编号：{$smarty.session.business_account}{/if}</p>
+
+</section>
+</body>
+</html>

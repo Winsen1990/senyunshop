@@ -1,0 +1,35 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">提现驳回</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="productExamForm" name="productExamForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">驳回理由：</label>
+                    <textarea name="content" rows="8" cols="93"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="delete" />
+                    <input type="hidden" name="sn" value="{$sn}"/>
+                    <input type="hidden" name="type" value="{$type}"/>
+                    <button class="btn btn-primary" type="submit">提交</button> &nbsp;
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

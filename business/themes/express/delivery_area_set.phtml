@@ -1,0 +1,198 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">物流方式：{$delivery.name}</h5>
+        <div class="clear"></div>
+        <div class="pull-right"><a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;</div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="delivery_area_form" method="post" action="" onsubmit="return check_area_form();">
+            <fieldset>
+                <p>
+                    <label class="l-title">区域名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="name" name="name" value="" placeholder="请填写区域名称">
+                </p>
+                <p>
+                    <label class="l-title">首重费用：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="first_weight" name="first_weight" value="" placeholder="请填写首重费用">
+                </p>
+                <p>
+                    <label class="l-title">续重费用：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="next_weight" name="next_weight" value="" placeholder="请填写续重费用">
+                </p>
+                <p>
+                    <label class="l-title">费用减免：</label>
+                    <input class="text-input w300" type="text" maxlength="64" id="free" name="free" value="0" placeholder="请填写费用减免">
+                </p>
+                <p>
+                    <label class="l-title">所辖地区：</label>
+                    <select name="province" id="province" class="" onchange="select_province(this.value);">
+                        <option value="0">省份</option>
+                        {foreach from=$province item=p}
+                        <option value="{$p.id}">{$p.name}</option>
+                        {/foreach}
+                    </select>
+                    <select id="city" name="city" onchange="select_city(this.value);">
+                        <option value="0">城市</option>
+                    </select>
+                    <select id="district" name="district">
+                        <option value="0">地区</option>
+                    </select>
+                    <a href="javascript:void(0);" id="add_area_btn" class="btn btn-primary">添加</a>
+                </p>
+                <p id="area_mapper">
+                    <label class="l-title">地区列表：</label>&nbsp;
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <button class="btn btn-primary" type="submit">提交</button>
+                    <input type="hidden" name="delivery_id" id="delivery_id" value="{$delivery.id}"/>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+<script type="text/javascript">
+    var city = {$city_json};
+    var district = {$district_json};
+    var area_mapper = new Array();
+
+    $(function(){
+        $("#add_area_btn").click(function() {
+            var province = $("#province").val();
+            var city = $("#city").val();
+            var district = $("#district").val();
+            var array_length = area_mapper.length;
+
+            province = parseInt(province);
+            city = parseInt(city);
+            district = parseInt(district);
+
+            if(province <= 0 && city <= 0 && district <= 0) {
+                return false;
+            } else {
+                for(var i=0; i < array_length; i++) {
+                    if(area_mapper[i].province == province && area_mapper[i].city == city && area_mapper[i].district == district) {
+                        return false;
+                    }
+                }
+
+                var name = "";
+                if(province > 0) {
+                    var ele = document.getElementById("province");
+                    name = ele.options[ele.selectedIndex].text;
+                }
+
+                if(city > 0) {
+                    var ele = document.getElementById("city");
+                    name = ele.options[ele.selectedIndex].text;
+                }
+
+                if(district > 0) {
+                    var ele = document.getElementById("district");
+                    name = ele.options[ele.selectedIndex].text;
+                }
+
+                area_mapper[array_length] = { "province":province, "city":city, "district":district, "name": name, "checked":1 };
+                $("#area_mapper").append('<input type="checkbox" checked="checked" name="area_mapper"/><em>'+name+'</em>&nbsp;');
+            }
+        });
+    });
+
+    function check_area_form() {
+        var first_weight = $("#first_weight").val();
+        var next_weight = $("#next_weight").val();
+        var free = $("#free").val();
+        var name = $("#name").val();
+        var area_mapper_tmp = document.forms[0].area_mapper;
+        var flag = area_mapper.length;
+        var delivery_id = $("#delivery_id").val();
+        var msg = "";
+
+        delivery_id = parseInt(delivery_id);
+        first_weight = parseFloat(first_weight);
+        next_weight = parseFloat(next_weight);
+        free = parseFloat(free);
+
+        if(isNaN(delivery_id) || delivery_id <= 0) {
+            msg += "-参数错误\n";
+        }
+
+        if(isNaN(first_weight) || first_weight < 0) {
+            msg += "-请填写首重费用\n";
+        }
+
+        if(isNaN(next_weight) || next_weight < 0) {
+            msg += "-请填写续重费用\n";
+        }
+
+        if(isNaN(free) || free < 0) {
+            msg += "-请填写费用减免\n";
+        }
+
+        if(name == "") {
+            msg += "-请填写区域名称\n";
+        }
+
+        if(area_mapper_tmp.length) {
+            for (var i in area_mapper_tmp) {
+                if (area_mapper_tmp[i].checked == false) {
+                    area_mapper[i].checked = 0;
+                    flag--;
+                }
+            }
+        } else {
+            if (area_mapper_tmp.checked == false) {
+                area_mapper[0].checked = 0;
+                flag--;
+            }
+        }
+
+        if(flag <= 0) {
+            msg += "-请选择所辖地区\n";
+        }
+
+        if(msg == "") {
+            var url = "express.php";
+            var data = { "opera":"area_add", "name":name, "first_weight":first_weight, "next_weight":next_weight, "free":free, "area_mapper":area_mapper, "delivery_id":delivery_id };
+            $.post(url, data, submit_area_form_handler, "json");
+        } else {
+            alert(msg);
+        }
+
+        return false;
+    }
+
+    function submit_area_form_handler(response) {
+        alert(response.msg);
+        if(response.error == 0) {
+            window.location.href = "express.php?act=delivery_area&plugin="+response.id;
+        }
+    }
+
+    function select_province(id) {
+        document.getElementById("city").length = 1;
+        document.getElementById("district").length = 1;
+
+        for(var i in city[id]) {
+            $("#city").append('<option value="'+city[id][i].id+'">'+city[id][i].name+'</option>');
+        }
+    }
+
+    function select_city(id) {
+        document.getElementById("district").length = 1;
+
+        for(var i in district[id]) {
+            $("#district").append('<option value="'+district[id][i].id+'">'+district[id][i].name+'</option>');
+        }
+    }
+</script>
+</body>
+</html>

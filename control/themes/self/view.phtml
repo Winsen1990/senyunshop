@@ -1,0 +1,130 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}-修改资料</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="self-main">
+        <form id="self-form" name="self-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">昵称:</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入昵称" value="{$admin.name}"/>
+                    <span class="error-input" id="name-error">{if isset($error.name)}{$error.name}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">邮箱:</label>
+                    <input class="text-input w300" type="text" id="email" name="email" placeholder="请输入邮箱" value="{$admin.email}"/>
+                    <span class="error-input" id="email-error">{if isset($error.email)}{$error.email}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">手机号码:</label>
+                    <input class="text-input w300" type="input" id="mobile" name="mobile" placeholder="请输入手机号码" value="{$admin.mobile}"/>
+                    <span class="error-input" id="mobile-error">{if isset($error.mobile)}{$error.mobile}{/if}</span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">性别:</label>
+                    <input type="radio" name="sex" value="M" {if $admin.sex eq 'M'}checked="checked"{/if}/><em>男</em>&nbsp;&nbsp;
+                    <input type="radio" name="sex" value="F" {if $admin.sex eq 'F'}checked="checked"{/if}/><em>女</em>
+                    <span class="error-input" id="sex-error">{if isset($error.sex)}{$error.sex}{/if}</span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        提交<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="edit"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript">
+    $(function() {
+        $("#submit-btn").click(do_submit);
+    });
+    /**
+     * 这个解决方案可以作为Ajax提交表单的模板
+     * 1、form的提交操作托管给do_submit处理;
+     * 2、Ajax操作分为两部分，第一部分do_submit作为提交前的参数验证，第二部分do_resposne作为返回代码的处理;
+     * 3、仅支持post方式提交表单;
+     * 4、需要在提交按钮加入提交中的加载图片，以及遮罩层代码<div id="mask"></div>
+     **/
+    function do_submit() {
+        //参数校验
+        var flag = true;
+        var name = $("#name").val().trim();
+        var email = $("#email").val().trim();
+        var mobile = $("#mobile").val().trim();
+        var sex = $("input[name='sex']")[0].checked ?  $("input[name='sex']")[0].value :  $("input[name='sex']")[1].value;
+
+        if(name == "") {
+            $("#name-error").text("-请输入昵称");
+            flag = false;
+        } else {
+            $("#name-error").text("");
+        }
+
+        if(email == "") {
+            $("#email-error").text("-请输入邮箱");
+            flag = false;
+        } else {
+            $("#email-error").text("");
+        }
+
+        if(mobile == "") {
+            $("#mobile-error").text("-请输入手机");
+            flag = false;
+        } else {
+            $("#mobile-error").text("");
+        }
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $(".btn-loading-img").show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var params = { "opera":"edit", "name":name, "email":email, "mobile":mobile, "sex":sex};
+            var url = "self.php";
+            $.post(url, params, do_response, "json");
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.msg);
+            window.location.reload();
+        } else {
+            if(result.msg != "") {
+                alert(result.msg);
+            }
+            console.log(result.errmsg);
+            if(result.errmsg) {
+                for(var id in result.errmsg) {
+                    $("#"+id+"-error").text(result.errmsg[id]);
+
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

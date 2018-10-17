@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>{$config.site_name|htmlspecialchars}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="{$config.site_name|htmlspecialchars}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>用户中心</em></h1>
+</header>
+<!-- 用户基本信息 -->
+<section class="home">
+    <header class="user-info">
+        <section class="user-basic">
+            <img class="user-avatar" src="{if $user_info.headimg neq ""}{$user_info.headimg}{else}{$template_dir}images/wang.jpg{/if}" alt="用户">
+            <div class="user-name">{$user_info.nickname}</div>
+            <p class="user-number">{$level[$user_info.level_id]}</p>
+<!--            <p class="user-number">{$user_info.account}</p>-->
+            <section class="remaining">
+                <a href="balance.php" style="display: none;"><em>余额&nbsp;{$user_info.balance}</em></a>
+                <a href="reward.php"><em>佣金&nbsp;{$user_info.reward}</em></a>
+                <a href="integral.php"><em>积分&nbsp;{$user_info.integral}</em></a>
+            </section>
+        </section>
+        <section class="user-stat">
+            <a id="change_count" href="#"><em>{$order_sum}</em>消费总额</a>
+            <a id="product_collect_number" href="wishlist.php"><em>{$collection_count}</em>商品收藏</a>
+            <a id="read_history_count" href="history.php"><em>{$history_count}</em>我的足迹</a>
+        </section>
+    </header>
+    <!-- 我的订单 -->
+    <section class="f-section order-section">
+        <a class="slide-link" href="order.php">
+            <span class="icon">&#xe622;</span>
+            我的订单            <em>查看全部购买商品</em>
+        </a>
+        <nav class="order-nav">
+            <ul>
+                <li>
+                    <a id="onlinepay_orders_count" href="order.php?status=1">
+                        <p class="icon">&#xe627;</p>
+                        待付款
+                        {if $order_await_pay gt 0}
+                        <sup class="badge">{$order_await_pay}</sup>
+                        {/if}
+                    </a>
+                </li>
+                <li>
+                    <a id="confirm_orders_count" href="order.php?status=6">
+                        <p class="icon">&#xe623;</p>
+                        待收货
+                        {if $order_await_receive gt 0}
+                        <sup class="badge">{$order_await_receive}</sup>
+                        {/if}
+                    </a>
+                </li>
+                <li>
+                    <a id="pd-comment" href="order.php?status=7">
+                        <p class="icon">&#xe624;</p>
+                        待评价
+                        {if $order_await_comment gt 0}
+                        <sup class="badge">{$order_await_comment}</sup>
+                        {/if}
+                    </a>
+                </li>
+                <li>
+                    <a id="refund" href="order.php?status=8">
+                        <p class="icon">&#xe61f;</p>
+                        退换货
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </section>
+    <!-- 我的资产 -->
+    <section class="f-section wealth-section">
+        <a class="slide-link" href="account.php">
+            <span class="icon" style="background-color: #7dc4fb;">&#xe619;</span>
+            我的资产            <em>查看我的全部资产</em>
+        </a>
+        <nav class="order-nav">
+            <ul>
+                <li style="display: none;">
+                    <a href="balance.php" >
+                        <p class="icon">&#xe61d;</p>
+                        余额
+                    </a>
+                </li>
+                <li>
+                    <a href="reward.php">
+                        <p class="icon">&#xe62a;</p>
+                        佣金
+                    </a>
+                </li>
+                <li>
+                    <a href="integral.php">
+                        <p class="icon">&#xe620;</p>
+                        积分
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:alert('敬请期待');">
+                        <p class="icon">&#xe616;</p>
+                        优惠券
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </section>
+    <!-- 个人中心功能菜单 -->
+    <section class="f-section">
+        {if $user_info.level_id gt 0}
+        <a class="slide-link" href="self_shop.php">
+            <span class="icon" style="background-color: #c2cb5a;">&#xe61c;</span>我的店铺
+        </a>
+        {/if}
+        <a class="slide-link" href="profile.php">
+            <span class="icon" style="background-color: #f29ec2;">&#xe625;</span>我的资料
+        </a>
+        <a class="slide-link" href="recharge.php" style="display: none;">
+            <span class="icon" style="background-color: #776d83;">&#xe643;</span>账户充值
+        </a>
+        <a class="slide-link" href="password.php">
+            <span class="icon" style="background-color: #b64846;">&#xe642;</span>修改密码
+        </a>
+        <a class="slide-link" href="bank.php">
+            <span class="icon" style="background-color: #f7c96e;">&#xe645;</span>我的银行卡
+        </a>
+        <a class="slide-link" href="reservation.php" style="display: none;">
+            <span class="icon" style="background-color: #f7c96e;">&#xe645;</span>我的预约
+        </a>
+        <a class="slide-link" href="address.php">
+            <span class="icon" style="background-color: #d0c0a6;">&#xe61a;</span>收货地址
+        </a>
+        <a class="slide-link" href="withdraw.php">
+            <span class="icon" style="background-color: #fb9065;">&#xe621;</span>我要提现
+        </a>
+<!--        <a class="slide-link" href="api/recommend.php?ticket={$user_info.openid}">-->
+        <a class="slide-link" href="recommend.php">
+            <span class="icon" style="background-color: #80c269;">&#xe626;</span>我的推广
+        </a>
+        {if $user_info.level_id gt 0}
+        <a class="slide-link" href="distribution.php">
+            <span class="icon" style="background-color: #f29902;">&#xe61e;</span>我的分销
+        </a>
+        <a class="slide-link" href="team.php">
+            <span class="icon" style="background-color: #8d9360;">&#xe641;</span>我的团队
+        </a>
+        <a class="slide-link" href="ranking.php">
+            <span class="icon" style="background-color: #a2beae;">&#xe644;</span>排行榜
+        </a>
+        {/if}
+        {if $user_info.business_account eq ""}
+        <a class="slide-link" href="apply.php">
+            <span class="icon" style="background-color: #c2cb5a;">&#xe61c;</span>我要加盟
+        </a>
+        {else}
+        <a class="slide-link" href="apply.php">
+            <span class="icon" style="background-color: #c2cb5a;">&#xe61c;</span>加盟审核进度
+        </a>
+        {/if}
+    </section>
+    <section class="f-section">
+        <a class="slide-link" href="javascript:alert('敬请期待');">
+            <span class="icon" style="background-color: #acd697;">&#xe61b;</span>投诉维权
+        </a>
+    </section>
+    <!-- 猜你喜欢 -->
+    <section class="f-section might-like">
+        <h3>
+            <i class="icon">&#xe617;</i>猜你喜欢
+            <a href="javascript:change_fav();"><span class="icon">&#xe618;</span>&nbsp;换一批</a>
+        </h3>
+        <ul id="fav_list">
+            {foreach from=$fav_products item=p}
+            <li>
+                <a href="product.php?id={$p.id}">
+                    <img src="{$p.img}" alt="{$p.name}">
+                    <span>{$p.name}</span>
+                    <em>￥{$p.price}</em>
+                    {if $p.given_integral gt 0}
+                    <em>送{$p.given_integral|string_format:'%.2f'}积分</em>
+                    {else}
+                    <em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</em>
+                    {/if}
+                </a>
+            </li>
+            {/foreach}
+        </ul>
+    </section>
+</section>
+<div style="height: 2.2rem;"></div>
+<!-- 底部菜单 -->
+<section class="menu">
+    <ul>
+        <li><a href="index.php"><em class="icon">&#xe601;</em><span>首页</span></a></li>
+        <li><a href="recommend.php"><em class="icon">&#xe626;</em><span>我要分享</span></a></li>
+<!--        <li><a href="category.php"><em class="icon">&#xe603;</em><span>分类</span></a></li>-->
+        <li><a href="cart.php"><em class="icon">&#xe602;</em><span>购物车</span></a></li>
+        <li><a class="active" href="user.php"><em class="icon">&#xe604;</em><span>我</span></a></li>
+    </ul>
+</section>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    var page = 2;
+    function change_fav() {
+        var url = "data_center.php";
+        var data = { "opera":"get_fav", "page": page, "count": 3 };
+        $.post(url, data, change_fav_handler, "json");
+    }
+
+    function change_fav_handler(response) {
+        if(response.error === 0) {
+            $("#fav_list").html(response.content);
+            page = response.page;
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<!-- sidebar -->
+<div id="sidebar">
+    <div id="sidebar-wrapper">
+        <ul id="main-nav">
+            <!-- main Menu -->
+            <li class="coin_1">
+                <a href="main.php" class="nav-top-item">
+                    <em class="icon">&#xe602;</em>首页
+                </a>
+            </li>
+            <li class="coin_menu_self">
+                <a href="self.php" class="nav-top-item">
+                    <em class="icon">&#xe606;</em>帐号管理
+                </a>
+                <ul class="submenu" id="menu_self"  style="display: none">
+                    <li><a href="self.php">帐号资料</a></li>
+                    <li><a href="self.php?act=password">修改密码</a></li>
+                </ul>
+            </li>
+            {foreach from=$menus item=menu}
+            <li class="coin_{$menu.key}">
+                {if $menu.count eq 1}
+                <a href="{$menu.url}" class="nav-top-item" >
+                    <em class="icon">{$menu.icon}</em>{$menu.title}
+                    {if $menu.url eq 'business.php' && $business_deal_count neq 0}
+                    <sup class="sidebar-badge">{if $business_deal_count lt 10}&nbsp;{/if}{$business_deal_count}</sup>
+                    {/if}
+                </a>
+                {else}
+                <a href="{$menu.url}" class="nav-top-item">
+                    <em class="icon">{$menu.icon}</em>{$menu.title}
+                    {if $menu.url eq 'exchange.php' && $finance_count neq 0}
+                    <sup class="sidebar-badge">{if $finance_count lt 10}&nbsp;{/if}{$finance_count}</sup>
+                    {/if}
+                    {if $menu.url eq 'product.php' && $product_exam_count neq 0}
+                    <sup class="sidebar-badge">{if $product_exam_count lt 10}&nbsp;{/if}{$product_exam_count}</sup>
+                    {/if}
+                    {if $menu.url eq 'virtual_product.php' && $virtual_product_exam_count neq 0}
+                    <sup class="sidebar-badge">{if $virtual_product_exam_count lt 10}&nbsp;{/if}{$virtual_product_exam_count}</sup>
+                    {/if}
+                </a>
+                <ul class="submenu" id="{$menu.key}" style="display: none">
+                    {foreach from=$menu.children item=child}
+                    <li><a href="{$child.url}">{$child.title}</a></li>
+                    {/foreach}
+                </ul>
+                {/if}
+            </li>
+
+            {/foreach}
+        </ul> <!-- End #main-nav -->
+    </div>
+</div>
+<!-- END sidebar -->
+{if $is_main eq false}
+<script type="text/javascript">
+    {if $activeNav eq 'self.php'}
+    $(function () {
+        menu1("#menu_self", "#menu_self a", ".coin_menu_self a.nav-top-item");
+    })
+    {else}
+    $(function () {
+        {if $menuMark.count gt 1}
+        menu1("#{$menuMark.name}", "#{$menuMark.name} a", ".coin_{$menuMark.name} a.nav-top-item");
+        {else}
+        menu1("", "", ".coin_{$menuMark.name} a.nav-top-item");
+        {/if}
+        /*
+        $("#sidebar").css("height", document.body.scrollHeight+"px");
+        */
+    })
+    {/if}
+</script>
+{else}
+<script type="text/javascript">
+    $(function () {
+        menu1("", "", ".coin_1 a.nav-top-item");
+    })
+</script>
+{/if}
+

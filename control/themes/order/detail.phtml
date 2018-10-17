@@ -1,0 +1,114 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">订单详情</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <p style="display: inline-block" class="clear">
+            <label class="l-title">订单编号：</label>
+            <em style="width: 132px;">{$order.order_sn}</em>
+        </p>
+        <p style="display: inline-block" class="clear">
+            <label class="l-title">下单时间：</label>
+            <em style="width: 132px;">{$order.add_time_str}</em>
+        </p>
+        <p style="display: inline-block" class="clear">
+            <label class="l-title">支付时间：</label>
+            <em style="width: 132px;">{$order.pay_time_str}</em>
+        </p>
+        <p style="display: inline-block" class="clear">
+            <label class="l-title">发货时间：</label>
+            <em style="width: 132px;">{$order.delivery_time_str}</em>
+        </p> <p style="display: inline-block" class="clear">
+            <label class="l-title">确认收货时间：</label>
+            <em style="width: 132px;">{$order.receive_time_str}</em>
+        </p>
+        <p style="display: inline-block" class="clear">
+            <label class="l-title">订单状态：</label>
+            <em style="width: 132px;">{$order.status_str}</em>
+        </p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>产品</th>
+                <th>属性</th>
+                <th>单价</th>
+                <th>数量</th>
+                <th>积分</th>
+                <th>返利</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$order_detail item=detail}
+            <tr>
+                <td>
+                    <div class="pull-left">
+                        <img src="{$detail.img}" width="50" height="50"/>
+                    </div>
+                    <div class="pull-left">
+                        <em> {$detail.product_name} </em>
+                    </div>
+                </td>
+                <td>
+                    <em>{$detail.product_attributes}</em>
+                </td>
+                <td>{$detail.product_price}</td>
+                <td>{$detail.count}</td>
+                <td>{$detail.integral}</td>
+                <td>{$detail.reward}</td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+        <div class="pull-right">
+            结算：{$order.amount}（含运费：{$order.delivery_fee}）
+        </div>
+    </div>
+    <div class="content-title">
+        <h5 class="pull-left">物流信息</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <div class="clear">
+            <p style="" class="clear">
+                <label class="l-title">收货地址：</label>
+                <em>
+                    {$order.province_name} &nbsp;
+                    {$order.city_name} &nbsp;
+                    {$order.district_name} &nbsp;
+                    {$order.address}  <br />
+                    {$order.consignee}  ( {$order.mobile}  ) <br />
+                    {$order.zipcode}
+                </em>
+            </p>
+            <p style="display: inline-block" class="clear">
+                <label class="l-title">配送方式：</label>
+                <em>{if $order.delivery_name}{$order.delivery_name}{else}&nbsp;{/if}</em>
+            </p>
+            <p style="display: inline-block" class="clear">
+                <label class="l-title">物流公司：</label>
+                <em>{if $order.express_name}{$order.express_name}{else}&nbsp;{/if}</em>
+            </p>
+            <p style="display: inline-block" class="clear">
+                <label class="l-title">快递单号：</label>
+                <em>{if $order.express_sn}{$order.express_sn}{else}&nbsp;{/if}</em>
+            </p>
+            <p style="display: inline-block" class="clear">
+                <label class="l-title">备注：</label>
+                <em>{if $order.remark}{$order.remark}{else}&nbsp;{/if}</em>
+            </p>
+        </div>
+    </div>
+</div>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

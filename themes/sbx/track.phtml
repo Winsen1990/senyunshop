@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<header class="header">
+    <a href="javascript:history.back();" class="back"></a>
+    <h1><em>查看物流</em></h1>
+</header>
+<!-- 查看物流页面 -->
+<section class="track">
+    <section class="track-con">
+        <div class="order-track border_bottom">
+            <div class="order-track-l">
+                <img src="{$product_img}" alt="产品图"/>
+            </div>
+            <div class="order-track-r">
+                <span class="track-status">物流状态：<em>{if $express_flow.status eq 200}{$express_state[{$express_flow.state}]}{else}暂无信息{/if}</em></span>
+                <span>承运公司：{$express_info.name}</span>
+                <span>运单编号：{$order.express_sn}</span>
+            </div>
+        </div>
+        <div class="track-detail">
+            {if $express_flow.status eq 200}
+            <div class="track-detail-con">
+                <i class="icon">&#xe61a;</i>
+                <ul>
+                    {foreach from=$express_flow.data item=data name=express_flow}
+                    {if $smarty.foreach.express_flow.first}
+                    <li class="selected">
+                    {else}
+                    <li>
+                    {/if}
+                        <span class="icon">&#xe636;</span>
+                        <span>{$data.context}</span>
+                        <p>{$data.time}</p>
+                    </li>
+                    {/foreach}
+                </ul>
+            </div>
+            {else}
+            <div class="track-detail-con">
+                <i class="icon">&#xe61a;</i>
+                <ul>
+                    <li class="selected">
+                        <span class="icon">&#xe636;</span>
+                        <span>物流单暂无结果</span>
+                        <p>{date('Y-m-d H:i:s')}</p>
+                    </li>
+                </ul>
+            </div>
+            {/if}
+        </div>
+    </section>
+</section>
+
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+</body>
+</html>

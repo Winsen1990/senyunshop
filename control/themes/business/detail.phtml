@@ -1,0 +1,83 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">商户认证信息详情</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="authDetailForm" method="post" action="">
+            <fieldset>
+                {if $business.company}
+                <p>
+                    <label class="l-title">公司名称：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-company" value="{$business.company}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="company" value="{$auth.company}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">公司简介：</label>
+                    <textarea disabled="disabled" rows="6" cols="41" name="old-desc">{$business.desc}</textarea>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <textarea disabled="disabled" rows="6" cols="41" name="desc">{$auth.desc}</textarea>
+                </p>
+                {/if}
+                <p>
+                    <label class="l-title">主营行业：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-industry" value="{$business.industry_name}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="industry" value="{$auth.industry_name}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">主营分类：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-category" value="{$business.cate_name}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="category" value="{$auth.cate_name}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">负责人：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-contact" value="{$business.contact}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="contact" value="{$auth.contact}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">联系电话：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-mobile" value="{$business.mobile}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="mobile" value="{$auth.mobile}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">电子邮箱：</label>
+                    <input class="text-input w300" type="text" maxlength="64" name="old-email" value="{$business.email}" disabled="disabled"/>
+                    ——>
+                    <input class="text-input w300" type="text" maxlength="64" name="email" value="{$auth.email}" disabled="disabled"/>
+                </p>
+                <p>
+                    <label class="l-title">{if $business.company}营业执照{else}身份证正面{/if}：</label>
+                    <input type="hidden" name="license" id="license" placeholder="">
+                    <img class="select-image" alt="" src="../{$auth.license}" width="400px">&nbsp;
+                </p>
+                <p>
+                    <label class="l-title">{if $business.company}法人身份证{else}身份证反面{/if}：</label>
+                    <input type="hidden" name="identity" id="identity" placeholder="">
+                    <img class="select-image" alt="" src="../{$auth.identity}" width="400px">&nbsp;
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="auth" />
+                    <input type="hidden" name="account" value="{$business.business_account}" />
+                    <button class="btn btn-primary" type="submit">通过</button> &nbsp;
+                    <a href="business.php?act=auth_reject&account={$business.business_account}" class="btn btn-primary">驳回</a>&nbsp;
+                    <a href="business.php?act=auth" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>圣宝先移动商城</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="application-name" content="圣宝先移动商城">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="www.kwanson.com">
+    <meta name="version" content="v.1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=no, address=no">
+    <link rel="stylesheet" href="{$template_dir}css/common.css">
+    <link rel="stylesheet" href="{$template_dir}css/app.css">
+    <link rel="stylesheet" href="{$template_dir}css/fonts.css">
+</head>
+<body>
+<!-- 搜索框 -->
+<section id="mix_search_div" dd_name="搜索浮层" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+    <header id="bd">
+        <header class="con floatsearch">
+            <section class="mix_new_header">
+                <a href="javascript:history.back();" class="mix_back"></a>
+                <form id="index_search_form" method="get" action="search.php">
+                    <div class="search">
+                        <div class="text_box">
+                            <input id="keyword" name="keyword" type="text" value="" placeholder="搜索店铺" class="keyword text" onkeydown="this.style.color='#404040';" maxlength="70" autocomplete="off">
+                        </div>
+                        <span class="mix_submit"></span>
+                    </div>
+                    <input type="hidden" name="mode" value="shop" id="mode"/>
+                    <input type="submit" value="搜索" class="mix_filtrate">
+                </form>
+            </section>
+            <section class="mix_search_list" style="display: none;"></section>
+        </header>
+    </header>
+</section>
+<!-- 排序 -->
+<section class="filtrate_term _pre" id="product_sort" title="商品排序">
+    <ul>
+        <li class="on" id="index_comment" style="width: 50%;"><a href="javascript:sort('comment');" name="list_sort_comment">店铺评价</a></li>
+        <li style="width: 50%;" id="index_near"><a href="javascript:sort('near');" name="list_sort_range">离我最近</a></li>
+    </ul>
+</section>
+<!-- search result -->
+<section class="goods_list _pre" id="goods_list" name="goods_list" title="商品列表">
+    <div class="clearfix">
+        <ul class="clearfix" id="shop_list">
+            {foreach from=$shop_list item=shop}
+            <li class="search-shop-li">
+                <div class="search-shop-info">
+                    <img src="{$shop.shop_logo}" alt="{$shop.shop_name}"/>
+                        <span class="search-shop-detail">
+                            <span class="search-shop-name">{$shop.shop_name}</span>
+                            <span class="search-shop-comment">店铺评价<em>{sprintf("%.1f", $shop.comment)}分</em></span>
+                        </span>
+                    <a href="shop.php?sn={$shop.business_account}" class="search-to-shop">进店逛逛</a>
+                    <ul class="search-shop-product">
+                        {foreach from=$shop.product_list item=product}
+                        <li>
+                            <a href="product.php?id={$product.id}">
+                                <img src="{$product.img}" alt="{$product.name}"/>
+                                <span class="shop-product-price">￥{$product.price}</span>
+                            </a>
+                        </li>
+                        {/foreach}
+                    </ul>
+                </div>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</section>
+<div class="cd-popup" role="alert">
+    <div class="cd-popup-container" id="message_dialog" style="display: none;">
+        <p id="dialog-message"></p>
+        <ul class="cd-buttons">
+            <li class="cd-signle-button"><a href="javascript:close_message_dialog();">确认</a></li>
+        </ul>
+        <a href="javascript:close_message_dialog();" class="cd-popup-close img-replace">X</a>
+    </div>
+
+    <div class="progressbar">
+        <img src="{$template_dir}images/loading.gif"/>
+    </div>
+</div>
+<script type="text/javascript" src="{$template_dir}js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="{$template_dir}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript">
+    var position = null;
+    var filter = {$filter};
+
+    $(document).ready(function(){
+        //图片延迟加载
+        $("img.lazy").lazyload({
+            effect : "fadeIn"
+        });
+        //初始化收藏功能
+
+        //初始化加载更多功能
+
+        //筛选浮层显示控制
+        var filtrate = $(".filtrate"), submit = $(".submit,.back");
+        filtrate.bind("click", function () {
+            $("._next").show();
+            $("._pre").hide();
+            window.scrollTo(0, 0);
+        });
+        submit.bind("click", function () {
+            $("._next").hide();
+            $("._pre").show();
+        });
+
+        $(".select-text").bind("click", function () {
+            $(".select-detail").toggle();
+        });
+
+        var options = { enableHighAccuracy: true };
+        window.navigator.geolocation.getCurrentPosition(getPosition, null, options);
+    });
+
+    function getPosition(p) {
+        position.latitude = p.coords.latitude;
+        position.longitude = p.coords.longitude;
+        filter.position = position;
+    }
+
+    function sort(mode) {
+        var url = "search.php";
+        var data = { "opera":"sort_shop", "filter":filter, "mode":mode };
+
+        $("#index_"+mode).siblings().removeClass("on");
+        $("#index_"+mode).addClass("on");
+
+        show_mask();
+        $.post(url, data, sort_handler, "json");
+    }
+
+    function sort_handler(response) {
+        hide_mask();
+        if(response.error == 0) {
+            $("#shop_list").html(response.content);
+            filter = response.filter;
+        } else {
+            show_message_dialog(response.msg);
+        }
+    }
+
+    function select_mode(mode) {
+        $("#mode").val(mode);
+        if(mode == "product") {
+            $("#select-text").text("宝贝");
+        } else {
+            $("#select-text").text("店铺");
+        }
+        $(".select-detail").toggle();
+    }
+
+    function show_message_dialog(message) {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").hide();
+        $("#dialog-message").text(message);
+        $("#message_dialog").show();
+    }
+
+    function close_message_dialog() {
+        $(".cd-popup").removeClass("is-visible");
+        $("#message_dialog").hide();
+    }
+
+    function show_mask() {
+        $(".cd-popup").addClass("is-visible");
+        $(".progressbar").show();
+    }
+
+    function hide_mask() {
+        $(".cd-popup").removeClass("is-visible");
+        $(".progressbar").hide();
+    }
+</script>
+</body>
+</html>

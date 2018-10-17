@@ -1,0 +1,1134 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">订单管理{if $order_status neq ''}-{$order_status}{/if}</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="order.php">全部</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=1">待支付</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=3">已支付</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=4">待发货</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=5">配货中</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=6">已发货</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=7">已收货</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=8">申请退单</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=9">退单中</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=10">已退单</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=11">无效订单</a>&nbsp;
+            <a class="btn btn-primary" href="order.php?status=12">已完成</a>&nbsp;
+            <a class="btn btn-primary" href="javascript:history.go(-1);">返回</a>&nbsp;
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <a class="btn btn-primary" href="?act=export&status={$status}&count={$count}&st={$st}&et={$et}">导出数据</a>&nbsp;
+        <form action="" method="get" />
+        <fieldset>
+            <p>
+            <div class="pull-left">
+                显示
+                <select name="count" class="w75">
+                    <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                    <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                    <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                    <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                </select>
+                项结果
+            </div>
+            <div class="pull-right">
+                <label>起始日期：</label>
+                <input class="text-input w150" type="text" id="" name="st" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$st}">&nbsp;
+                <label>结束日期：</label>
+                <input class="text-input w150" type="text" id="" name="et" {literal}onClick="laydate({istime: true, format: 'YYYY-MM-DD'})"{/literal} value="{$et}">&nbsp;
+                <input type="hidden" name="status" value="{$status}"/>
+                <button type="submit" class="btn btn-default">搜索</button>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        {if $status eq 0}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>订单状态</th>
+                <th>订单总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.status_str}</td>
+                <td>{$order.amount}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <a href="order.php?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">尚未有客户下单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 1}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>运费</th>
+                <th>产品总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.delivery_fee}</td>
+                <td>{$order.product_amount}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">尚未有客户下单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 3}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>产品总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.product_amount}</td>
+                <td>
+                    {$order.mobile}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">尚未有客户下单！（产品是全虚拟产品）</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 4}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>支付时间</th>
+                <th>配送方式</th>
+                <th>支付方式</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.pay_time_str}</td>
+                <td>{$order.delivery_name}</td>
+                <td>{$order.payment_name}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">尚未有需要发货的订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 5}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>支付时间</th>
+                <th>配送方式</th>
+                <th>支付方式</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.pay_time_str}</td>
+                <td>{$order.delivery_name}</td>
+                <td>{$order.payment_name}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">尚未有需要发货的订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 6}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>发货时间</th>
+                <th>配送方式</th>
+                <th>快递单号</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.delivery_time_str}</td>
+                <td>{$order.delivery_name}</td>
+                <td>{$order.express_sn}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无已发出的订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 7}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>发货时间</th>
+                <th>收货时间</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.delivery_time_str}</td>
+                <td>{$order.receive_time_str}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户确认收货的订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 8}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>支付时间</th>
+                <th>发货时间</th>
+                <th>收货时间</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.pay_time_str}</td>
+                <td>{$order.delivery_time_str}</td>
+                <td>{$order.receive_time_str}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                    | <a href="order.php?act=agree&sn={$order.order_sn}" onclick="javascript:if(confirm('确认同意退单？')) return true; else return false;">同意退单</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户申请退单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 9}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>订单状态</th>
+                <th>订单总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.status_str}</td>
+                <td>{$order.amount}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                    | <a href="order.php?act=refund&sn={$order.order_sn}" onclick="javascript:if(confirm('确认已退单？')) return true; else return false;">退单成功</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户退单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 10}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>支付时间</th>
+                <th>发货时间</th>
+                <th>收货时间</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.pay_time_str}</td>
+                <td>{$order.delivery_time_str}</td>
+                <td>{$order.receive_time_str}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户申请退单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        {if $status eq 11}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>运费</th>
+                <th>产品总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.delivery_fee}</td>
+                <td>{$order.product_amount}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户取消订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+        {if $status eq 12}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>运费</th>
+                <th>产品总额</th>
+                <th>联系方式</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $total neq 0}
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time_str}</td>
+                <td>{$order.delivery_fee}</td>
+                <td>{$order.product_amount}</td>
+                <td>
+                    {$order.province_name}&nbsp;{$order.city_name}&nbsp;{$order.district_name}&nbsp;{$order.group_name}&nbsp;{$order.address}<br />
+                    {$order.consignee}({$order.mobile})<br />
+                    邮编：{$order.zipcode}
+                </td>
+                <td>{$order.remark}</td>
+                <td>
+                    <!--                    <a href="javascript:void(0);" class="order-detail" data-value="{$order.order_sn}">订单详情</a>-->
+                    <a href="?act=detail&sn={$order.order_sn}">订单详情</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            {if $st eq '' && $et eq ''}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">暂无客户完成订单！</td>
+            </tr>
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    <span class="text-size-24 blue icon-info-1" style="vertical-align: middle"></span>
+                    <div class="text-size-18 tip-text inline-block">没有查询到符合条件的记录</div>
+                </td>
+            </tr>
+            {/if}
+            {/if}
+            <tr>
+                <td colspan="7">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&st={$st}&count={$count}&et={$et}&status={$status}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&st={$st}&count={$count}&et={$et}&status={$status}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&st={$st}&count={$count}&et={$et}&status={$status}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&st={$st}&count={$count}&et={$et}&status={$status}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&st={$st}&count={$count}&et={$et}&status={$status}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+    </div>
+    <div id="modal-order-detail" class="modal modal-large" style="max-height: 542px;">
+        <div class="modal-dialog">
+            <div class="modal-head">
+                <h1 class="modal-title">订单详情</h1>
+                <a href="javascript: void(0)" class="close-modal" rel="modal:close">&times;</a>
+            </div>
+            <div class="modal-body">
+                <div class="order-info clear">
+
+
+                </div>
+                <div class="express-info clear">
+                    <h5 class="pull-left">物流信息</h5>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="pull-right">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script>
+    {literal}
+    $(function(){
+        laydate.skin('yalan');//切换皮肤，请查看skins下面皮肤库
+    });
+    {/literal}
+</script>
+<!-- END 日历控件 -->
+
+<script type="text/javascript">
+    $(function() {
+        $('select[name=count]').change(function () {
+            var st = $('input[name=st]').val();
+            var et = $('input[name=et]').val();
+
+            var count = $(this).val();
+            var url = 'order.php?count=' + count;
+            if( st ) {
+                url += '&st=' + st;
+            }
+            if( et ) {
+                url += '&et=' + et;
+            }
+            {if $status}
+                var status = $('input[name=status]').val();
+                url += ( status == 0 ) ? '' : '&status=' + status;
+                {/if}
+                    window.location.href = url;
+                });
+            });
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>
