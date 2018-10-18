@@ -9,7 +9,7 @@
 
 include 'library/init.inc.php';
 
-global $plugins;
+global $plugins, $db, $log, $smarty, $config;
 
 $plugins = array();
 //商户管理后台初始化
@@ -234,6 +234,7 @@ if('delivery_area_delete' == $act)
 
     if($db->autoDelete('delivery_area', '`id`='.$id))
     {
+        $db->destroy('delivery_area_mapper', ['area_id' => $id]);
         show_system_message('删除配送区域成功');
     } else {
         show_system_message('系统繁忙，请稍后再试');

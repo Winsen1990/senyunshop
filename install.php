@@ -13951,6 +13951,24 @@ $sql[] = 'INSERT INTO '.$db->table('express').' (`id`, `name`, `code`, `first_le
 (206, \'郑州速捷\', \'sujievip\', \'Z\'),
 (207, \'智通物流\', \'ztong\', \'Z\');';
 
+$table[] = '专区';
+$sql[] = 'create table if not exists '.$db->table('blocks').' (
+    `id` bigint not null auto_increment primary key,
+    `name` varchar(255) not null comment \'专区名称\',
+    `status` int not null default \'0\' comment \'状态：0 - 停用，1 - 启用\',
+    `url` varchar(255) not null comment \'链接\',
+    `cover` varchar(255) not null comment \'封面图\',
+    `sort` int not null default \'50\' comment \'排序 升序\'
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '专区-产品映射';
+$sql[] = 'create table if not exists '.$db->table('block_product_mapper').' (
+    `block_id` bigint not null comment \'专区ID\',
+    `product_sn` varchar(255) not null comment \'产品编号\',
+    `sort` int not null default \'50\' comment \'排序\',
+    primary key(`block_id`, `product_sn`)
+) engine=InnoDB default charset=utf8;';
+
 echo '创建数据库表:<br/>';
 foreach($table as $key=>$name)
 {

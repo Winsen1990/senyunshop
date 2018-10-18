@@ -12,7 +12,7 @@ $charset = 'utf8'; //数据库采用编码
 define('DB_HOST', 'localhost');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', 'root');
-define('DB_DBNAME', 'senyun');
+define('DB_DBNAME', 'wine');
 define('DB_PREFIX', 'wi_');
 define('DB_CHARSET', 'utf8mb4');
 define('PASSWORD_END', '_wine');

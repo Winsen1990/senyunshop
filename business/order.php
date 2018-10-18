@@ -579,24 +579,9 @@ if( 'refund' == $act ) {
                 $db->autoInsert('business_exchange_log', array($business_log_data));
             }
         }
-
     }
 
     distribution_settle(-($order['reward_amount']), -($order['integral_given_amount']), $path, $order_sn);
-
-    if($order['type'] == 1) {
-        $user = $db->fetchRow('select * from '.$db->table('member').' where `account`=\''.$order['account'].'\'');
-
-        if($user['level_id'] <= 1) {
-            $user_data = array(
-                'level_id' => 0
-            );
-
-            $db->autoUpdate('member', $user_data, '`account`=\''.$order['account'].'\'');
-
-            $log->record('会员降级 '.$user['account'].': '.$user['level_id'].'=>0');
-        }
-    }
 
     if( $transaction ) {
         $db->commit();
@@ -785,46 +770,6 @@ if( 'pay' == $act ) {
                 'status' => 4,
             );
             $db->autoUpdate('order', $order_data, '`order_sn`=\''.$order_sn.'\' and `status`<>4');
-        }
-
-        //如果会员购买了activity=1的产品且店铺已通过审核，则升级
-        $check_can_levelup = 'select am.`activity_id` from '.$db->table('activity_mapper').' as am left join '.
-            $db->table('order_detail').' using (`product_sn`) where `order_sn`=\''.$order_sn.'\' and `activity_id`=1';
-
-        $user_info = $db->fetchRow('select `nickname`,`headimg`,`level_id`,`openid` from '.$db->table('member').' where `account`=\''.$order['account'].'\'');
-
-        if($db->fetchOne($check_can_levelup) && $order['product_amount'] >= 10000 && $user_info && $user_info['level_id'] <= 0)
-        {
-            $member_data = array(
-                'level_id' => 1
-            );
-
-            $db->autoUpdate('member', $member_data, '`account`=\''.$order['account'].'\'');
-
-            $member_shop = $db->fetchRow('select `id` from '.$db->table('member_shop').' where `account`=\''.$order['account'].'\'');
-
-            if(empty($member_shop)) {
-                /**
-                 * 创建会员店铺
-                 */
-                $member_shop_data = array(
-                    'account' => $order['account'],
-                    'name' => $user_info['nickname'].'的店铺',
-                    'logo' => $user_info['headimg'],
-                    'add_time' => time()
-                );
-
-                $db->autoInsert('member_shop', array($member_shop_data));
-            }
-
-            if($user_info['openid'] != '') {
-                notify_member($user_info['openid'], '您的商业会员申请已通过审核');
-            }
-
-            $order_data = array(
-                'type' => 1,
-            );
-            $db->autoUpdate('order', $order_data, '`order_sn`=\''.$order_sn.'\'');
         }
 
         $links = array(

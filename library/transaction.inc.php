@@ -194,7 +194,18 @@ function consume_inventory($product_sn, $attributes, $number, $mode = 0)
     $sql .= ' where `product_sn`=\''.$product_sn.'\' and `attributes`=\''.$attributes.'\'';
 
     $log->record($sql);
-    return $db->update($sql);
+    if($db->update($sql) !== false) {
+        if($mode == 1) {
+            //更新产品销售数量
+            $update_sale_count = 'update '.$db->table('product').' set `sale_count`=`sale_count`+'.$number.
+                                ' where `product_sn`=\''.$product_sn.'\'';
+
+            $db->update($update_sale_count);
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**

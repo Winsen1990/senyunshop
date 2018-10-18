@@ -574,6 +574,15 @@ class MySQL
                                     $where .= ' between \'' . implode('\' and \'', $values[0]) . '\'';
                                     break;
 
+                                case 'not in':
+                                case 'in':
+                                    foreach($values[0] as &$_value) {
+                                        $_value = $this->escape($_value);
+                                    }
+
+                                    $where .= ' '.$operation.' (\''. implode('\',\'', $values[0]) .'\')';
+                                    break;
+
                                 case 'exp':
                                     $where .= $this->escape($values[0]);
                                     break;

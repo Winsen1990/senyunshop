@@ -9,7 +9,7 @@ include '../library/api.inc.php';
 global $db, $log, $config, $current_user;
 
 $operation = 'add|delete|edit|default';
-$action = 'view|show|get_default';
+$action = 'view|show|get_default|data';
 
 $opera = check_action($operation, getPOST('opera'));
 $act = check_action($action, getGET('act'));
@@ -93,58 +93,33 @@ if('delete' == $opera)
 
 if('add' == $opera)
 {
-    $province = getPOST('province');
-    $city = getPOST('city');
-    $district = getPOST('district');
-    $group = 0;
+    $province = intval(getPOST('province'));
+    $city = intval(getPOST('city'));
+    $district = intval(getPOST('district'));
+    $group = intval(getPOST('group'));
     $address = getPOST('address');
     $is_default = 0;
     $mobile = getPOST('mobile');
     $consignee = getPOST('consignee');
 
-    if(empty($province) || empty($city) || empty($district)) {
-        $response['message'] .= "-请选择省/市/区";
-    } else {
-        if(mb_substr($province, -1) == '省') {
-            $province = mb_substr($province, 0, -1);
-        }
+    $province = max(0, $province);
+    $city = max(0, $city);
+    $district = max(0, $district);
+    $group = max(0, $group);
 
-        $province = $db->getColumn('province', 'id', ['province_name' => $province]);
-
-        if ($province <= 0) {
-            $response['message'] .= "-请选择省份\n";
-        }
-
-        if(mb_substr($city, -1) == '市') {
-            $city = mb_substr($city, 0, -1);
-        }
-
-        $city = $db->getColumn('city', 'id', ['city_name' => $city]);
-
-        if ($city <= 0) {
-            $response['message'] .= "-请选择城市\n";
-        }
-
-        if(mb_substr($district, -1) == '区') {
-            $district = mb_substr($district, 0, -1);
-        }
-
-        $district = $db->getColumn('district', 'id', ['district_name' => $district]);
-
-        if ($district <= 0) {
-            $response['message'] .= "-请选择区\n";
-        }
+    if(empty($province) || empty($city) || empty($district) || empty($group)) {
+        $response['message'] .= '-请选择省/市/区';
     }
 
     if($address == '') {
-        $response['message'] .= "-请填写详细地址\n";
+        $response['message'] .= '-请填写详细地址\n';
     } else {
         $address = $db->escape($address);
     }
 
     if(!is_mobile($mobile))
     {
-        $response['message'] .= "-手机号码格式错误";
+        $response['message'] .= '-手机号码格式错误';
     } else {
         $mobile = $db->escape($mobile);
     }
@@ -198,58 +173,33 @@ if('edit' == $opera)
         throw new RestFulException('参数错误', 401);
     }
 
-    $province = getPOST('province');
-    $city = getPOST('city');
-    $district = getPOST('district');
-    $group = 0;
+    $province = intval(getPOST('province'));
+    $city = intval(getPOST('city'));
+    $district = intval(getPOST('district'));
+    $group = intval(getPOST('group'));
     $address = getPOST('address');
     $is_default = 0;
     $mobile = getPOST('mobile');
     $consignee = getPOST('consignee');
 
-    if(empty($province) || empty($city) || empty($district)) {
-        $response['message'] .= "-请选择省/市/区";
-    } else {
-        if(mb_substr($province, -1) == '省') {
-            $province = mb_substr($province, 0, -1);
-        }
+    $province = max(0, $province);
+    $city = max(0, $city);
+    $district = max(0, $district);
+    $group = max(0, $group);
 
-        $province = $db->getColumn('province', 'id', ['province_name' => $province]);
-
-        if ($province <= 0) {
-            $response['message'] .= "-请选择省份\n";
-        }
-
-        if(mb_substr($city, -1) == '市') {
-            $city = mb_substr($city, 0, -1);
-        }
-
-        $city = $db->getColumn('city', 'id', ['city_name' => $city]);
-
-        if ($city <= 0) {
-            $response['message'] .= "-请选择城市\n";
-        }
-
-        if(mb_substr($district, -1) == '区') {
-            $district = mb_substr($district, 0, -1);
-        }
-
-        $district = $db->getColumn('district', 'id', ['district_name' => $district]);
-
-        if ($district <= 0) {
-            $response['message'] .= "-请选择区\n";
-        }
+    if(empty($province) || empty($city) || empty($district) || empty($group)) {
+        $response['message'] .= '-请选择省/市/区';
     }
 
     if($address == '') {
-        $response['message'] .= "-请填写详细地址\n";
+        $response['message'] .= '-请填写详细地址\n';
     } else {
         $address = $db->escape($address);
     }
 
     if(!is_mobile($mobile))
     {
-        $response['message'] .= "-手机号码格式错误";
+        $response['message'] .= '-手机号码格式错误';
     } else {
         $mobile = $db->escape($mobile);
     }
@@ -329,7 +279,9 @@ if('show' == $act)
     }
 
     $get_address = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
-        'a.`mobile`,a.`zipcode`,a.`id` from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
+        'a.`province`,a.`city`,a.`district`,a.`group`,'.
+        'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name'.
+        ' from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
         $db->table('city').' as c, '.$db->table('district').' as d where '.
         'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
         ' and a.`account`=\''.$current_user['account'].'\' and a.id = '.$id;
@@ -345,10 +297,15 @@ if('show' == $act)
             'consignee' => $address['consignee'],
             'mobile' => $address['mobile'],
             'detail' => $address['address'],
+            'province' => $address['province'],
+            'city' => $address['city'],
+            'district' => $address['district'],
+            'group' => $address['group'],
             'region' => [
-                $address['province_name'].'省',
-                $address['city_name'].'市',
-                $address['district_name'].'区'
+                $address['province_name'],
+                $address['city_name'],
+                $address['district_name'],
+                $address['group_name']
             ]
         ];
 
@@ -363,8 +320,10 @@ if('view' == $act)
     $response['address'] = [];
 
     $get_address_list = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
-        'a.`mobile`,a.`zipcode`,a.`id` from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
-        $db->table('city').' as c, '.$db->table('district').' as d where '.
+        'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name '.
+        ' from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
+        $db->table('city').' as c, '.$db->table('district').' as d '.
+        ' where '.
         'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
         ' and a.`account`=\''.$current_user['account'].'\' order by `is_default` DESC';
     $address_list = $db->fetchAll($get_address_list);
@@ -374,7 +333,7 @@ if('view' == $act)
         foreach ($address_list as &$address)
         {
             $address['is_default'] = $address['is_default'] ? true : false;
-            $address['address'] = $address['province_name'] . ' ' . $address['city_name'] . ' ' . $address['district_name'] . ' ' . $address['address'];
+            $address['address'] = $address['province_name'] . ' ' . $address['city_name'] . ' ' . $address['district_name'] . ' '. $address['group_name'].' ' . $address['address'];
             unset($address['province_name']);
             unset($address['city_name']);
             unset($address['district_name']);
@@ -383,6 +342,46 @@ if('view' == $act)
 
         $response['address'] = $address_list;
     }
+}
+
+if('data' == $act)
+{
+    $response['error'] = 0;
+
+    $province = $db->all('province', ['id', 'province_name']);
+    foreach($province as &$_province) {
+        $_province['id'] = intval($_province['id']);
+        $_province['name'] = $_province['province_name'];
+        unset($_province['province_name']);
+    }
+    $response['province'] = $province;
+
+    $city = $db->all('city', ['id', 'city_name', 'province_id']);
+    foreach($city as &$_city) {
+        $_city['id'] = intval($_city['id']);
+        $_city['province_id'] = intval($_city['province_id']);
+        $_city['name'] = $_city['city_name'];
+        unset($_city['city_name']);
+    }
+    $response['city'] = $city;
+
+    $district = $db->all('district', ['id', 'district_name', 'city_id']);
+    foreach($district as &$_district) {
+        $_district['id'] = intval($_district['id']);
+        $_district['city_id'] = intval($_district['city_id']);
+        $_district['name'] = $_district['district_name'];
+        unset($_district['district_name']);
+    }
+    $response['district'] = $district;
+
+    $group = $db->all('group', ['id', 'group_name', 'district_id']);
+    foreach($group as &$_group) {
+        $_group['id'] = intval($_group['id']);
+        $_group['district_id'] = intval($_group['district_id']);
+        $_group['name'] = $_group['group_name'];
+        unset($_group['group_name']);
+    }
+    $response['group'] = $group;
 }
 
 echo json_encode($response);

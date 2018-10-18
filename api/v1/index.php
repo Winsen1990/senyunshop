@@ -51,35 +51,43 @@ if($categories) {
 //}
 
 //推荐产品
-$get_recommend_products = 'select p.`id`,p.`name`,p.`price`,p.`shop_price` as market_price,p.`sale_count`,p.`img` from '.
-                          $db->table('product').' as p join '.$db->table('activity_mapper').' as a using(`product_sn`) '.
-                          ' where a.`activity_id`=1 and p.`status`=4 order by `order_view` limit 10';
+$blocks = $db->all('blocks', ['id', 'name', 'cover'], ['status' => 1], null, ['sort']);
+if($blocks) {
+    foreach($blocks as $block) {
+        $get_assoc_products = 'select p.`id`,p.`product_sn`,p.`name`,p.`price`,p.`img`,m.`sort`,p.`shop_price` as market_price,'.
+                                'p.`sale_count` from '.$db->table('product').' as p inner join '.
+            $db->table('block_product_mapper').' as m on m.`product_sn`=p.`product_sn` and m.`block_id`='.$block['id'].' order by m.`sort`';
 
-$recommend_products = $db->fetchAll($get_recommend_products);
+        $assoc_products = $db->fetchAll($get_assoc_products);
+        $products = [];
+        if($assoc_products) {
+            foreach($assoc_products as $assoc_product) {
+                $_product = [
+                    'id' => intval($assoc_product['id']),
+                    'img' => $assoc_product['img'],
+                    'name' => $assoc_product['name'],
+                    'price' => floatval($assoc_product['price']),
+                    'market_price' => floatval($assoc_product['market_price']),
+                    'sale_count' => intval($assoc_product['sale_count'])
+                ];
+                $products[] = $_product;
+            }
+        }
 
-if($recommend_products) {
-    foreach ($recommend_products as &$_r_product) {
-        $_r_product['id'] = intval($_r_product['id']);
-        $_r_product['price'] = floatval($_r_product['price']);
-        $_r_product['market_price'] = floatval($_r_product['market_price']);
+        $response['blocks'][] = [
+            'cover' => $block['cover'],
+            'name' => $block['name'],
+            'products' => $products
+        ];
     }
-
-    $response['recommend'] = $recommend_products;
 }
 
-//热卖产品
-$get_hot_products = 'select `id`,`name`,`price`,`shop_price` as market_price,`sale_count`,`img` from '.
-    $db->table('product').' where `status`=4 order by `sale_count` DESC limit 10';
+if(count($response['blocks'])) {
+    $response['recommend'] = $response['blocks'][0]['products'];
+}
 
-$hot_products = $db->fetchAll($get_hot_products);
-if($hot_products) {
-    foreach($hot_products as &$_h_product) {
-        $_h_product['id'] = intval($_h_product['id']);
-        $_h_product['price'] = floatval($_h_product['price']);
-        $_h_product['market_price'] = floatval($_h_product['market_price']);
-    }
-
-    $response['hot'] = $hot_products;
+if(count($response['blocks']) >= 2) {
+    $response['hot'] = $response['blocks'][1]['products'];
 }
 
 echo json_encode($response);

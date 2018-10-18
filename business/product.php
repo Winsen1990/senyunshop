@@ -203,16 +203,6 @@ if( 'add' == $opera ) {
         }
     }
 
-    // 单商户模式关闭店铺分类选择
-    /*
-    $check_category = 'select * from '.$db->table('category').' where id = '.$shop_category.' and business_account = \''.$_SESSION['business_account'].'\' limit 1';
-    $category_exists = $db->fetchRow($check_category);
-    if( !$category_exists ) {
-        show_system_message('不存在的产品店铺分类', array());
-        exit;
-    }
-    */
-
     if($product_type)
     {
         $check_type = 'select * from ' . $db->table('product_type') . ' where id = ' . $product_type . ' limit 1';
@@ -385,9 +375,6 @@ if( 'edit' == $opera ) {
     $order_view = intval(getPOST('order_view'));
     $free_delivering = intval(getPOST('free_delivering'));
 
-//    $inventory = getPOST('single_inventory');
-//    $inventory = intval($inventory);
-
     if( '' == $name ) {
         show_system_message('产品名称不能为空', array());
         exit;
@@ -525,15 +512,6 @@ if( 'edit' == $opera ) {
         }
     }
 
-    /*
-    $check_category = 'select * from '.$db->table('category').' where id = '.$shop_category.' and business_account = \''.$_SESSION['business_account'].'\' limit 1';
-    $category_exists = $db->fetchRow($check_category);
-    if( !$category_exists ) {
-        show_system_message('不存在的产品店铺分类', array());
-        exit;
-    }
-    */
-
     if($product_type)
     {
         $check_type = 'select * from ' . $db->table('product_type') . ' where id = ' . $product_type . ' limit 1';
@@ -586,14 +564,6 @@ if( 'edit' == $opera ) {
     $order = '';
     $limit = '1';
     if( $db->autoUpdate($table, $data, $where, $order, $limit) !== false ) {
-//        //检查库存，如果存在无属性库存则更新库存
-//        $check_inventory = 'select `id` from '.$db->table('inventory').' where `product_sn`=\''.$product_sn.'\' and `attributes`=\'\'';
-//        $inventory_id = $db->fetchOne($check_inventory);
-//        if($inventory_id)
-//        {
-//            modify_inventory($product_sn, '', $inventory);
-//        }
-
         //检查分类，如果不存在则新增
         $db->autoDelete('product_category_mapper', '`product_sn`=\''.$product['product_sn'].'\' and `category_id` not in ('.implode(',', $category).')');
         $product_category_mapper = [];
@@ -604,6 +574,9 @@ if( 'edit' == $opera ) {
             ]);
         }
         $db->autoReplace('product_category_mapper', $product_category_mapper);
+
+        //更新购物车价格
+        $db->autoUpdate('cart', ['price' => $data['price']], '`product_sn`=\''.$product['product_sn'].'\'');
 
         $links = array(
             array('link' => 'product.php', 'alt' => '产品列表'),

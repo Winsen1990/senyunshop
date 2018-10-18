@@ -8,209 +8,237 @@
 include '../library/api.inc.php';
 global $db, $log, $config, $current_user;
 
-$operation = 'add|delete';
+$operation = 'add|delete|sync';
 $action = 'view';
 
 $opera = check_action($operation, getPOST('opera'));
-$act = check_action($action, getGET('act'), 'view');
+$act = check_action($action, getGET('act'));
 
 $response = [
     'error' => -1,
     'message' => ''
 ];
 
-//读取地址信息
-if(!isset($_SESSION['address_id']) || $_SESSION['address_id'] <= 0)
-{
-    $_SESSION['address_id'] = $address_id;
-} else {
-    $address_id = $_SESSION['address_id'];
-}
+//同步购物车信息
+if('sync' == $opera) {
+    $cart_list = getPOST('cart');
+    $cart_id_list = [];
 
-$get_address_detail = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,(select `group_name` from wi_group where id = a.group) as `group_name`,a.`address`,a.`consignee`,'.
-    'a.`mobile`,a.`zipcode`,a.`id`,a.`province`,a.`city`,a.`district`,a.`group` from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
-    $db->table('city').' as c, '.$db->table('district').' as d where '.
-    'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
-    ' and a.`account`=\''.$_SESSION['account'].'\' and a.id='.$address_id;
-//echo $get_address_detail;exit;
-$address_info = $db->fetchRow($get_address_detail);
-assign('address_info', $address_info);
-
-//获取待购买产品
-$get_cart_list = 'select c.`checked`,p.`img`,p.`product_type_id`,c.`id`,c.`attributes`,c.`product_sn`,c.`price`,c.`integral`,c.`number`,b.`shop_name`,b.`id` as b_id,p.`name`,p.`weight`,c.`business_account` from ('.
-    $db->table('cart').' as c join '.$db->table('product').' as p using(`product_sn`)) join '.$db->table('business').
-    ' as b on (c.`business_account`=b.`business_account`) where c.`account`=\''.$_SESSION['account'].'\' and c.`checked`=1 order by c.`business_account`';
-
-$cart_list_tmp = $db->fetchAll($get_cart_list);
-
-if(!$cart_list_tmp)
-{
-    redirect('cart.php');
-}
-
-$total_number = 0;
-$total_amount = 0;
-$total_integral = 0;
-$total_delivery_fee = 0;
-$total_product_amount = 0;
-
-$cart_list = array();
-$can_use_integral = true;
-foreach($cart_list_tmp as $cart)
-{
-    if(!isset($cart_list[$cart['b_id']]))
-    {
-        $cart_list[$cart['b_id']] = array(
-            'b_id' => $cart['b_id'],
-            'shop_name' => $cart['shop_name'],
-            'products' => array(),
-            'business_account' => $cart['business_account']
-        );
+    if(!is_array($cart_list)) {
+        throw new RestFulException('参数错误', 401);
     }
 
-    //获取产品属性表
-    $get_product_attributes = 'select `id`,`name` from '.$db->table('product_attributes').' where `product_type_id`='.$cart['product_type_id'];
-    $attributes_tmp = $db->fetchAll($get_product_attributes);
-    $attributes_map = array();
-    if($attributes_tmp)
-    {
-        foreach ($attributes_tmp as $a)
-        {
-            $attributes_map[$a['id']] = $a['name'];
+    foreach($cart_list as &$_cart) {
+        $_cart['id'] = intval($_cart['id']);
+        $_cart['count'] = intval($_cart['count']);
+
+        if($_cart['id'] <= 0) {
+            continue;
         }
-    }
 
-    $check_activity = 'select `activity_id` from '.$db->table('activity_mapper').' where `product_sn`=\''.$cart['product_sn'].'\' and `activity_id`=1';
-
-    if($db->fetchOne($check_activity)) {
-        $can_use_integral = false;
-    }
-
-    $attributes = json_decode($cart['attributes']);
-    $cart['attributes_str'] = '';
-    if($attributes)
-    {
-        foreach ($attributes as $aid => $aval)
-        {
-            $cart['attributes_str'] .= $attributes_map[$aid] . ':' . $aval . ' ';
+        if($_cart['count'] <= 0) {
+            continue;
         }
+
+        $_cart['checked'] = $_cart['checked'] == 1 ? 1 : 0;
+
+        $db->autoUpdate('cart', [
+            'number' => $_cart['count'],
+            'checked' => $_cart['checked']
+        ], '`account`=\''.$current_user['account'].'\' and `id`='. $_cart['id']);
     }
 
-    $cart_list[$cart['b_id']]['products'][] = array(
-        'c_id' => $cart['id'],
-        'product_sn' => $cart['product_sn'],
-        'attributes' => $cart['attributes_str'],
-        'number' => intval($cart['number']),
-        'price' => floatval($cart['price']),
-        'integral' => floatval($cart['integral']),
-        'name' => $cart['name'],
-        'img' => $cart['img']
-    );
-
-    $total_product_amount += $cart['price'] * $cart['number'];
-    $total_integral += $cart['integral'] * $cart['number'];
-    $total_number += $cart['number'];
+    $response['error'] = 0;
+    $response['message'] = '购物车同步成功';
 }
 
-//获取物流信息
-$get_product_weight = 'select b.`id` as b_id, sum(p.`weight`*c.`number`) as `total_weight`,b.`business_account` from '.$db->table('cart').' as c'.
-    ' join '.$db->table('product').' as p using(`product_sn`) join '.$db->table('business').' as b '.
-    ' on c.`business_account`=b.`business_account` where c.`checked`=1 and c.`account`=\''.$_SESSION['account'].'\' '.
-    ' and p.`free_delivery`=0 group by c.`business_account`';
-$product_weight = $db->fetchAll($get_product_weight);
+//结算页面
+if('view' == $act) {
+    $response['address'] = null;
+    $response['shipping'] = [];
+    $response['cart'] = [];
 
-$get_delivery_sql = 'select da.`id`,da.`first_weight`,da.`next_weight`,da.`free`,da.`delivery_id`,d.`name` from '.$db->table('delivery_area_mapper').
-    ' as dam join '.$db->table('delivery_area').' as da on dam.`area_id`=da.`id` join '.$db->table('delivery').
-    ' as d on da.`delivery_id`=d.`id` where ';
+    $address_id = intval(getGET('address_id'));
 
-$delivery_list_json = array();
-
-if($address_info) {
-    if ($product_weight) {
-        foreach ($product_weight as $weight) {
-            $get_delivery = $get_delivery_sql . ' dam.`province`=' . $address_info['province'] . ' and dam.`city`=' . $address_info['city'] . ' and dam.`district`=' . $address_info['district'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $weight['business_account'] . '\'';
-            $get_delivery .= ' union all ' . $get_delivery_sql . ' dam.`province`=' . $address_info['province'] . ' and dam.`city`=' . $address_info['city'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $weight['business_account'] . '\'';
-            $get_delivery .= ' union all ' . $get_delivery_sql . ' dam.`province`=' . $address_info['province'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $weight['business_account'] . '\'';
-
-            $delivery_list = $db->fetchAll($get_delivery);
-
-            $delivery_list_mapper = array();
-            if ($delivery_list) {
-                foreach ($delivery_list as $delivery) {
-                    $tmp = array(
-                        'delivery_id' => $delivery['delivery_id'],
-                        'delivery_name' => $delivery['name'],
-                        'delivery_fee' => caculate_delivery_fee($delivery['first_weight'], $delivery['next_weight'], $delivery['free'], $weight['total_weight'])
-                    );
-
-                    $delivery_list_mapper[] = $tmp;
-                    $delivery_list_json[$weight['b_id']][] = $tmp;
-                }
-                $cart_list[$weight['b_id']]['delivery_list'] = $delivery_list_mapper;
-            }
-
-        }
+    if(empty($address_id)) {
+        //没有提供地址ID，读取默认地址
+        $address_id = $db->getColumn('address', 'id', ['is_default' => 1, 'account' => $current_user['account']]);
     }
-}
-$delivery_support = true;
-//把运费计入总金额
-foreach($cart_list as $key=>$cart)
-{
-    if(isset($cart['delivery_list']))
-    {
-        $total_delivery_fee += $cart['delivery_list'][0]['delivery_fee'];
-        $delivery_list_json[$cart['b_id']][0]['selected'] = 1;
+
+    $address_info = null;
+    //如有地址ID则获取地址信息
+    if($address_id > 0) {
+        $get_address_detail = 'select p.`province_name`,c.`city_name`,d.`district_name`,g.`group_name`,a.`address`,a.`consignee`,' .
+            'a.`province`,a.`city`,a.`district`,a.`group`,g.`group_name`,' .
+            'a.`mobile`,a.`zipcode`,a.`id` from ' . $db->table('address') . ' as a, ' . $db->table('province') . ' as p, ' .
+            $db->table('city') . ' as c, ' . $db->table('district') . ' as d, ' . $db->table('group') . ' as g where ' .
+            'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` and a.`group`=g.`id` and a.`id`=' . $address_id .
+            ' and `account`=\'' . $current_user['account'] . '\'';
+
+        $address_info = $db->fetchRow($get_address_detail);
+
+        $response['address'] = [
+            'id' => $address_info['id'],
+            'consignee' => $address_info['consignee'],
+            'mobile' => $address_info['mobile'],
+            'detail' => $address_info['province_name'].' '.$address_info['city_name'].' '.$address_info['district_name'].' '.$address_info['group_name'].' '.$address_info['address']
+        ];
+    }
+
+    //获取待购买产品
+    $get_cart_list = 'select p.`img`,c.`id`,c.`attributes`,c.`product_sn`,c.`price`,c.`integral`,c.`number`,p.`name`,p.`weight`,'.
+                     'p.`is_virtual`,p.`free_delivery`,p.`id` as p_id '.
+                    'from ('.$db->table('cart').' as c join '.$db->table('product').' as p using(`product_sn`)) '.
+                    'where c.`account`=\''.$current_user['account'].'\' and c.`checked`=1';
+
+    $cart_list_tmp = $db->fetchAll($get_cart_list);
+
+    if(empty($cart_list_tmp)) {
+        throw new RestFulException('没有可购买的产品', 500);
+    }
+
+    //计算物流方式
+    $total_weight = 0;
+    $total_amount = 0;
+    $total_integral = 0;
+
+    $support_delivery = true;
+    $inventory_enough = true;
+    $shipping = [];
+    $lack_inventory = [];
+    foreach ($cart_list_tmp as $_cart) {
+        //库存检查
+        $inventory = $db->getColumn('inventory', 'inventory_logic', ['product_sn' => $_cart['product_sn']]);
+        if($inventory < $_cart['number']) {
+            $inventory_enough = false;
+            array_push($lack_inventory, $_cart['name']);
+        }
+
+        if(!$_cart['is_virtual'] && !$_cart['free_delivery']) {
+            //实物商品且不包邮
+            $total_weight += $_cart['weight'] * $_cart['number'];
+        }
+
+        $total_amount = $_cart['price'] * $_cart['number'];
+        $total_integral = $_cart['integral'] * $_cart['number'];
+
+        array_push($response['cart'], [
+            'id' => intval($_cart['id']),
+            'img' => $_cart['img'],
+            'name' => $_cart['name'],
+            'count' => intval($_cart['number']),
+            'price' => floatval($_cart['price']),
+            'p_id' => intval($_cart['p_id'])
+        ]);
+    }
+    $response['lack_inventory'] = $lack_inventory;
+    $response['inventory_enough'] = $inventory_enough;
+
+    //运费计算
+    $delivery_list_tmp = $db->all('delivery', ['id', 'name'], ['status' => 1]);
+    $delivery_list = [];
+
+    if(empty($delivery_list_tmp)) {
+        throw new RestFulException('商家尚未设置配送方式', 550);
+    }
+
+    foreach($delivery_list_tmp as $delivery) {
+        $delivery_list[$delivery['id']] = [
+            'id' => $delivery['id'],
+            'name' => $delivery['name']
+        ];
+    }
+
+    if(empty($address_info)) {
+        $response['address'] = [
+            'id' => 0,
+            'consignee' => '',
+            'mobile' => '',
+            'detail' => ''
+        ];
     } else {
-        if($address_info) {
-            $get_delivery = $get_delivery_sql . ' dam.`province`=' . $address_info['province'] . ' and dam.`city`=' . $address_info['city'] . ' and dam.`district`=' . $address_info['district'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $cart['business_account'] . '\'';
-            $get_delivery .= ' union ' . $get_delivery_sql . ' dam.`province`=' . $address_info['province'] . ' and dam.`city`=' . $address_info['city'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $cart['business_account'] . '\'';
-            $get_delivery .= ' union ' . $get_delivery_sql . ' dam.`province`=' . $address_info['province'];
-            $get_delivery .= ' and dam.`business_account`=\'' . $cart['business_account'] . '\'';
-            $delivery = $db->fetchRow($get_delivery);
+        //计算各个物流方式的运费
+        //读取地址所属区域
+        //1.省市区区域
+        $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+            'province' => $address_info['province'],
+            'city' => $address_info['city'],
+            'district' => $address_info['district']
+        ]);
 
-            if ($delivery) {
-                //所有产品重量都为0或者所有产品都包邮，获取商家的任意快递方式，并设置运费为0
-                $tmp = array(
-                    'delivery_id' => $delivery['delivery_id'],
-                    'delivery_name' => $delivery['name'],
-                    'delivery_fee' => 0
-                );
+        //2.省市区域
+        if(empty($area_ids)) {
+            $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+                'province' => $address_info['province'],
+                'city' => $address_info['city'],
+                'district' => 0
+            ]);
 
-                $cart['delivery_list'] = array(
-                    $tmp
-                );
-
-                $cart_list[$key] = $cart;
-                $delivery_list_json[$cart['b_id']][] = $tmp;
-            } else {
-                //商家不支持该地区的配送，则剔除该产品
-                $db->autoUpdate('cart', array('checked' => 0), '`business_account`=\'' . $cart['business_account'] . '\'');
-                unset($cart_list[$key]);
-                foreach ($cart['products'] as $p) {
-                    $total_product_amount -= $p['price'] * $p['number'];
-                    $total_number -= $p['number'];
-                }
-                $delivery_support = false;
+            //3.省级区域
+            if(empty($area_ids)) {
+                $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+                    'province' => $address_info['province'],
+                    'city' => 0,
+                    'district' => 0
+                ]);
             }
         }
+
+        if(empty($area_ids)) {
+            $support_delivery = false;
+            $response['message'] = '当前地区不支持配送';
+        } else {
+            //读取区域运费计算规则
+            $area_id = [];
+            foreach($area_ids as $_area) {
+                array_push($area_id, $_area['area_id']);
+            }
+
+            $shipping_rules = $db->all('delivery_area', ['delivery_id', 'first_weight', 'next_weight', 'free'], ['id' => ['in', $area_id]]);
+            if(empty($shipping_rules)) {
+                throw new RestFulException('商家没有设置运费规则', 550);
+            }
+
+            $delivery_ids = [];
+            foreach($shipping_rules as $rule) {
+                array_push($delivery_ids, $rule['delivery_id']);
+
+                if($total_weight > 0) {
+                    $shipping_fee = $rule['first_weight'];
+                    if($total_weight > 1000) {
+                        $shipping_fee += $rule['next_weight'] * ceil($total_weight/1000 - 1);
+                    }
+                    $shipping_fee -= $rule['free'];
+
+                    if(isset($delivery_list[$rule['delivery_id']]['shipping_fee'])) {
+                        $shipping_fee = min($delivery_list[$rule['delivery_id']]['shipping_fee'], $shipping_fee);
+                    }
+
+                    $delivery_list[$rule['delivery_id']]['shipping_fee'] = $shipping_fee;
+                }
+            }
+
+            //剔除不支持的配送方式
+            foreach($delivery_list as $i => $delivery) {
+                if(!isset($delivery['shipping_fee'])) {
+                    unset($delivery_list[$i]);
+                }
+            }
+        }
     }
+
+    foreach($delivery_list as &$_delivery) {
+        if(!isset($_delivery['shipping_fee'])) {
+            $_delivery['shipping_fee'] = 0;
+        }
+    }
+
+    if($response['message'] == '') {
+        $response['error'] = 0;
+    }
+    $response['total_amount'] = $total_amount;
+    $response['total_integral'] = $total_integral;
+    $response['shipping'] = array_values($delivery_list);
 }
 
-assign('can_use_integral', $can_use_integral);
-if(!$delivery_support)
-{
-    if(count($cart_list) == 0)
-    {
-        assign('target', 'cart.php');
-    } else {
-        assign('target', '');
-    }
-}
-assign('delivery_support', $delivery_support);
-
-$total_amount = $total_product_amount + $total_delivery_fee;
+echo json_encode($response);
