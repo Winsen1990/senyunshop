@@ -160,8 +160,8 @@
     KindEditor.ready(function(K) {
         var editor = K.editor({
             allowFileManager : true,
-            uploadJson: '../plugins/kindeditor/platform_upload_json.php',
-            fileManagerJson : '../plugins/kindeditor/platform_file_manager_json.php'
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson : '../plugins/kindeditor/file_manager_json.php'
         });
         K('#select-image').click(function() {
             editor.loadPlugin('fileupload', function() {
