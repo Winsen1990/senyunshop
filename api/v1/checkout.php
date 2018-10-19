@@ -119,8 +119,8 @@ if('view' == $act) {
             $total_weight += $_cart['weight'] * $_cart['number'];
         }
 
-        $total_amount = $_cart['price'] * $_cart['number'];
-        $total_integral = $_cart['integral'] * $_cart['number'];
+        $total_amount += $_cart['price'] * $_cart['number'];
+        $total_integral += $_cart['integral'] * $_cart['number'];
 
         array_push($response['cart'], [
             'id' => intval($_cart['id']),
@@ -215,10 +215,13 @@ if('view' == $act) {
                     }
 
                     $delivery_list[$rule['delivery_id']]['shipping_fee'] = $shipping_fee;
+                } else {
+                    $delivery_list[$rule['delivery_id']]['shipping_fee'] = 0;
                 }
             }
 
             //剔除不支持的配送方式
+            $log->record_array($delivery_list);
             foreach($delivery_list as $i => $delivery) {
                 if(!isset($delivery['shipping_fee'])) {
                     unset($delivery_list[$i]);
