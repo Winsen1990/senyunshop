@@ -3,6 +3,7 @@
  * 初始化数据
  */
 include 'library/init.inc.php';
+global $db, $loader;
 $loader->includeScript('purview');
 
 header('Content-Type: text/html;charset=utf-8');
@@ -42,30 +43,6 @@ $data[] = array(
     array('key'=>'site_name', 'name'=>'站点名称', 'value'=>'', 'type'=>'text', 'group'=>'config', 'remark'=>''),
     array('key'=>'themes', 'name'=>'模板文件', 'value'=>'wine', 'type'=>'text', 'group'=>'themes', 'remark'=>''),
     array('key'=>'statistics ', 'name'=>'开启统计', 'value'=>'0', 'type'=>'text', 'group'=>'themes', 'remark'=>''),
-);
-
-//角色
-$table[] = 'platform_role';
-$data[] = array(
-    array(
-        'id' => 1,
-        'name' => '超级管理员',
-        'purview' => json_encode($purview)
-    )
-);
-
-//管理员
-$table[] = 'platform_admin';
-$data[] = array(
-    array(
-        'account' => 'admin',
-        'password' => md5('admin'.PASSWORD_END),
-        'name' => '管理员',
-        'email' => 'airplace1@gmail.com',
-        'sex' => 'F',
-        'role_id' => 1,
-        'mobile' => '13929564894'
-    )
 );
 
 //初始化商家
@@ -116,20 +93,18 @@ $data[] = array(
     array('name'=>'微信支付', 'plugins'=>'wechat', 'desc'=>'微信支付', 'status'=>1)
 );
 /*
-$table[] = 'modules';
-$data[] = array(
-    array('url' => 'donate.php', 'name' => '公益专区', 'assoc_type' => '', 'assoc' => '', 'status' => 1, 'identity' => 'donate'),
-    array('url' => 'active.php', 'name' => '活动专区', 'assoc_type' => '', 'assoc' => '', 'status' => 1, 'identity' => 'active'),
-    array('url' => 'healthy_advisory.php', 'name' => '健康咨询', 'assoc_type' => 'section_id', 'assoc' => '2', 'status' => 1, 'identity' => 'healthy_advisory'),
-    array('url' => 'expert_online.php', 'name' => '专家连线', 'assoc_type' => 'section_id', 'assoc' => '2', 'status' => 1, 'identity' => 'expert_online'),
-    array('url' => 'interactive.php', 'name' => '互动专区', 'assoc_type' => 'section_id', 'assoc' => '2', 'status' => 1, 'identity' => 'interactive'),
-    array('url' => 'business_study.php', 'name' => '培训预约', 'assoc_type' => 'section_id', 'assoc' => '3', 'status' => 1, 'identity' => 'business_study'),
-    array('url' => 'notice.php', 'name' => '系统通知', 'assoc_type' => 'section_id', 'assoc' => '3', 'status' => 1, 'identity' => 'notice'),
-    array('url' => 'business_online_advisory.php', 'name' => '在线咨询', 'assoc_type' => 'section_id', 'assoc' => '3', 'status' => 1, 'identity' => 'business_online_advisory'),
-    array('url' => 'dance_study.php', 'name' => '培训预约', 'assoc_type' => 'section_id', 'assoc' => '4', 'status' => 1, 'identity' => 'dance_study'),
-    array('url' => 'coach_reserve.php', 'name' => '教练预约', 'assoc_type' => 'section_id', 'assoc' => '4', 'status' => 1, 'identity' => 'coach_reserve'),
-    array('url' => 'dance_online_advisory.php', 'name' => '在线咨询', 'assoc_type' => 'section_id', 'assoc' => '4', 'status' => 1, 'identity' => 'dance_online_advisory'),
-);
+$table[] = '初始化广告位数据';
+$sql[] = 'insert into '.$db->table('ad_position').' (`id`, `pos_name`, `width`, `height`, `number`, `code`) values
+ (\'1\', \'首页轮播广告\', \'320\', \'140\', \'5\', \'\'),
+ (\'2\', \'首页展示广告\', \'320\', \'128\', \'3\', \'\'),
+ (\'3\', \'商家轮播\', \'320\', \'140\', \'3\', \'\'),
+ (\'4\', \'PC端网站首页大广告\', \'788\', \'328\', \'5\', \'\');';
+
+
+$table[] = '初始化会员等级';
+$sql[] = 'insert into '.$db->table('level').' values (1, \'普通会员\', 0, 2, 0, 0, 100, \'\'),
+(2, \'白银会员\', 1001, 2, 0, 0, 90, \'\'),(3, \'黄金会员\', 2001, 2, 0, 0, 80, \'\'),(4, \'铂金会员\', 3001, 2, 0, 0, 70, \'\'),
+(5, \'钻石会员\', 5001, 2, 0, 0, 50, \'\')';
 */
 echo '初始化数据:<br/>';
 foreach($table as $key=>$name)
