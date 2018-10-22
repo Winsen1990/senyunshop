@@ -317,7 +317,7 @@ if('show' == $act)
 if('view' == $act)
 {
     $response['error'] = 0;
-    $response['address'] = [];
+    $response['addresses'] = [];
 
     $get_address_list = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
         'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name '.
@@ -340,7 +340,7 @@ if('view' == $act)
             unset($address['zipcode']);
         }
 
-        $response['address'] = $address_list;
+        $response['addresses'] = $address_list;
     }
 }
 
