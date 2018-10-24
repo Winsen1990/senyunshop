@@ -242,6 +242,12 @@ if('view' == $act) {
     $response['total_amount'] = $total_amount;
     $response['total_integral'] = $total_integral;
     $response['shipping'] = array_values($delivery_list);
+
+    //商家信息
+    $shop = $db->find('business', ['id', 'shop_name'], ['id' => 1]);
+    $shop['name'] = $shop['shop_name'];
+    unset($shop['shop_name']);
+    $response['shop'] = $shop;
 }
 
 echo json_encode($response);

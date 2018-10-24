@@ -396,7 +396,7 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
  */
  function add_order($integral_amount, $product_amount, $delivery_fee, $delivery_id, $business_account, $integral_given_amount, $given_integral_amount,
                     $payment_id, $address_id, $reward_amount, $account, $integral_paid = 0.0, $reward_paid = 0.0, $balance_paid = 0.0,
-                    $status = 1, $self_delivery = 0, $remark = '', $is_virtual = 0)
+                    $status = 1, $self_delivery = 0, $remark = '', $is_virtual = 0, $message_notice = 0)
  {
     global $db;
     global $config;
@@ -425,7 +425,8 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
         'status' => $status,
         'add_time' => time(),
         'remark' => $remark,
-        'is_virtual' => $is_virtual
+        'is_virtual' => $is_virtual,
+        'message_notice' => $message_notice
     );
 
     //获取地址信息

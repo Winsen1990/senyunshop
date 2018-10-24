@@ -58,7 +58,7 @@ if(!$user) {
         $user = [
             'account' => $account,
             'nickname' => null,
-            'avatar' => null
+            'headimg' => null
         ];
     } else {
         $log->record('async user list fail. openid=' . $openid);

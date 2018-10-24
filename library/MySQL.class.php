@@ -501,6 +501,89 @@ class MySQL
     }
 
     /**
+     * 更新记录
+     * @param string $table 表名，不含前缀
+     * @param array $columns 字段
+     * @param array $condition 条件
+     * @param string $limit 格式为 offset, limit
+     * @param array $order 排序依据，格式为 ['字段名', 'ASC|DESC']，如直接提供字段，则默认按升序排列
+     * @return bool|resource
+     */
+    public function upgrade($table, $columns, $condition = array(), $limit = null, $order = null) {
+        $sql = 'update '.$this->table($table).' set ';
+
+        if(is_array($columns)) {
+            $express_columns = array();
+            foreach($columns as $column => $values) {
+                $column = '`'.$this->escape($column).'`';
+
+                if(is_array($values)) {
+                    $opera = $values[0];
+                    $values = $values[1];
+
+                    switch($opera) {
+                        case 'exp':
+                            array_push($express_columns, $column.'='.$values.'');
+                            break;
+
+                        default:
+                            break;
+                    }
+                } else {
+                    if(strpos($values, '(') !== false) {
+                        array_push($express_columns, $column.'='.$values);
+                    } else {
+                        $values = $this->escape($values);
+                        array_push($express_columns, $column.'=\''.$values.'\'');
+                    }
+                }
+            }
+
+            if(count($express_columns)) {
+                $sql .= implode(',', $express_columns);
+            }
+        } else {
+            return false;
+        }
+
+        $sql .= ' where ';
+
+        if(empty($condition)) {
+            $sql .= '1';
+        } else {
+            $sql .= $this->condition_translator($condition);
+        }
+
+        if(is_array($order) && count($order)) {
+            $sql .= ' order by ';
+
+            $order_by_conditions = array();
+            foreach($order as $order_by) {
+                if(is_array($order_by)) {
+                    if(count($order_by) == 1) {
+                        array_push($order_by_conditions, '`'.$order_by[0].'` ASC');
+                    } else {
+                        array_push($order_by_conditions, '`'.$order_by[0].'` '.strtoupper($order_by[1]));
+                    }
+                } else {
+                    array_push($order_by_conditions, $order_by);
+                }
+            }
+
+            $sql .= implode(',', $order_by_conditions);
+        }
+
+        if($limit && is_string($limit)) {
+            $sql .= ' limit '.$limit;
+        }
+
+        global $log;
+        $log->record($sql);
+
+        return $this->update($sql);
+    }
+
+    /**
      * 自动更新
      */
     public function autoUpdate($table, $data, $where = 1, $order = '', $limit = '')
