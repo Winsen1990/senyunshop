@@ -9,8 +9,8 @@ include '../library/api.inc.php';
 global $db, $log, $config, $current_user, $loader;
 $loader->includeScript('transaction');
 
-$operation = 'add|delete|edit|pay|cancel|receive|rollback';
-$action = 'view|show|express_info';
+$operation = 'add|delete|edit|pay|cancel|receive|rollback|comment|product_comment';
+$action = 'view|show|express_info|detail';
 
 $opera = check_action($operation, getPOST('opera'));
 $act = check_action($action, getGET('act'));
@@ -27,6 +27,7 @@ if('product_comment' == $opera)
     $product_sn = getPOST('product_sn');
     $star = getPOST('star');
     $comment = getPOST('comment');
+    $detail_id = intval(getPOST('detail_id'));
 
     if($product_sn == '')
     {
@@ -71,9 +72,15 @@ if('product_comment' == $opera)
             //获取评论数量和星级
             $get_comment_info = 'select count(*) as c, sum(`star`) as star from '.$db->table('comment').' where `product_sn`=\''.$product_sn.'\'';
             $comment_info = $db->fetchRow($get_comment_info);
-            $product_data = array('star'=>$comment_info['star']/$comment_info['c']);
 
-            $db->autoUpdate('product', $product_data, '`product_sn`=\''.$product_sn.'\'');
+            $product_data = [
+                'star' => $comment_info['star']/$comment_info['c'],
+                'comment_count' => ['exp', '`comment_count`+1']
+            ];
+
+            $db->upgrade('product', $product_data, ['product_sn' => $product_sn]);
+
+            $db->upgrade('order_detail', ['is_comment' => 1], ['id' => $detail_id]);
 
             $response['error'] = 0;
             $response['message'] = '评论成功';
@@ -146,7 +153,18 @@ if('comment' == $opera)
 
 if('rollback' == $opera)
 {
-    $order_sn = getPOST('sn');
+    $order_sn = getPOST('order_sn');
+    $serve_type = intval(getPOST('serve_type'));
+    $serve_type = max(1, $serve_type);
+    $serve_type = min(4, $serve_type);
+
+    /**
+     * serve_type
+     * 1: 退款
+     * 2: 退款退货
+     * 3: 换货
+     * 4: 补货
+     */
 
     if($order_sn == '')
     {
@@ -158,14 +176,17 @@ if('rollback' == $opera)
 
         if($order_sn)
         {
-            $data = array('status'=>8);
+            $data = array(
+                'status' => 8,
+                'serve_type' => $serve_type
+            );
 
             if($db->autoUpdate('order', $data, '`order_sn`=\''.$order_sn.'\''))
             {
                 add_order_log($order_sn, $current_user['account'], 8, '用户申请退单');
-                //将款项打到商家账户中
+
                 $response['error'] = 0;
-                $response['message'] = '申请退单成功，稍后商家客服将直接与您联系';
+                $response['message'] = '申请已提交';
             } else {
                 $response['message'] = '系统繁忙，请稍后再试';
             }
@@ -393,6 +414,7 @@ if('add' == $opera)
     $use_balance = getPOST('use_balance') == 'true' ? true : false;
     $use_reward = getPOST('use_reward') == 'true' ? true : false;
     $comments = getPOST('remark');
+    $message_notice = getPOST('message_notice') == 'true' ? 1 : 0;
 
     $get_address_detail = 'select p.`province_name`,c.`city_name`,d.`district_name`,g.`group_name`,a.`address`,a.`consignee`,'.
         'a.`province`,a.`city`,a.`district`,a.`group`,g.`group_name`,'.
@@ -671,7 +693,7 @@ if('add' == $opera)
 
         $order_sn = add_order($cart['total_integral'], $cart['total_product_amount'], $cart['total_delivery_fee'], $cart['delivery_id'],
             $business_account, $cart['total_integral_given'], $cart['total_given_integral'], $payment_id, $address_id, $cart['total_reward'],
-            $current_user['account'], $cart['integral_paid'], $cart['reward_paid'], $cart['balance_paid'], $status, 0, $cart['remark']);
+            $current_user['account'], $cart['integral_paid'], $cart['reward_paid'], $cart['balance_paid'], $status, 0, $cart['remark'], 0, $message_notice);
 
         if($order_sn)
         {
@@ -762,6 +784,40 @@ if('add' == $opera)
     }
 }
 
+//订单详情
+if('detail' == $act) {
+    $order_sn = trim(getGET('order_sn'));
+    $id = intval(getGET('id'));
+
+    if(empty($order_sn) || $id <= 0) {
+        throw new RestFulException('参数错误', 550);
+    }
+
+    //检查订单归属
+    $order = $db->find('order', ['order_sn'], ['order_sn' => $order_sn, 'account' => $current_user['account']]);
+
+    if(empty($order)) {
+        throw new RestFulException('订单不存在', 550);
+    }
+
+    $get_order_detail = 'select od.`product_sn`,od.`product_name`,od.`product_attributes`,od.`count`,p.`img` from '.$db->table('order_detail').' as od '.
+                        ' left join '.$db->table('product').' as p using(`product_sn`) where od.`order_sn`=\''.$order_sn.'\' and od.`id`='.$id;
+
+    $order_detail = $db->fetchRow($get_order_detail);
+
+    if($order_detail) {
+        $response['error'] = 0;
+        $response['detail'] = [
+            'name' => $order_detail['product_name'],
+            'attributes' => $order_detail['product_attributes'],
+            'img' => $order_detail['img'],
+            'product_sn' => $order_detail['product_sn']
+        ];
+    } else {
+        $response['message'] = '订单详情不存在';
+    }
+}
+
 if('show' == $act)
 {
     $status_str = array(
@@ -791,11 +847,11 @@ if('show' == $act)
 
     $order = $db->fetchRow($get_order);
 
-    $get_order_detail = 'select `od`.`integral`,od.`product_price`,od.`product_name`,od.`product_sn`,p.`id`,p.`img`,od.`count` from '.$db->table('order_detail').' as od '.
-        ' join '.$db->table('product').' as p using(`product_sn`) where od.`order_sn`=\''.$order_sn.'\'';
+    $get_order_detail = 'select od.`is_comment`,`od`.`integral`,od.`product_price` as price,od.`product_name` as name,od.`product_sn`,od.`id`,p.`id` as p_id,p.`img`,od.`count` from '.$db->table('order_detail').' as od '.
+        ' left join '.$db->table('product').' as p using(`product_sn`) where od.`order_sn`=\''.$order_sn.'\'';
 
-    $order['order_detail'] = $db->fetchAll($get_order_detail);
-    $order['show_status'] = $status_str[$order['status']];
+    $order['details'] = $db->fetchAll($get_order_detail);
+    $order['status_str'] = $status_str[$order['status']];
 
     $get_province_name = 'select `province_name` from '.$db->table('province').' where `id`='.$order['province'];
     $get_city_name = 'select `city_name` from '.$db->table('city').' where `id`='.$order['city'];
@@ -838,7 +894,7 @@ if('view' == $act) {
 
     $limit = ($page - 1)*$size .','. $size;
 
-    $get_order_list = 'select o.`order_sn`,b.`shop_name`,o.`status`,o.`amount` from '.$db->table('order').' as o join '.
+    $get_order_list = 'select o.`order_sn`,b.`shop_name`,o.`status`,o.`amount`,o.`delivery_fee` from '.$db->table('order').' as o join '.
         $db->table('business').' as b using(`business_account`) where o.`account`=\''.$current_user['account'].'\'';
 
     if($status > 0 && $status < 8)
@@ -859,21 +915,21 @@ if('view' == $act) {
     {
         foreach ($order_list as &$ol)
         {
-            $get_order_detail = 'select od.`product_name`,od.`product_sn`,p.`id`,p.`img` as image,od.`count`,od.`product_price` as price from ' . $db->table('order_detail') . ' as od ' .
-                ' join ' . $db->table('product') . ' as p using(`product_sn`) where od.`order_sn`=\'' . $ol['order_sn'] . '\'';
-            $ol['order_detail'] = $db->fetchAll($get_order_detail);
+            $get_order_detail = 'select od.`product_name` as name,od.`product_sn`,p.`id` as p_id,od.`id`,p.`img`,od.`count`,od.`product_price` as price,od.`product_attributes` from ' . $db->table('order_detail') . ' as od ' .
+                ' left join ' . $db->table('product') . ' as p using(`product_sn`) where od.`order_sn`=\'' . $ol['order_sn'] . '\'';
+            $ol['details'] = $db->fetchAll($get_order_detail);
 
-            $ol['show_status'] = $status_str[$ol['status']];
-            if($ol['order_detail']) {
+            $ol['status_str'] = $status_str[$ol['status']];
+            if($ol['details']) {
                 $detail_count = 0;
 
-                foreach($ol['order_detail'] as $order_detail) {
+                foreach($ol['details'] as $order_detail) {
                     $detail_count += $order_detail['count'];
                 }
-                $ol['detail_count'] = $detail_count;
+                $ol['total_count'] = $detail_count;
             } else {
                 $ol['order_detail'] = [];
-                $ol['detail_count'] = 0;
+                $ol['total_count'] = 0;
             }
         }
     }
