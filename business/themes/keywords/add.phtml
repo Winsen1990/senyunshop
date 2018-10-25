@@ -1,0 +1,105 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">关键词:</label>
+                    <input class="text-input w300" type="text" id="keyword" name="keyword" placeholder="请输入关键词"/>
+                    <span class="error-input" id="keyword-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">排序:</label>
+                    <input class="text-input w300" type="text" id="sort" name="sort" placeholder="请输入排序" value="50"/>
+                    <span class="error-input" id="sort-error"></span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        新增<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>                
+            </fieldset>
+        </form> 
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#submit-btn").click(do_submit);
+});
+
+function do_submit() {
+    //参数校验
+    var data = {
+        keyword: $('#keyword').val().trim(),
+        sort: $('#sort').val(),
+        opera: 'add'
+    };
+
+    var flag = true;
+
+    if(data.keyword === '') {
+        $('#keyword-error').text('请填写关键词');
+        flag = false;
+    } else {
+        $('#keyword-error').text('');
+    }
+
+    data.sort = parseInt(data.sort);
+    if(isNaN(data.sort) || data.sort <= 0) {
+        data.sort = 50;
+    }
+
+    if(flag) {
+        flag = true;
+        //启用过渡效果
+        $('.btn-loading-img').show();
+        $("#submit-btn").addClass("btn-disabled");
+        $("#mask").show();
+
+        var url = "keywords.php";
+        $.post(url, data, do_response, "json");
+    }
+
+    return flag;
+}
+
+function do_response(result) {
+    //关闭过渡效果
+    $(".btn-loading-img").hide();
+    $("#submit-btn").removeClass("btn-disabled");
+    $("#mask").hide();
+    //处理返回结果
+    if(result.error == 0) {
+        alert(result.message);
+        document.forms['ad-form'].reset();
+    } else {
+        if(result.message != "") {
+            alert(result.msg);
+        }
+
+        if(result.errors) {
+            for(var id in result.errors) {
+                $("#"+id+"-error").text(result.errors[id]);
+            }
+        }
+    }
+}
+/*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

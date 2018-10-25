@@ -33,7 +33,7 @@ if(!empty($banners)) {
 $functions = $db->all('category', ['id', 'icon', 'name'], ['parent_id' => 15], ['order_view']);
 if(!empty($functions)) {
     foreach($functions as &$_function) {
-        $_function['id'] = intval($_function);
+        $_function['id'] = intval($_function['id']);
         array_push($response['functions'], $_function);
     }
 }
@@ -44,7 +44,7 @@ if($blocks) {
     foreach($blocks as $block) {
         $get_assoc_products = 'select p.`id`,p.`product_sn`,p.`name`,p.`price`,p.`img`,m.`sort`,p.`shop_price` as market_price,'.
                                 'p.`sale_count` from '.$db->table('product').' as p inner join '.
-            $db->table('block_product_mapper').' as m on m.`product_sn`=p.`product_sn` and m.`block_id`='.$block['id'].' order by m.`sort`';
+            $db->table('block_product_mapper').' as m on m.`product_sn`=p.`product_sn` and m.`block_id`='.$block['id'].' where p.`status`=4 order by m.`sort`';
 
         $assoc_products = $db->fetchAll($get_assoc_products);
         $products = [];

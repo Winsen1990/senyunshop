@@ -7,19 +7,73 @@
  * @version 1.0.0
  */
 include 'library/init.inc.php';
+global $db, $log, $smarty, $config;
 business_base_init();
 
 $template = 'content/';
 assign('subTitle', '内容管理');
 
-$action = 'edit|add|view|delete|cycle|revoke|remove|empty';
-$operation = 'edit|add';
+$action = 'edit|add|view|delete|cycle|revoke|remove|empty|comment_view|comment_show|comment_delete|comment_review|comment_top';
+$operation = 'edit|add|comment_reply';
 
 $act = check_action($action, getGET('act'), 'view');
 
 $opera = check_action($operation, getPOST('opera'));
 
 //======================================================================
+if('comment_reply' == $opera) {
+    $response = ['error' => -1, 'message' => ''];
+
+    if( !check_purview('pur_content_edit', $_SESSION['business_purview']) ) {
+        throw new RestFulException('权限不足', 550);
+    } else {
+        $id = intval(getPOST('id'));
+        $comment_id = intval(getPOST('comment_id'));
+        $comment_content = trim(getPOST('comment'));
+
+        if($id <= 0 || $comment_id <= 0) {
+            throw new RestFulException('参数错误', 550);
+        }
+
+        $content = $db->find('content', ['id'], ['id' => $id]);
+
+        if(empty($content)) {
+            throw new RestFulException('资讯不存在', 403);
+        }
+
+        $comment = $db->find('content_comment', ['id', 'path'], ['id' => $comment_id]);
+        if(empty($comment)) {
+            throw new RestFulException('留言不存在', 403);
+        }
+
+        $comment_data = [
+            'content_id' => $id,
+            'comment' => $comment_content,
+            'add_time' => time(),
+            'account' => $_SESSION['business_account'],
+            'status' => 1
+        ];
+
+        if($db->create('content_comment', $comment_data)) {
+            $comment_id = $db->get_last_id();
+
+            $comment_assoc_data = [
+                'path' => $comment['path'].$comment_id.','
+            ];
+
+            $db->upgrade('content_comment', $comment_assoc_data, ['id' => $comment_id]);
+            $db->upgrade('content', ['comment_count' => ['exp', '`comment_count`+1']], ['id' => $id]);
+
+            $response['error'] = 0;
+            $response['message'] = '回复成功';
+        } else {
+            $response['message'] = '系统繁忙，请稍后再试';
+        }
+    }
+
+    echo json_encode($response);
+    exit;
+}
 
 //添加内容
 if( 'add' == $opera ) {
@@ -584,6 +638,39 @@ if( 'empty' == $act ) {
     } else {
         show_system_message('系统繁忙，请稍后再试', array());
         exit;
+    }
+}
+
+//评论列表
+if('comment_view' == $act) {
+
+}
+
+//评论详情
+if('comment_show' == $act) {
+
+}
+
+//评论置顶/取消置顶
+if('comment_top' == $act) {
+
+}
+
+//评论审核
+if('comment_review' == $act) {
+    $id = intval(getGET('id'));
+    $status = intval(getGET('status'));
+    $status = min(2, $status);
+    $status = max(1, $status);
+
+    if($id <= 0) {
+        show_system_message('参数错误');
+    }
+
+    $comment = $db->find('content_comment', ['id'], ['id' => $id, 'parent_id' => 0]);
+
+    if(empty($comment)) {
+        show_system_message('评论不存在');
     }
 }
 
