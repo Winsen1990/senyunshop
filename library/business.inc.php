@@ -140,6 +140,14 @@ $purview = array(
         'pur_block_add',
         'pur_block_edit',
         'pur_block_del',
+    ),
+
+    //关键词管理
+    'pur_keyword' => array(
+        'pur_keyword_view',
+        'pur_keyword_add',
+        'pur_keyword_edit',
+        'pur_keyword_del',
     )
 );
 
@@ -253,6 +261,12 @@ $L_purview = array(
     'pur_block_add' => '添加专区',
     'pur_block_edit' => '编辑专区',
     'pur_block_del' => '删除专区',
+
+    'pur_keyword' => '关键词管理',
+    'pur_keyword_view' => '查看关键词',
+    'pur_keyword_add' => '添加关键词',
+    'pur_keyword_edit' => '编辑关键词',
+    'pur_keyword_del' => '删除关键词',
 );
 
 global $menus;
@@ -265,6 +279,7 @@ $menus = array(
             'pur_business_base' => array('url' => 'business.php', 'title' => '基本信息'),
 //            'pur_business_auth' => array('url' => 'business.php?act=auth', 'title' => '认证信息'),
             'pur_block_view' => array('url' => 'block.php', 'title' => '专区管理'),
+            'pur_keyword_view' => array('url' => 'keywords.php', 'title' => '关键词管理')
         )
     ),
     'pur_category' => array(

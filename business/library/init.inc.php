@@ -21,7 +21,7 @@ $loader = AutoLoader::getInstance();
 $configs = array('script_path'=>ROOT_PATH.'library/', 'class_path'=>ROOT_PATH.'library/');
 $loader->setConfigs($configs);
 
-$class_list = array('Smarty', 'Logs', 'MySQL', 'Code');
+$class_list = array('Smarty', 'Logs', 'MySQL', 'Code', 'RestfulException');
 $loader->includeClass($class_list);
 $script_list = array('configs','functions','lang', 'business', 'transaction', 'member', 'wechat');
 $loader->includeScript($script_list);
