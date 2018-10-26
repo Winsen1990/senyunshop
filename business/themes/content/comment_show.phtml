@@ -5,47 +5,91 @@
 <!-- content -->
 <div id="content">
     <div class="content-title">
-        <h5 class="pull-left">回复评论</h5>
+        <h5 class="pull-left">回复资讯评论</h5>
         <div class="clear"></div>
     </div>
     <div class="basicInfo-main">
-        <form id="withdrawForm" method="post" action="" onsubmit="return luhmCheck($('#bank_card').val())">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
             <fieldset>
-                <p>
-                    <label class="l-title">评论：</label>
+                <p class="clear">
+                    <label class="l-title">评论:</label>
                     <textarea name="comment" cols="100" rows="6" disabled="disabled">{$comment.comment}</textarea>
                 </p>
+                <p class="clear">
                     <label class="l-title">回复：</label>
-                    <textarea cols="100" rows="6" name="response">{$comment.response}</textarea>
+                    <textarea cols="100" rows="6" name="response" id="response"></textarea>
                 </p>
                 <p>
                     <label class="l-title"></label>
-                    <button class="btn btn-primary" type="submit">提交</button>
-                    <input type="hidden" name="opera" value="response" />
-                    <input type="hidden" name="id" value="{$comment.id}" />
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        回复<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
                 </p>
             </fieldset>
         </form>
     </div>
 
 </div>
-<!-- END content -->
-<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
-<link rel="stylesheet" href="../plugins/kindeditor/themes/default/default.css" />
-<script charset="utf-8" src="../plugins/kindeditor/lang/zh_CN.js"></script>
-<script>
-    var editor;
-    KindEditor.ready(function(K) {
-        editor = K.create('textarea[name="response"]', {
-            resizeType : 1,
-            allowPreviewEmoticons : false,
-            width:"64%",
-            items : [
-                'emoticons', 'link']
-        });
+<script type="text/javascript">
+    $(function() {
+        $("#submit-btn").click(do_submit);
     });
-</script>
 
+    function do_submit() {
+        //参数校验
+        var data = {
+            id: '{$comment.content_id}',
+            comment_id: '{$comment.id}',
+            comment_content: $('#response').val().trim(),
+            opera: 'comment_reply'
+        };
+
+        var flag = true;
+
+        if(data.comment_content === '') {
+            alert('请填写回复内容');
+            flag = false;
+        }
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $('.btn-loading-img').show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var url = "content.php";
+            $.post(url, data, do_response, "json");
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.message);
+            document.forms['ad-form'].reset();
+        } else {
+            if(result.message != "") {
+                alert(result.message);
+                window.history.back();
+            }
+
+            if(result.errors) {
+                for(var id in result.errors) {
+                    $("#"+id+"-error").text(result.errors[id]);
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
 
 {include file="library/footer.lbi"}
 </body>
