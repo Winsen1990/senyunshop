@@ -29,7 +29,7 @@ if('comment_reply' == $opera) {
     } else {
         $id = intval(getPOST('id'));
         $comment_id = intval(getPOST('comment_id'));
-        $comment_content = trim(getPOST('comment'));
+        $comment_content = trim(getPOST('comment_content'));
 
         if($id <= 0 || $comment_id <= 0) {
             throw new RestFulException('参数错误', 550);
@@ -46,12 +46,17 @@ if('comment_reply' == $opera) {
             throw new RestFulException('留言不存在', 403);
         }
 
+        if(empty($comment_content)) {
+            throw new RestFulException('回复内容不能为空', 403);
+        }
+
         $comment_data = [
             'content_id' => $id,
             'comment' => $comment_content,
             'add_time' => time(),
             'account' => $_SESSION['business_account'],
-            'status' => 1
+            'status' => 1,
+            'parent_id' => $comment_id
         ];
 
         if($db->create('content_comment', $comment_data)) {
@@ -62,7 +67,6 @@ if('comment_reply' == $opera) {
             ];
 
             $db->upgrade('content_comment', $comment_assoc_data, ['id' => $comment_id]);
-            $db->upgrade('content', ['comment_count' => ['exp', '`comment_count`+1']], ['id' => $id]);
 
             $response['error'] = 0;
             $response['message'] = '回复成功';
@@ -643,21 +647,127 @@ if( 'empty' == $act ) {
 
 //评论列表
 if('comment_view' == $act) {
+    if( !check_purview('pur_content_view', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+    }
 
+    $id = intval(getGET('id'));
+
+    if($id <= 0) {
+        show_system_message('参数错误');
+    }
+
+    $content = $db->find('content', ['id'], ['id' => $id]);
+
+    if(empty($content)) {
+        show_system_message('资讯不存在');
+    }
+
+    //获取评论
+    $get_comments = 'select c.`id`,c.`top`,c.`thumb_up`,c.`comment`,c.`parent_id`,m.`headimg`,m.`nickname`,m.`account`,c.`add_time`,c.`status` from '.
+        $db->table('content_comment').' as c left join '.$db->table('member').' as m '.
+        'using(`account`) where c.`content_id`='.$id.' order by c.`path` ASC,c.`top` DESC,c.`add_time` DESC';
+
+    $comments = $db->fetchAll($get_comments);
+
+    if($comments) {
+        foreach($comments as &$_comment) {
+            if($_comment['parent_id'] > 0) {
+                $_comment['nickname'] = '管理员';
+            }
+
+            $_comment['add_time_str'] = date('Y-m-d H:i:s', $_comment['add_time']);
+            switch($_comment['status']) {
+                case 0:
+                    $_comment['status_str'] = '待审核';
+                    break;
+
+                case 1:
+                    $_comment['status_str'] = '审核通过';
+                    break;
+
+                case 2:
+                    $_comment['status_str'] = '审核不通过';
+                    break;
+            }
+        }
+    }
+
+    assign('comments', $comments);
 }
 
 //评论详情
 if('comment_show' == $act) {
+    if( !check_purview('pur_content_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+    }
 
+    $id = intval(getGET('id'));
+
+    if($id <= 0) {
+        show_system_message('参数错误');
+    }
+
+    $comment = $db->find('content_comment', ['id', 'comment', 'account', 'content_id'], ['id' => $id]);
+
+    if(empty($comment)) {
+        show_system_message('评论不存在');
+    }
+
+    assign('comment', $comment);
 }
 
 //评论置顶/取消置顶
 if('comment_top' == $act) {
+    if( !check_purview('pur_content_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+    }
 
+    $id = intval(getGET('id'));
+
+    if($id <= 0) {
+        show_system_message('参数错误');
+    }
+
+    $comment = $db->find('content_comment', ['id', 'content_id', 'top', 'status'], ['id' => $id, 'parent_id' => 0]);
+
+    if(empty($comment)) {
+        show_system_message('评论不存在');
+    }
+
+    if($comment['status'] == 0) {
+        show_system_message('评论未审核，不能置顶');
+    }
+
+    if($comment['status'] == 2) {
+        show_system_message('评论审核不通过，不能置顶');
+    }
+
+    $data = [
+        'top' => 1
+    ];
+
+    if($comment['top'] == 1) {
+        $data['top'] = 0;
+    }
+
+    if($db->upgrade('content_comment', $data, ['id' => $id])) {
+        if($data['top']) {
+            show_system_message('评论置顶成功');
+        } else {
+            show_system_message('评论已取消置顶');
+        }
+    } else {
+        show_system_message('系统繁忙，请稍后再试');
+    }
 }
 
 //评论审核
 if('comment_review' == $act) {
+    if( !check_purview('pur_content_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+    }
+
     $id = intval(getGET('id'));
     $status = intval(getGET('status'));
     $status = min(2, $status);
@@ -667,10 +777,57 @@ if('comment_review' == $act) {
         show_system_message('参数错误');
     }
 
-    $comment = $db->find('content_comment', ['id'], ['id' => $id, 'parent_id' => 0]);
+    $comment = $db->find('content_comment', ['id', 'content_id', 'status'], ['id' => $id, 'parent_id' => 0]);
 
     if(empty($comment)) {
         show_system_message('评论不存在');
+    }
+
+    if($comment['status'] != 0) {
+        show_system_message('评论已审核过，不能重复操作');
+    }
+
+    if($db->upgrade('content_comment', ['status' => $status], ['id' => $id])) {
+        if($status == 1) {
+            //审核通过
+            $db->upgrade('content', ['comment_count' => ['exp', '`comment_count`+1']], ['id' => $comment['content_id']]);
+        }
+
+        show_system_message('审核成功');
+    } else {
+        show_system_message('系统繁忙，请稍后再试');
+    }
+}
+
+//评论删除
+if('comment_delete' == $act) {
+    if( !check_purview('pur_content_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+    }
+
+    $id = intval(getGET('id'));
+
+    if($id <= 0) {
+        show_system_message('参数错误');
+    }
+
+    $comment = $db->find('content_comment', ['id', 'content_id', 'status'], ['id' => $id]);
+
+    if(empty($comment)) {
+        show_system_message('评论不存在');
+    }
+
+    if($db->destroy('content_comment', ['id' => $id]) !== false) {
+        $db->destroy('content_comment', ['parent_id' => $id]);
+        $db->destroy('content_comment_up', ['content_comment_id' => $id]);
+
+        if($comment['status'] == 1) {
+            $db->upgrade('content', ['comment_count' => ['exp', '`comment_count`-1']], ['id' => $comment['content_id']]);
+        }
+
+        show_system_message('删除评论成功');
+    } else {
+        show_system_message('删除评论失败');
     }
 }
 
