@@ -39,7 +39,7 @@ if(!empty($functions)) {
 }
 
 //产品专区
-$blocks = $db->all('blocks', ['id', 'name', 'cover'], ['status' => 1], null, ['sort']);
+$blocks = $db->all('blocks', ['id', 'name', 'cover', 'url'], ['status' => 1], null, ['sort']);
 if($blocks) {
     foreach($blocks as $block) {
         $get_assoc_products = 'select p.`id`,p.`product_sn`,p.`name`,p.`price`,p.`img`,m.`sort`,p.`shop_price` as market_price,'.
@@ -65,6 +65,7 @@ if($blocks) {
         $response['blocks'][] = [
             'cover' => $block['cover'],
             'name' => $block['name'],
+            'url' => $block['url'],
             'products' => $products
         ];
     }
