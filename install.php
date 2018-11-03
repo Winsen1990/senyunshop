@@ -527,9 +527,45 @@ $sql[] = 'create table if not exists '.$db->table('content').' (
     `sort` int not null default \'50\',
     `original_url` varchar(255),
     `section_id` int not null,
-    `status` tinyint not null default 1
+    `status` tinyint not null default 1,
+    `view_count` int not null default \'0\' comment \'浏览次数\',
+    `thumb_up` int not null default \'0\' comment \'点赞次数\',
+    `comment_count` int not null default \'0\' comment \'评论数量\'
+) default charset=utf8;';
+
+$table[] = '资讯点赞记录';
+$sql[] = 'create table if not exists '.$db->table('content_up').' (
+    `account` varchar(255) not null comment \'会员账号\',
+    `content_id` int not null comment \'评论ID\',
+    `add_time` int not null comment \'点赞时间\',
+    primary key(`account`, `content_id`)
 ) engine=InnoDB default charset=utf8;';
-/*
+
+$table[] = '资讯评论';
+$sql[] = 'create table if not exists '.$db->table('content_comment').' (
+    `id` bigint not null auto_increment primary key,
+    `path` varchar(255) comment \'评论关系\',
+    `account` varchar(255) not null comment \'会员账号\',
+    `comment` text not null comment \'评论内容\',
+    `add_time` int not null comment \'评论时间\',
+    `status` int not null default \'0\' comment \'状态：0 - 待审，1 - 通过，2 - 不通过\',
+    `thumb_up` int not null default \'0\' comment \'点赞次数\',
+    `top` tinyint(1) not null default \'0\' comment \'置顶：0 - 否，1 - 是\',
+    `parent_id` bigint not null default \'0\' comment \'上级评论ID\',
+    `content_id` int not null comment \'资讯ID\',
+    index(`parent_id`),
+    index(`account`),
+    index(`content_id`)
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '资讯评论点赞记录';
+$sql[] = 'create table if not exists '.$db->table('content_comment_up').' (
+    `account` varchar(255) not null comment \'会员账号\',
+    `content_comment_id` bigint not null comment \'资讯评论ID\',
+    `add_time` int not null comment \'点赞时间\',
+    primary key(`account`, `content_comment_id`)
+) engine=InnoDB default charset=utf8;';
+
 $table[] = '虚拟产品内容';
 $sql[] = 'create table if not exists '.$db->table('virtual_content').' (
     `id` int not null auto_increment primary key,
@@ -538,7 +574,7 @@ $sql[] = 'create table if not exists '.$db->table('virtual_content').' (
     `count` varchar(255) not null,
     `total` varchar(255) not null
 ) engine=InnoDB default charset=utf8;';
-*/
+
 $table[] = '短信验证码池';
 $sql[] = 'create table if not exists '.$db->table('message_code').' (
     `id` bigint not null auto_increment unique,
@@ -684,6 +720,14 @@ $sql[] = 'create table if not exists '.$db->table('blocks').' (
     `cover` varchar(255) not null comment \'封面图\',
     `sort` int not null default \'50\' comment \'排序 升序\'
 ) engine=InnoDB engine=InnoDB default charset=utf8;';
+
+$table[] = '关键词';
+$sql[] = 'create table if not exists '.$db->table('keywords').' (
+    `id` bigint not null auto_increment primary key,
+    `keyword` varchar(255) not null unique comment \'关键词\',
+    `click_count` int not null default \'0\' comment \'点击次数\',
+    `sort` int not null default \'50\' comment \'排序 升序排列\'
+) engine=InnoDB default charset=utf8;';
 
 $table[] = '专区-产品映射';
 $sql[] = 'create table if not exists '.$db->table('block_product_mapper').' (

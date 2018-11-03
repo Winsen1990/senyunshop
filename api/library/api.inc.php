@@ -95,7 +95,7 @@ if($level_list) {
 }
 
 if(!$login_flag) {
-    $ignore_script = 'authorization.php|index.php|category.php|product.php|feed.php|comment.php';
+    $ignore_script = 'authorization.php|index.php|category.php|product.php|feed.php|comment.php|keywords.php';
 
     $script_name = str_replace(ROOT_PATH, '', $_SERVER['SCRIPT_FILENAME']);
     $script_name_info = explode('/', $script_name);

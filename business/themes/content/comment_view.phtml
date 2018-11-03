@@ -1,0 +1,86 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">评价管理</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main">
+        <div class="article-main-header">
+            <div class="clear"></div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>用户昵称</th>
+                <th>评论内容</th>
+                <th>评论时间</th>
+                <th>状态</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $comments}
+            {foreach from=$comments item=comment}
+            <tr>
+                <td>{$comment.nickname}</td>
+                <td>{$comment.comment}</td>
+                <td>{$comment.add_time_str}</td>
+                <td>{$comment.status_str}</td>
+                <td class="text-right">
+                    {if $comment.status eq 0}
+                    <a href="javascript:void(0);" class="comment-review" data-id="{$comment.id}">审核</a> |
+                    {/if}
+
+                    {if $comment.status eq 1 and $comment.parent_id eq 0}
+                    <a href="?act=comment_show&id={$comment.id}">回复</a>
+                    | <a href="?act=comment_top&id={$comment.id}">
+                        {if $comment.top eq 1}取消置顶{else}置顶{/if}
+                    </a> |
+                    {/if}
+
+                    <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=comment_delete&id={$comment.id}">删除</a></td>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="5" align="center">暂无回复</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<script type="text/javascript">
+    $(function() {
+        $('.comment-review').click(review_comment);
+    });
+
+    function review_comment() {
+        var id = $(this).attr('data-id');
+
+        layer.open({
+            title: '评论审核',
+            content: '您要通过该评论吗？',
+            btn: ['通过', '不通过', '取消'],
+            yes: function() {
+                window.location.href = 'content.php?act=comment_review&status=1&id=' + id;
+            },
+            btn2: function() {
+                window.location.href = 'content.php?act=comment_review&status=2&id=' + id;
+            },
+            btn3: function() {
+                layer.closeAll();
+            }
+        });
+    }
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

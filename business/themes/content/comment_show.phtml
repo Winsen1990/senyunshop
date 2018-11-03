@@ -1,0 +1,96 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">回复资讯评论</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="basicInfo-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">评论:</label>
+                    <textarea name="comment" cols="100" rows="6" disabled="disabled">{$comment.comment}</textarea>
+                </p>
+                <p class="clear">
+                    <label class="l-title">回复：</label>
+                    <textarea cols="100" rows="6" name="response" id="response"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        回复<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+
+</div>
+<script type="text/javascript">
+    $(function() {
+        $("#submit-btn").click(do_submit);
+    });
+
+    function do_submit() {
+        //参数校验
+        var data = {
+            id: '{$comment.content_id}',
+            comment_id: '{$comment.id}',
+            comment_content: $('#response').val().trim(),
+            opera: 'comment_reply'
+        };
+
+        var flag = true;
+
+        if(data.comment_content === '') {
+            alert('请填写回复内容');
+            flag = false;
+        }
+
+        if(flag) {
+            flag = true;
+            //启用过渡效果
+            $('.btn-loading-img').show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var url = "content.php";
+            $.post(url, data, do_response, "json");
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.message);
+            document.forms['ad-form'].reset();
+        } else {
+            if(result.message != "") {
+                alert(result.message);
+                window.history.back();
+            }
+
+            if(result.errors) {
+                for(var id in result.errors) {
+                    $("#"+id+"-error").text(result.errors[id]);
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

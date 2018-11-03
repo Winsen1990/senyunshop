@@ -8,7 +8,7 @@
 include '../library/api.inc.php';
 global $db, $log, $config, $current_user;
 
-$operation = 'add|delete|edit|default';
+$operation = 'add|delete|edit|default|delivery_check';
 $action = 'view|show|get_default|data';
 
 $opera = check_action($operation, getPOST('opera'));
@@ -18,6 +18,51 @@ $response = [
     'error' => -1,
     'message' => ''
 ];
+
+//能否配送检验
+if('delivery_check' == $opera)
+{
+    $province = intval(getPOST('province'));
+    $city = intval(getPOST('city'));
+    $district = intval(getPOST('district'));
+
+    if($province > 0 && $city > 0 && $district > 0) {
+        //读取地址所属区域
+        //1.省市区区域
+        $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+            'province' => $province,
+            'city' => $city,
+            'district' => $district
+        ]);
+
+        //2.省市区域
+        if(empty($area_ids)) {
+            $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+                'province' => $province,
+                'city' => $city,
+                'district' => 0
+            ]);
+
+            //3.省级区域
+            if(empty($area_ids)) {
+                $area_ids = $db->all('delivery_area_mapper', ['DISTINCT(`area_id`)'], [
+                    'province' => $province,
+                    'city' => 0,
+                    'district' => 0
+                ]);
+            }
+        }
+
+        if(!empty($area_ids)) {
+            $response['error'] = 0;
+            $response['message'] = '当前地区支持配送';
+        } else {
+            $response['message'] = '当前地区不支持配送';
+        }
+    } else {
+        $response['message'] = '参数错误';
+    }
+}
 
 if('default' == $opera)
 {
@@ -247,6 +292,7 @@ if('edit' == $opera)
 if('get_default' == $act)
 {
     $get_address_detail = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
+        'a.`province`,a.`city`,a.`district`,a.`group`,'.
         'a.`mobile`,a.`zipcode`,a.`id` from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
         $db->table('city').' as c, '.$db->table('district').' as d where '.
         'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
@@ -261,7 +307,11 @@ if('get_default' == $act)
             'detail' => $address_info['province_name'].' '.$address_info['city_name'].' '.$address_info['district_name'].' '.$address_info['address'],
             'consignee' => $address_info['consignee'],
             'id' => $address_info['id'],
-            'mobile' => $address_info['mobile']
+            'mobile' => $address_info['mobile'],
+            'province' => $address_info['province'],
+            'city' => $address_info['city'],
+            'district' => $address_info['district'],
+            'group' => $address_info['group']
         ];
         $response['message'] = '获取默认地址成功';
     } else {
@@ -317,7 +367,7 @@ if('show' == $act)
 if('view' == $act)
 {
     $response['error'] = 0;
-    $response['address'] = [];
+    $response['addresses'] = [];
 
     $get_address_list = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
         'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name '.
@@ -340,7 +390,7 @@ if('view' == $act)
             unset($address['zipcode']);
         }
 
-        $response['address'] = $address_list;
+        $response['addresses'] = $address_list;
     }
 }
 

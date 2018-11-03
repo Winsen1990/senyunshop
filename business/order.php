@@ -653,6 +653,33 @@ if( 'detail' == $act ) {
     $order['pay_time_str'] = $order['pay_time'] ? date('Y-m-d H:i:s', $order['pay_time']) : '未支付';
     $order['status_str'] = $status_str[$order['status']];
 
+    if($order['serve_type'] >= 1) {
+        switch($order['serve_type']) {
+            case 1:
+                $order['serve_type_str'] = '申请退款';
+                break;
+
+            case 2:
+                $order['serve_type_str'] = '退款退货';
+                break;
+
+            case 3:
+                $order['serve_type_str'] = '申请换货';
+                break;
+
+            case 4:
+                $order['serve_type_str'] = '申请补发';
+                break;
+        }
+    }
+    /**
+     * serve_type
+     * 1: 退款
+     * 2: 退款退货
+     * 3: 换货
+     * 4: 补货
+     */
+
     $get_order_detail = 'select o.*, p.img from '. $db->table('order_detail').' as o';
     $get_order_detail .= ' left join '.$db->table('product').' as p on o.product_sn = p.product_sn';
     $get_order_detail .= ' where 1';

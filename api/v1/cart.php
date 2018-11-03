@@ -160,6 +160,7 @@ if('add' == $opera) {
     }
 }
 
+//读取购物车信息
 if('view' == $act) {
     $response['error'] = 0;
     $response['cart'] = [];
@@ -188,6 +189,11 @@ if('view' == $act) {
             ]);
         }
     }
+
+    $shop = $db->find('business', ['id', 'shop_name'], ['id' => 1]);
+    $shop['name'] = $shop['shop_name'];
+    unset($shop['shop_name']);
+    $response['shop'] = $shop;
 }
 
 echo json_encode($response);

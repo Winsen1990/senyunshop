@@ -410,8 +410,8 @@ function refund($appid, $mch_id, $mch_key, $order_sn, $total_fee, $ssl_cert, $ss
         'nonce_str' => get_nonce_str(),
         'out_trade_no' => $order_sn,
         'out_refund_no' => 'RF'.$order_sn,
-        'total_fee' => intval($total_fee * 100),
-        'refund_fee' => intval($total_fee * 100)
+        'total_fee' => $total_fee * 100,
+        'refund_fee' => $total_fee * 100
     );
 
     $data['sign'] = tenpay_sign($data, $mch_key);
