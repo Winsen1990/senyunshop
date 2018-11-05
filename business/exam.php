@@ -47,8 +47,8 @@ if('edit' == $opera)
         $response['errors']['title'] = '请填写问卷标题';
     }
 
-    $status = max($data['status'], 0);
-    $status = min(1, $data['status']);
+    $data['status'] = max($data['status'], 0);
+    $data['status'] = min(1, $data['status']);
 
     if(count($response['errors']) == 0 && $response['message'] == '') {
         if($db->upgrade('exam', $data, ['id' => $id]) !== false) {
@@ -82,8 +82,8 @@ if('add' == $opera)
         $response['errors']['title'] = '请填写问卷标题';
     }
 
-    $status = max($data['status'], 0);
-    $status = min(1, $data['status']);
+    $data['status'] = max($data['status'], 0);
+    $data['status'] = min(1, $data['status']);
 
     if(count($response['errors']) == 0 && $response['message'] == '') {
         $data['forever'] = 1;
@@ -116,11 +116,17 @@ if('view' == $act) {
     assign('exam_list', $exam_list);
 }
 
+if('add' == $act)
+{
+    if( !check_purview('pur_exam_add', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足');
+    }
+}
+
 if('edit' == $act)
 {
     if( !check_purview('pur_exam_edit', $_SESSION['business_purview']) ) {
         show_system_message('权限不足');
-        exit;
     }
 
     $id = intval(getGET('id'));
@@ -129,7 +135,7 @@ if('edit' == $act)
         show_system_message('参数错误');
     }
 
-    $exam = $db->find('exam', ['title', 'status'], ['id' => $id]);
+    $exam = $db->find('exam', ['id', 'title', 'status'], ['id' => $id]);
 
     assign('exam', $exam);
 }
@@ -138,7 +144,6 @@ if('delete' == $act)
 {
     if( !check_purview('pur_exam_del', $_SESSION['business_purview']) ) {
         show_system_message('权限不足');
-        exit;
     }
 
     $id = intval(getGET('id'));

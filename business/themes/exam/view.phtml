@@ -27,13 +27,15 @@
                 <td>{$exam.title|escape}</td>
                 <td>{$exam.status_str}</td>
                 <td class="text-right">
-                    <a href="?act=edit&id={$exam.id}">编辑</a> 
+                    <a href="?act=edit&id={$exam.id}">编辑</a>
+                    | <a href="question.php?act=view&exam_id={$exam.id}">问题管理</a>
+                    | <a href="result.php?act=view&exam_id={$exam.id}">结论管理</a>
                     | <a href="javascript:delete_exam({$exam.id});">删除</a></td>
             </tr>
             {/foreach}
             {else}
             <tr>
-                <td style="padding: 50px 0" colspan="7" align="center">
+                <td style="padding: 50px 0" colspan="4" align="center">
                     您还没有问卷，立即点击 “<a href="?act=add">这里</a>” 创建问卷！
                 </td>
             </tr>

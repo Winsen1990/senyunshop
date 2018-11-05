@@ -1,0 +1,56 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}-{$exam.title|escape}</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="exam.php">返回</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>答案序列</th>
+                <th>结论</th>
+                <th>有推荐产品</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $results}
+            {foreach from=$results item=result}
+            <tr>
+                <td>{$result.answer_series_str}</td>
+                <td>{$result.conclusion}</td>
+                <td>{if $result.recommend_product}有{else}无{/if}</td>
+                <td class="text-right">
+                    {if $result.id gt 0}
+                    <a href="?act=edit&exam_id={$exam.id}&id={$result.id}">编辑</a>
+                    | <a href="javascript:delete_result({$result.id});">删除</a>
+                    {else}
+                    <a href="?act=add&exam_id={$exam.id}&series={$result.answer_series}">创建</a>
+                    {/if}
+                </td>
+            </tr>
+            {/foreach}
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+function delete_result(id) {
+    if(confirm("确定要删除?")) {
+        window.location.href = "?act=delete&id="+id;
+    }
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>
