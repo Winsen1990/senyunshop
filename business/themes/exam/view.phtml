@@ -1,0 +1,55 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">创建问卷</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>问卷编号</th>
+                <th>问卷标题</th>
+                <th>状态</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $exam_list}
+            {foreach from=$exam_list item=exam}
+            <tr>
+                <td>{$exam.id}</td>
+                <td>{$exam.title|escape}</td>
+                <td>{$exam.status_str}</td>
+                <td class="text-right">
+                    <a href="?act=edit&id={$exam.id}">编辑</a> 
+                    | <a href="javascript:delete_exam({$exam.id});">删除</a></td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="7" align="center">
+                    您还没有问卷，立即点击 “<a href="?act=add">这里</a>” 创建问卷！
+                </td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+function delete_exam(id) {
+    if(confirm("确定要删除?")) {
+        window.location.href = "?act=delete&id="+id;
+    }
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>
