@@ -691,7 +691,49 @@ $sql[] = 'create table if not exists '.$db->table('block_product_mapper').' (
     `product_sn` varchar(255) not null comment \'产品编号\',
     `sort` int not null default \'50\' comment \'排序\',
     primary key(`block_id`, `product_sn`)
-) engine=InnoDB engine=InnoDB default charset=utf8;';
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '测试';
+$sql[] = 'create table if not exists '.$db->table('exam').' (
+    `id` bigint not null auto_increment primary key,
+    `title` varchar(255) not null comment \'测试名称\',
+    `forever` tinyint(1) not null default \'0\' comment \'长期有效：0 - 否，1 - 是\',
+    `status` int not null default \'0\' comment \'状态：0 - 停用，1 - 启用\',
+    `begin_time` int comment \'开始时间\',
+    `end_time` int comment \'结束时间\'
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '问题';
+$sql[] = 'create table if not exists '.$db->table('question').' (
+    `id` bigint not null auto_increment primary key,
+    `exam_id` bigint not null comment \'测试ID\',
+    `title` varchar(255) not null comment \'题目\',
+    `answer_mode` int not null comment \'答案类型：1 - 单选，2 - 多选\',
+    `answers` text not null comment \'答案选项\',
+    index(`exam_id`)
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '答案';
+$sql[] = 'create table if not exists '.$db->table('result').' (
+    `id` bigint not null auto_increment primary key,
+    `exam_id` bigint not null comment \'测试ID\',
+    `answer_series` varchar(255) not null comment \'答案序列\',
+    `recommend_product` varchar(255) comment \'推荐产品编号，多个产品用逗号分隔\',
+    `conclusion` varchar(255) not null comment \'结论\'
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '用户测试结果';
+$sql[] = 'create table if not exists '.$db->table('member_exam_result').' (
+    `id` bigint not null auto_increment primary key,
+    `exam_id` bigint not null comment \'测试ID\',
+    `account` varchar(255) not null comment \'用户账号\',
+    `add_time` int not null comment \'测试时间\',
+    `answer_series` varchar(255) not null comment \'答案序列\',
+    `conslusion` varchar(255) not null comment \'结论\',
+    `recommend_prodct` varchar(255) comment \'推荐产品编号，多个编号用逗号分隔\',
+    index(`account`),
+    index(`exam_id`)
+) engine=InnoDB default charset=utf8;';
 
 echo '创建数据库表:<br/>';
 foreach($table as $key=>$name)

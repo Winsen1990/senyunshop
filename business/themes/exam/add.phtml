@@ -1,0 +1,89 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">问卷标题:</label>
+                    <input class="text-input w300" type="text" id="title" name="title" placeholder="请输入问卷标题"/>
+                    <span class="error-input" id="title-error"></span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        新增<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>                
+            </fieldset>
+        </form> 
+    </div>
+</div>
+<div id="mask"></div>
+<script type="text/javascript">
+$(function() {
+    $("#submit-btn").click(do_submit);
+});
+
+function do_submit() {
+    var data = {
+        opera: 'add',
+        title: $('#title').val(),
+        status: 0
+    };
+
+    var errors = {};
+
+    if(flag) {
+        flag = true;
+        //启用过渡效果
+        $(".btn-loading-img").show();
+        $("#submit-btn").addClass("btn-disabled");
+        $("#mask").show();
+
+        var params = { "opera":"add", "alt":alt, "img":img, "end_time":end_time, "begin_time":begin_time, "forever":forever, "url":url, "order_view":order_view, "ad_pos_id":ad_pos_id };
+        var url = "ad.php";
+        $.post(url, params, do_response, "json");
+    }
+
+    return flag;
+}
+
+function do_response(result) {
+    //关闭过渡效果
+    $(".btn-loading-img").hide();
+    $("#submit-btn").removeClass("btn-disabled");
+    $("#mask").hide();
+    //处理返回结果
+    if(result.error == 0) {
+        alert(result.msg);
+        document.forms['ad-form'].reset();
+        $("#available-time").hide();
+        $("#show-image").attr("src", "../upload/image/no-image.png");
+    } else {
+        if(result.msg != "") {
+            alert(result.msg);
+        }
+
+        if(result.errmsg.length) {
+            for(var id in result.errmsg) {
+                $("#"+id+"-error").text(result.errmsg[id]);
+            }
+        }
+    }
+}
+/*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

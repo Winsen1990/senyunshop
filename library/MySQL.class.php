@@ -397,8 +397,8 @@ class MySQL
     /**
      * 获取单条记录
      */
-    public function find($table, $columns = array(), $condition = null) {
-        $row = $this->all($table, $columns, $condition, 1);
+    public function find($table, $columns = array(), $condition = null, $order = null) {
+        $row = $this->all($table, $columns, $condition, 1, $order);
 
         if($row) {
             return $row[0];
