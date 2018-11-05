@@ -12,26 +12,24 @@
         <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
             <fieldset>
                 <p class="clear">
-                    <label class="l-title">问卷标题:</label>
-                    <input class="text-input w300" type="text" id="title" name="title" placeholder="请输入问卷标题" value="{$exam.title|escape}"/>
-                    <span class="error-input" id="title-error"></span>
+                    <label class="l-title">答案序列:</label>
+                    <input class="text-input w300" type="text" value="{$answer_series_str}" disabled="disabled"/>
                 </p>
                 <p class="clear">
-                    <label class="l-title">状态:</label>
-                    <label for="status-0">
-                        <input type="radio" name="status" value="0" id="status-0" {if $exam.status eq 0}checked="checked"{/if}/>
-                        <em>停用</em>
-                    </label>
-                    <label for="status-1">
-                        <input type="radio" name="status" value="1" id="status-1" {if $exam.status eq 1}checked="checked"{/if}/>
-                        <em>启用</em>
-                    </label>
-                    <span class="error-input" id="status-error"></span>
+                    <label class="l-title">结论:</label>
+                    <span class="error-input" id="conclusion-error"></span>
+                </p>
+                <p>
+                    <textarea name="conclusion" rows="5" cols="93" placeholder="请填写答案评价" id="conclusion">{$result.conclusion}</textarea>
+                </p>
+                <p class="clear">
+                    <label class="l-title">推荐产品编号:</label>
+                    <input class="text-input w300" type="text" name="recommend_product" id="recommend_product" value="{$result.recommend_product}" placeholder="请输入推荐产品编号，多个产品使用英文逗号分隔"/>
                 </p>
                 <p>
                     <label class="l-title"></label>
                     <a class="btn btn-primary" id="submit-btn" href="javascript:;">
-                        保存<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                        创建<img src="images/btn_loading.gif" class="btn-loading-img"/>
                     </a>&nbsp;
                     <input type="hidden" name="opera" value="add"/>
                     <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
@@ -41,6 +39,7 @@
     </div>
 </div>
 <div id="mask"></div>
+
 <script type="text/javascript">
     $(function() {
         $("#submit-btn").click(do_submit);
@@ -49,26 +48,24 @@
     function do_submit() {
         var data = {
             opera: 'edit',
-            title: $('#title').val().trim(),
-            status: 0,
-            id: '{$exam.id}'
+            conclusion: $('#conclusion').val().trim(),
+            recommend_product: [],
+            id: '{$result.id}'
         };
 
         var flag = true;
         var errors = {};
 
-        if(data.title === '') {
-            errors.title = '请填写问卷标题';
+        if(data.conclusion === '') {
+            errors.conclusion = '请填写答案评价';
             flag = false;
         } else {
-            $('#title-error').text('');
+            $('#conclusion-error').text('');
         }
 
-        $('input[name=status]').each(function() {
-            if($(this).prop('checked')) {
-                data.status = $(this).val();
-            }
-        });
+        var recommend_product = $('#recommend_product').val().trim();
+        recommend_product = recommend_product.split('，').join(',').split(',');
+        data.recommend_product = recommend_product;
 
         if(flag) {
             //启用过渡效果
@@ -76,7 +73,7 @@
             $("#submit-btn").addClass("btn-disabled");
             $("#mask").show();
 
-            var url = "exam.php";
+            var url = "result.php";
             $.post(url, data, do_response, "json");
         } else {
             for(var key in errors) {
@@ -97,7 +94,7 @@
             alert(result.message);
             $("#available-time").hide();
             $("#show-image").attr("src", "../upload/image/no-image.png");
-            window.location.reload();
+            window.history.back();
         } else {
             if(result.message !== "") {
                 alert(result.message);

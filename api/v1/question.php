@@ -47,29 +47,37 @@ if('submit' == $opera) {
 
         if(!empty($result['recommend_product'])) {
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
-                'product_sn' => ['in', $result['recommend_product']],
+                'product_sn' => ['in', json_decode($result['recommend_product'], true)],
                 'status' => 4
             ], null, ['order_view']);
 
             $response['recommend_products'] = $recommend_products;
             $response['conclusion'] = $result['conclusion'];
+            $result = [
+                'recommend_products' => $recommend_products,
+                'conclusion' => $result['conclusion']
+            ];
+
+            $response['result'] = $result;
             $response['error'] = 0;
         }
     } else {
-        $response['message'] = '';
+        $response['message'] = '没有匹配的结论';
     }
 }
 
 //问题详情
 if('show' == $act) {
+    /*
     $id = intval(getGET('id'));
 
     if($id <= 0) {
         throw new RestFulException('参数错误', 550);
     }
+    */
 
-    $exam = $db->find('exam', ['title'], [
-        'id' => $id,
+    $exam = $db->find('exam', ['id', 'title'], [
+//        'id' => $id,
         'status' => 1,
         'forever' => 1
     ]);
@@ -78,12 +86,17 @@ if('show' == $act) {
         throw new RestFulException('参数错误', 550);
     }
 
+    $response['exam'] = $exam;
+
+    $id = $exam['id'];
+
     $questions = $db->all('question', ['id', 'title', 'answer_mode', 'answers'], ['exam_id' => $id]);
     if($questions) {
         foreach($questions as &$_question) {
-            $_question['answers'] = json_decode($_question['answers']);
+            $_question['answers'] = json_decode($_question['answers'], true);
         }
     }
+    $response['questions'] = $questions;
 
     $result = $db->find('member_exam_result', ['answer_series', 'recommend_product', 'conclusion'], [
         'exam_id' => $id,
@@ -95,14 +108,19 @@ if('show' == $act) {
 
         if(!empty($result['recommend_product'])) {
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
-                'product_sn' => ['in', $result['recommend_product']],
+                'product_sn' => ['in', json_decode($result['recommend_product'], true)],
                 'status' => 4
             ], null, ['order_view']);
 
             $response['recommend_products'] = $recommend_products;
             $response['conclusion'] = $result['conclusion'];
+            $result = [
+                'recommend_products' => $recommend_products,
+                'conclusion' => $result['conclusion']
+            ];
         }
     }
+    $response['result'] = $result;
 
     $response['error'] = 0;
 }

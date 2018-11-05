@@ -1,0 +1,170 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">问题:</label>
+                    <input class="text-input w300" type="text" id="title" name="title" placeholder="请输入问题" value="{$question.title|escape}"/>
+                    <span class="error-input" id="title-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">选项类型:</label>
+                    <label for="status-1">
+                        <input type="radio" name="answer_mode" value="1" id="status-1" {if $question.answer_mode eq 1}checked="checked"{/if}>
+                        <em>单选</em>
+                    </label>
+                    <!--
+                    <label for="status-2">
+                        <input type="radio" name="answer_mode" value="2" id="status-2"/>
+                        <em>多选</em>
+                    </label>
+                    -->
+                    <span class="error-input" id="answer_mode-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">答案:</label>
+                    <a href="javascript:void(0);" id="add_answer_option">添加答案</a>
+                    <span class="error-input" id="answers-error"></span>
+                </p>
+                {foreach $question.answers as $_answer}
+                <p class="clear" {if $_answer@last}id="answer-option"{/if}>
+                    <label class="l-title"></label>
+                    <input class="text-input w300" type="text" name="answers" placeholder="请输入答案" value="{$_answer}"/>
+                    {if $_answer@index gt 2}
+                    <a href="javascript:void(0);" onclick="remove_answer_option(this);">移除此答案</a>
+                    {/if}
+                </p>
+                {/foreach}
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        保存<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<div id="mask"></div>
+<p class="clear category-alias" id="answer-option-template" style="display: none;">
+    <label class="l-title"></label>
+    <input class="text-input w300" type="text" name="answers" placeholder="请输入答案"/>
+    <a href="javascript:void(0);" onclick="remove_answer_option(this);">移除此答案</a>
+</p>
+
+<script type="text/javascript">
+    function add_answer_option() {
+        var option_content = $('#answer-option-template').html();
+
+        var option_html = '<p class="clear">' + option_content + '</p>';
+
+        $(option_html).insertAfter('#answer-option');
+    }
+
+    function remove_answer_option(obj) {
+        $(obj).parent().remove();
+    }
+
+    $(function() {
+        $("#submit-btn").click(do_submit);
+
+        $('#add_answer_option').click(add_answer_option);
+    });
+
+    function do_submit() {
+        var data = {
+            opera: 'edit',
+            title: $('#title').val().trim(),
+            answer_mode: 1,
+            answers: [],
+            id: '{$question.id}'
+        };
+
+        var flag = true;
+        var errors = {};
+
+        if(data.title === '') {
+            errors.title = '请填写问题';
+            flag = false;
+        } else {
+            $('#title-error').text('');
+        }
+
+        $('input[name=answer_mode]').each(function() {
+            if($(this).prop('checked')) {
+                data.answer_mode = $(this).val();
+            }
+        });
+
+        $('input[name=answers]').each(function() {
+            var answer = $(this).val().trim();
+
+            if(answer) {
+                data.answers.push(answer);
+            }
+        });
+
+        if(data.answers.length === 0) {
+            errors.answers = '请填写至少2个答案';
+            flag = false;
+        } else {
+            $('#answers-error').text('');
+        }
+
+        if(flag) {
+            //启用过渡效果
+            $(".btn-loading-img").show();
+            $("#submit-btn").addClass("btn-disabled");
+            $("#mask").show();
+
+            var url = "question.php";
+            $.post(url, data, do_response, "json");
+        } else {
+            for(var key in errors) {
+                $('#' + key + '-error').text(errors[key]);
+            }
+        }
+
+        return flag;
+    }
+
+    function do_response(result) {
+        //关闭过渡效果
+        $(".btn-loading-img").hide();
+        $("#submit-btn").removeClass("btn-disabled");
+        $("#mask").hide();
+        //处理返回结果
+        if(result.error == 0) {
+            alert(result.message);
+            $("#available-time").hide();
+            $("#show-image").attr("src", "../upload/image/no-image.png");
+            window.history.back();
+        } else {
+            if(result.message !== "") {
+                alert(result.message);
+            }
+
+            if(result.errors) {
+                for(var id in result.errors) {
+                    $("#"+id+"-error").text(result.errors[id]);
+                }
+            }
+        }
+    }
+    /*----------------  Ajax end ---------------------*/
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

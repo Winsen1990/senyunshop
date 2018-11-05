@@ -729,8 +729,8 @@ $sql[] = 'create table if not exists '.$db->table('member_exam_result').' (
     `account` varchar(255) not null comment \'用户账号\',
     `add_time` int not null comment \'测试时间\',
     `answer_series` varchar(255) not null comment \'答案序列\',
-    `conslusion` varchar(255) not null comment \'结论\',
-    `recommend_prodct` varchar(255) comment \'推荐产品编号，多个编号用逗号分隔\',
+    `conclusion` varchar(255) not null comment \'结论\',
+    `recommend_product` varchar(255) comment \'推荐产品编号，多个编号用逗号分隔\',
     index(`account`),
     index(`exam_id`)
 ) engine=InnoDB default charset=utf8;';
