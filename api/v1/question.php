@@ -47,14 +47,20 @@ if('submit' == $opera) {
 
         if(!empty($result['recommend_product'])) {
             $result['conclusion'] = json_decode($result['conclusion'], true);
+            $recommend_product_sn = json_decode($result['recommend_product'], true);
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
-                'product_sn' => ['in', json_decode($result['recommend_product'], true)],
+                'product_sn' => ['in', $recommend_product_sn],
                 'status' => 4
             ], null, ['order_view']);
 
             if(!empty($recommend_products)) {
-                foreach($recommend_products as $index => &$_recommend_product) {
-                    $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                foreach($recommend_products as &$_recommend_product) {
+                    foreach ($recommend_product_sn as $index => $sn) {
+                        if($sn == $_recommend_product['product_sn']) {
+                            $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -112,14 +118,20 @@ if('show' == $act) {
         $result['conclusion'] = json_decode($result['conclusion'], true);
 
         if(!empty($result['recommend_product'])) {
+            $recommend_product_sn = json_decode($result['recommend_product'], true);
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
-                'product_sn' => ['in', json_decode($result['recommend_product'], true)],
+                'product_sn' => ['in', $recommend_product_sn],
                 'status' => 4
             ], null, ['order_view']);
 
             if(!empty($recommend_products)) {
-                foreach($recommend_products as $index => &$_recommend_product) {
-                    $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                foreach($recommend_products as &$_recommend_product) {
+                    foreach ($recommend_product_sn as $index => $sn) {
+                        if($sn == $_recommend_product['product_sn']) {
+                            $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                            break;
+                        }
+                    }
                 }
             }
 
