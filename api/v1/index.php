@@ -11,6 +11,8 @@ global $db, $log, $config;
 
 $response = [
     'banners' => [],
+    'under_banner_ads' => [],
+    'before_block_ads' => [],
     'functions' => [],
     'blocks' => [],
     'error' => 0,
@@ -29,12 +31,36 @@ if(!empty($banners)) {
     }
 }
 
+//首页第二屏广告
+$banners = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 2], ['order_view']);
+
+if(!empty($banners)) {
+    while($banner = array_shift($banners)) {
+        array_push($response['under_banner_ads'], [
+            'img' => $banner['img'],
+            'url' => $banner['url']
+        ]);
+    }
+}
+
 //功能区
 $functions = $db->all('category', ['id', 'icon', 'name'], ['parent_id' => 15], ['order_view']);
 if(!empty($functions)) {
     foreach($functions as &$_function) {
         $_function['id'] = intval($_function['id']);
         array_push($response['functions'], $_function);
+    }
+}
+
+//专区前广告
+$banners = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 3], ['order_view']);
+
+if(!empty($banners)) {
+    while($banner = array_shift($banners)) {
+        array_push($response['before_block_ads'], [
+            'img' => $banner['img'],
+            'url' => $banner['url']
+        ]);
     }
 }
 

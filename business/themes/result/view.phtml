@@ -16,8 +16,7 @@
             <thead>
             <tr>
                 <th>答案序列</th>
-                <th>结论</th>
-                <th>有推荐产品</th>
+                <th>状态</th>
                 <th class="text-right">操作</th>
             </tr>
             </thead>
@@ -26,8 +25,7 @@
             {foreach from=$results item=result}
             <tr>
                 <td>{$result.answer_series_str}</td>
-                <td>{$result.conclusion}</td>
-                <td>{if $result.recommend_product}有{else}无{/if}</td>
+                <td>{if $result.recommend_product}已设置{else}未设置{/if}</td>
                 <td class="text-right">
                     {if $result.id gt 0}
                     <a href="?act=edit&exam_id={$exam.id}&id={$result.id}">编辑</a>
