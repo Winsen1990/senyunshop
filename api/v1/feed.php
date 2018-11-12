@@ -96,6 +96,7 @@ if($act == 'show') {
         $feed['desc'] = $feed['description'];
         unset($feed['description']);
 
+        $feed['wap_content'] = str_replace('"/upload', '"'.$config['domain'].'/upload', $feed['wap_content']);
         $feed['content'] = $feed['wap_content'];
         unset($feed['wap_content']);
 
