@@ -39,11 +39,19 @@ if('edit' == $opera)
 
     $data = [
         'recommend_product' => getPOST('recommend_product'),
-        'conclusion' => trim(getPOST('conclusion'))
+        'conclusion' => getPOST('conclusion')
     ];
 
     if(empty($data['conclusion'])) {
         $response['errors']['conclusion'] = '请填写结论';
+    } else {
+        foreach($data['conclusion'] as $index => &$_conclusion) {
+            $_conclusion = trim($_conclusion);
+            if(empty($_conclusion)) {
+                unset($data['conclusion'][$index]);
+                continue;
+            }
+        }
     }
 
     if(!empty($data['recommend_product'])) {
@@ -51,13 +59,18 @@ if('edit' == $opera)
             $_product_sn = trim($_product_sn);
             if(empty($_product_sn)) {
                 unset($data['recommend_product'][$index]);
-               continue;
+                continue;
             }
         }
     }
 
+    if(count($data['recommend_product']) != count($data['conclusion'])) {
+        $response['errors']['conclusion'] = '结论数量与推荐产品数量不一致';
+    }
+
     if(count($response['errors']) == 0 && $response['message'] == '') {
         $data['recommend_product'] = json_encode($data['recommend_product']);
+        $data['conclusion'] = json_encode($data['conclusion']);
         if($db->upgrade('result', $data, ['id' => $id]) !== false) {
             $response['error'] = 0;
             $response['message'] = '更新结论成功';
@@ -82,7 +95,7 @@ if('add' == $opera)
     $data = [
         'answer_series' => trim(getPOST('answer_series')),
         'recommend_product' => getPOST('recommend_product'),
-        'conclusion' => trim(getPOST('conclusion')),
+        'conclusion' => getPOST('conclusion'),
         'exam_id' => intval(getPOST('exam_id'))
     ];
 
@@ -102,6 +115,14 @@ if('add' == $opera)
 
     if(empty($data['conclusion'])) {
         $response['errors']['conclusion'] = '请填写结论';
+    } else {
+        foreach($data['conclusion'] as $index => &$_conclusion) {
+            $_conclusion = trim($_conclusion);
+            if(empty($_conclusion)) {
+                unset($data['conclusion'][$index]);
+                continue;
+            }
+        }
     }
 
     if(!empty($data['recommend_product'])) {
@@ -114,8 +135,13 @@ if('add' == $opera)
         }
     }
 
+    if(count($data['recommend_product']) != count($data['conclusion'])) {
+        $response['errors']['conclusion'] = '结论数量与推荐产品数量不一致';
+    }
+
     if(count($response['errors']) == 0 && $response['message'] == '') {
         $data['recommend_product'] = json_encode($data['recommend_product']);
+        $data['conclusion'] = json_encode($data['conclusion']);
         if($db->create('result', $data)) {
             $response['error'] = 0;
             $response['message'] = '创建结论成功';
@@ -285,12 +311,40 @@ if('edit' == $act)
     }
 
     if(!empty($result['recommend_product'])) {
-        $result['recommend_product'] = json_decode($result['recommend_product']);
-        $result['recommend_product'] = implode(',', $result['recommend_product']);
+        $result['recommend_product'] = json_decode($result['recommend_product'], true);
+        $result['conclusion'] = json_decode($result['conclusion'], true);
     }
 
     assign('answer_series_str', $answer_series_str);
     assign('result', $result);
+
+    $assoc_products = $db->all('product', [
+        'product_sn',
+        'name',
+        'price',
+        'img'
+    ], ['product_sn' => ['in', $result['recommend_product']]]);
+
+    $product_scope = [];
+    $product_selected = [];
+
+    if($assoc_products) {
+        foreach ($assoc_products as $index => &$_product) {
+            $_product['conclusion'] = $result['conclusion'][$index];
+
+            array_push($product_scope, $_product['product_sn']);
+            $product_selected[$_product['product_sn']] = [
+                'id' => $_product['product_sn'],
+                'img' => $_product['img'],
+                'name' => $_product['name'],
+                'price' => $_product['price']
+            ];
+        }
+    }
+
+    assign('assoc_products', $assoc_products);
+    assign('product_scope', $product_scope);
+    assign('product_selected', $product_selected);
 }
 
 if('delete' == $act)

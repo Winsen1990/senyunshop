@@ -15,6 +15,7 @@
                     <label class="l-title">答案序列:</label>
                     <input class="text-input w300" type="text" value="{$answer_series_str}" disabled="disabled"/>
                 </p>
+                <!--
                 <p class="clear">
                     <label class="l-title">结论:</label>
                     <span class="error-input" id="conclusion-error"></span>
@@ -22,10 +23,15 @@
                 <p>
                     <textarea name="conclusion" rows="5" cols="93" placeholder="请填写答案评价" id="conclusion"></textarea>
                 </p>
+                -->
                 <p class="clear">
-                    <label class="l-title">推荐产品编号:</label>
-                    <input class="text-input w300" type="text" name="recommend_product" id="recommend_product" placeholder="请输入推荐产品编号，多个产品使用英文逗号分隔"/>
+                    <label class="l-title">推荐产品:</label>
+                    <input type="button" class="text-input" id="product-selector" value="请选择推荐产品" style="cursor:pointer"/>
+                    <span class="error-input" id="recommend_product-error"></span>
+                    <span class="error-input" id="conclusion-error"></span>
                 </p>
+                <div class="clear" id="product-scope-input-notice">
+                </div>
                 <p>
                     <label class="l-title"></label>
                     <a class="btn btn-primary" id="submit-btn" href="javascript:;">
@@ -40,16 +46,18 @@
 </div>
 <div id="mask"></div>
 
+<script type="text/javascript" src="js/layer/layer.js"></script>
 <script type="text/javascript">
 $(function() {
     $("#submit-btn").click(do_submit);
+    $('#product-selector').click(show_product_optional);
 });
 
 function do_submit() {
     var data = {
         opera: 'add',
-        conclusion: $('#conclusion').val().trim(),
-        recommend_product: [],
+        conclusion: [],
+        recommend_product: product_scope,
         answer_series: '{$answer_series}',
         exam_id: '{$exam.id}'
     };
@@ -57,16 +65,24 @@ function do_submit() {
     var flag = true;
     var errors = {};
 
-    if(data.conclusion === '') {
-        errors.conclusion = '请填写答案评价';
+    $('.conclusion').each(function() {
+        data.conclusion.push($(this).val());
+    });
+
+    if(data.recommend_product.length === 0) {
+        errors.recommend_product = '请选择推荐产品';
+        flag = false;
+    } else {
+        $('#recommend_product-error').text('');
+    }
+
+    if(data.conclusion.length !== data.recommend_product.length) {
+        errors.conclusion = '推荐产品评价数量必须和推荐产品数量一致';
         flag = false;
     } else {
         $('#conclusion-error').text('');
     }
 
-    var recommend_product = $('#recommend_product').val().trim();
-    recommend_product = recommend_product.split('，').join(',').split(',');
-    data.recommend_product = recommend_product;
 
     if(flag) {
         //启用过渡效果
@@ -109,6 +125,141 @@ function do_response(result) {
     }
 }
 /*----------------  Ajax end ---------------------*/
+
+var product_list_param = {
+    total: 0,
+    page: 1
+};
+//显示可用产品
+function show_product_optional() {
+    layer.load(1);
+
+    $.getJSON('ajax.php', { act: 'product_list', page: product_list_param.page, page_size: 9 }, function(response) {
+        layer.closeAll('loading');
+
+        product_selector(response.selector);
+    });
+}
+
+var product_scope = [];
+var product_selected = {};
+function product_selector(product_panel) {
+    $.ajaxSetup({
+        beforeSend: function() {
+            $('.product-selector-item.checked').each(function() {
+                var id = $(this).attr('data-id');
+
+                if(product_scope.indexOf(id) === -1) {
+                    product_scope.push(id);
+
+                    product_selected[id] = {
+                        id: id,
+                        name: $(this).attr('data-name'),
+                        img: $(this).attr('data-img'),
+                        price: $(this).attr('data-price')
+                    };
+                }
+            });
+        }
+    });
+
+    var selector = layer.open({
+        title: '请选择适用产品',
+        content: product_panel,
+        area: ['600px', '340px'],
+        btn: ['确认', '清空已选'],
+        yes: function() {
+            $('.product-selector-item.checked').each(function() {
+                var id = $(this).attr('data-id');
+
+                if(product_scope.indexOf(id) === -1) {
+                    product_scope.push(id);
+
+                    product_selected[id] = {
+                        id: id,
+                        name: $(this).attr('data-name'),
+                        img: $(this).attr('data-img'),
+                        price: $(this).attr('data-price')
+                    };
+                }
+            });
+            layer.close(selector);
+        },
+        btn2: function() {
+            $('.product-selector-item.checked').each(function() {
+                $(this).removeClass('checked');
+            });
+            return false;
+        },
+        end: function() {
+            $.ajaxSetup({
+                beforeSend: null
+            });
+
+            render_product();
+        }
+    });
+
+    $('.product-selector-item').each(function() {
+        var id = $(this).attr('data-id');
+        if(product_scope.indexOf(id) !== -1) {
+            $(this).addClass('checked');
+        }
+    });
+
+    $('.product-selector-item').click(function () {
+        if (!$(this).hasClass('checked')) {
+            $(this).addClass('checked');
+        } else {
+            $(this).removeClass('checked');
+        }
+    });
+
+    $('.product-selection-pagination a').click(function() {
+        var page = $(this).attr('data-page');
+
+        layer.load(1);
+
+        $.getJSON('ajax.php', { act: 'product_list', page: page, page_size: 9 }, function(response) {
+            layer.closeAll('loading');
+
+            product_selector(response.selector);
+        });
+    });
+}
+
+function render_product() {
+    for(var id in product_selected) {
+        if($('#product-option-selected-' + id).length) {
+            continue;
+        }
+
+        var product = product_selected[id];
+
+        var product_item = '<div class="product-optional-item" id="product-option-selected-' + id + '">';
+
+        product_item += '<img src="' + product.img + '"/>';
+        product_item += '<p class="product-name">' + product.name + '</p>';
+        product_item += '<p class="product-price">￥' + product.price + '</p>';
+        product_item += '<a href="javascript:void(0);" data-id="' + id + '" onclick="remove_selected_product(this);">删除</a>';
+        product_item += '<input type="hidden" name="product_scope" value="' + id + '"/>';
+        product_item += '<textarea class="text-input conclusion" style="width:128px" rows="10" name="conclusion" placeholder="结论"></textarea>';
+
+        product_item += '</div>';
+
+        $('#product-scope-input-notice').append(product_item);
+    }
+}
+
+function remove_selected_product(obj) {
+    var id = $(obj).attr('data-id');
+    delete product_selected[id];
+    if(product_scope.indexOf(id) !== -1) {
+        product_scope.splice(product_scope.indexOf(id), 1);
+    }
+
+    obj.parentNode.remove();
+}
 </script>
 <!-- END content -->
 {include file="library/footer.lbi"}

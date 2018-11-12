@@ -9,6 +9,7 @@ include '../library/api.inc.php';
 global $db, $log, $config, $current_user;
 
 $code = getPOST('code');
+$recommend = trim(getPOST('recommend'));
 
 if(empty($code)) {
     throw new RestFulException('参数错误', 400);
@@ -32,6 +33,13 @@ $parent_id = 0;
 $user = $db->fetchRow($get_user);
 $account = '';
 if(!$user) {
+    if(!empty($recommend)) {
+        $parent_id = $db->getColumn('member', 'id', ['account' => $recommend]);
+
+        if(empty($parent_id)) {
+            $parent_id = 0;
+        }
+    }
     //注册用户
     if ($account = register_member($openid, $parent_id)) {
         $log->record('async user list, add new user with: openid=' . $openid);

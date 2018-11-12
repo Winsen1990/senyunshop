@@ -46,16 +46,20 @@ if('submit' == $opera) {
         $db->create('member_exam_result', $member_result);
 
         if(!empty($result['recommend_product'])) {
+            $result['conclusion'] = json_decode($result['conclusion'], true);
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
                 'product_sn' => ['in', json_decode($result['recommend_product'], true)],
                 'status' => 4
             ], null, ['order_view']);
 
-            $response['recommend_products'] = $recommend_products;
-            $response['conclusion'] = $result['conclusion'];
+            if(!empty($recommend_products)) {
+                foreach($recommend_products as $index => &$_recommend_product) {
+                    $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                }
+            }
+
             $result = [
-                'recommend_products' => $recommend_products,
-                'conclusion' => $result['conclusion']
+                'recommend_products' => $recommend_products
             ];
 
             $response['result'] = $result;
@@ -105,6 +109,7 @@ if('show' == $act) {
 
     if(!empty($result)) {
         $response['answer_series'] = $result['answer_series'];
+        $result['conclusion'] = json_decode($result['conclusion'], true);
 
         if(!empty($result['recommend_product'])) {
             $recommend_products = $db->all('product', ['id', 'product_sn', 'price', 'img', 'name'], [
@@ -112,11 +117,14 @@ if('show' == $act) {
                 'status' => 4
             ], null, ['order_view']);
 
-            $response['recommend_products'] = $recommend_products;
-            $response['conclusion'] = $result['conclusion'];
+            if(!empty($recommend_products)) {
+                foreach($recommend_products as $index => &$_recommend_product) {
+                    $_recommend_product['conclusion'] = isset($result['conclusion'][$index]) ? $result['conclusion'][$index] : '';
+                }
+            }
+
             $result = [
                 'recommend_products' => $recommend_products,
-                'conclusion' => $result['conclusion']
             ];
         }
     }
