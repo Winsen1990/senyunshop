@@ -245,6 +245,10 @@ if('view' == $act) {
         if(!isset($_delivery['shipping_fee'])) {
             $_delivery['shipping_fee'] = 0;
         }
+
+        if($total_amount >= 300 && time() <= strtotime('2018-11-19 00:00:00')) {
+            $_delivery['shipping_fee'] = 0;
+        }
     }
 
     if($response['message'] == '') {
@@ -252,6 +256,7 @@ if('view' == $act) {
     }
     $response['total_amount'] = $total_amount;
     $response['total_integral'] = $total_integral;
+
     $response['shipping'] = array_values($delivery_list);
 
     //商家信息
