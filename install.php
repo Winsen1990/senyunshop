@@ -198,7 +198,6 @@ $sql[] = 'create table if not exists '.$db->table('member').' (
     `reward_amount` decimal(18,2) not null default \'0\',
     `parent_id` int not null default \'0\',
     `path` varchar(255),
-    `business_account` varchar(255),
     `ticket` varchar(255),
     `expired` int not null default \'0\',
     `scene_id` int not null default \'0\',
@@ -337,7 +336,9 @@ $sql[] = 'create table if not exists '.$db->table('admin').' (
     `name` varchar(255) not null,
     `role_id` int not null,
     `mobile` varchar(255) not null,
-    `sex` char(2) not null
+    `sex` char(2) not null,
+    `openid` varchar(255) comment \'openid\',
+    index(`openid`)
 ) engine=InnoDB default charset=utf8;';
 
 $table[] = '角色';
@@ -373,7 +374,8 @@ $sql[] = 'create table if not exists '.$db->table('cart').' (
     `checked` tinyint(1) not null default \'1\',
     `is_virtual` tinyint(1) not null default \'0\',
     `is_gift` tinyint(1) not null default \'0\' comment \'赠品：0 - 否，1 - 是\',
-    `belongs` bigint not null default \'0\' comment \'赠品从属购物车ID\',
+    `relate_id` bigint not null default \'0\' comment \'赠品从属购物车ID\',
+    `relate_remark` varchar(255) comment \'赠品依据\',
     index(`account`),
     index(`product_sn`),
     index(`sku`)
@@ -454,6 +456,8 @@ $sql[] = 'create table if not exists '.$db->table('order_detail').' (
     `is_virtual` tinyint(1) not null default \'0\',
     `is_special` tinyint(1) not null default \'0\',
     `is_gift` tinyint(1) not null default \'0\',
+    `relate_id` bigint not null default \'\' comment \'赠品依赖产品\',
+    `relate_remark` varchar(255) comment \'赠品依据\',
     `is_comment` tinyint(1) not null default \'0\' comment \'已评价：0 - 否，1 - 是\',
     index(`order_sn`),
     index(`product_sn`),
@@ -733,6 +737,106 @@ $sql[] = 'create table if not exists '.$db->table('member_exam_result').' (
     `recommend_product` varchar(255) comment \'推荐产品编号，多个编号用逗号分隔\',
     index(`account`),
     index(`exam_id`)
+) engine=InnoDB default charset=utf8;';
+
+
+$table[] = '会员等级';
+$sql[] = 'create table if not exists '.$db->table('level').'(
+    `id` bigint not null auto_increment primary key,
+    `name` varchar(255) not null comment \'等级名称\',
+    `experience` decimal(18, 3) not null default \'0\' comment \'经验值\',
+    `experience_type` int not null default \'1\' comment \'经验值类型：1 - 单次消费额，2 - 累计消费额，3 - 累计推广积分\',
+    `recommend_count` int not null default \'0\' comment \'推荐人数\',
+    `is_special` tinyint(1) not null default \'0\' comment \'特殊等级：0 - 否，1 - 是\',
+    `remark` varchar(255) comment \'备注\'
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '优惠券';
+$sql[] = 'create table if not exists '.$db->table('coupon').' (
+    `id` bigint not null auto_increment primary key,
+    `prefix` varchar(255) not null unique comment \'券号前缀\',
+    `name` varchar(255) not null comment \'优惠券名称\',
+    `type` int not null comment \'优惠券类型：1 - 折扣，2 - 代金， 3 - 满减\',
+    `min_amount` decimal(18,3) default \'0\' comment \'最低起用金额\',
+    `decrement_limit` decimal(18,3) default \'0\' comment \'优惠减免金额上限，仅折扣券有效\',
+    `discount` int default \'0\' comment \'折扣\',
+    `decrement` decimal(18,3) not null default \'0\' comment \'减免金额\',
+    `category_scope` varchar(255) comment \'适用分类\',
+    `product_scope` varchar(255) comment \'适用产品\',
+    `shop_scope` varchar(255) comment \'适用店铺\',
+    `ignore_all` tinyint(1) not null default \'0\' comment \'适用全品类： 0 - 否，1 - 是\',
+    `forever` tinyint(1) not null default \'0\' comment \'永久有效： 0 - 否，1 - 是\',
+    `begin_time` int not null comment \'开始发放时间\',
+    `end_time` int not null comment \'结束发放时间\',
+    `add_time` int not null comment \'添加时间\',
+    `last_modify` int not null comment \'最后修改时间\',
+    `hook` varchar(255) comment \'调用位置\',
+    `cost` decimal(18,3) not null default \'0\' comment \'成本\',
+    `number` int not null comment \'总量\',
+    `remain` int not null comment \'剩余数量\',
+    `used` int not null comment \'使用数量\',
+    `cycle` tinyint(1) not null default \'0\' comment \'循环使用：0 - 否，1 - 是\',
+    `expired_time` int not null default \'0\' comment \'强制优惠券过期时间\',
+    `active_time` int not null comment \'过期时间，单位：小时\',
+    `member_levels` varchar(255) comment \'适用会员等级 为空则全等级通用\',
+    `status` int not null default \'1\' comment \'状态：0 - 停用，1 - 启用\',
+    `channels` varchar(255)  comment \'发放渠道\',
+    index(`business_account`)
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '优惠券适用规则';
+$sql[] = 'create table if not exists '.$db->table('coupon_rule_mapper').' (
+    `coupon_id` bigint not null comment \'优惠券ID\',
+    `shop_id` bigint not null default \'0\' comment \'店铺ID\',
+    `category_id` bigint not null default \'0\' comment \'分类ID\',
+    `product_id` bigint not null default \'0\' comment \'产品ID\',
+    `begin_time` int not null comment \'开始发放时间\',
+    `end_time` int not null comment \'结束发放时间\',
+    `level_id` int not null default \'0\' comment \'会员等级\',
+    `status` int not null default \'1\' comment \'状态：0 - 停用，1 - 启用\',
+    primary key(`coupon_id`,`shop_id`,`category_id`,`product_id`,`level_id`),
+    index(`coupon_id`),
+    index(`shop_id`),
+    index(`category_id`),
+    index(`product_id`),
+    index(`level_id`)
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '用户优惠券';
+$sql[] = 'create table if not exists '.$db->table('coupon_member_mapper').' (
+    `id` bigint not null auto_increment unique,
+    `account` varchar(255) not null comment \'用户账号\',
+    `coupon_id` bigint not null comment \'优惠券ID\',
+    `coupon_sn` varchar(255) not null primary key comment \'优惠券号\',
+    `name` varchar(255) not null comment \'优惠券名称\',
+    `type` int not null comment \'优惠券类型：1 - 折扣，2 - 代金， 3 - 满减\',
+    `min_amount` decimal(18,3) default \'0\' comment \'最低起用金额\',
+    `decrement_limit` decimal(18,3) default \'0\' comment \'优惠减免金额上限，仅折扣券有效\',
+    `discount` int default \'0\' comment \'折扣\',
+    `category_scope` varchar(255) comment \'适用分类\',
+    `product_scope` varchar(255) comment \'适用产品\',
+    `shop_scope` varchar(255) comment \'适用店铺\',
+    `ignore_all` tinyint(1) not null default \'0\' comment \'适用全品类： 0 - 否，1 - 是\',
+    `forever` tinyint(1) not null default \'0\' comment \'永久有效： 0 - 否，1 - 是\',
+    `decrement` decimal(18,3) not null default \'0\' comment \'减免金额\',
+    `status` int not null comment \'状态：0 - 可用，1 - 已使用，2 - 已过期\',
+    `add_time` int not null comment \'领券时间\',
+    `expired` int not null default \'0\' comment \'过期时间\',
+    `order_sn` varchar(255) comment \'订单编号\',
+    `decrement_amount` decimal(18,3) not null default \'0\' comment \'减免金额\',
+    `channel` varchar(255) comment \'使用渠道\',
+    `used_time` int comment \'使用时间\',
+    index(`account`),
+    index(`coupon_id`),
+) engine=InnoDB default charset=utf8;';
+
+$table[] = '优惠券号池';
+$sql[] = 'create table if not exists '.$db->table('coupon_sn_pool').' (
+    `id` bigint not null auto_increment primary key,
+    `coupon_sn` varchar(255) not null comment \'优惠券号\',
+    `status` tinyint(1) not null default \'1\' comment \'状态：0 - 不可用，1 - 可用\',
+    `coupon_id` int not null comment \'优惠券ID\',
+    index(`coupon_id`)
 ) engine=InnoDB default charset=utf8;';
 
 echo '创建数据库表:<br/>';
