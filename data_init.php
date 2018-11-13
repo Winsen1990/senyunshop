@@ -45,34 +45,6 @@ $data[] = array(
     array('key'=>'statistics ', 'name'=>'开启统计', 'value'=>'0', 'type'=>'text', 'group'=>'themes', 'remark'=>''),
 );
 
-//初始化商家
-$table[] = 'business';
-$data[] = array(
-    array(
-        'id' => 1,
-        'business_account' => 'Wine2018',
-        'password' => md5('Wine2018@'.PASSWORD_END),
-        'company' => '知性小厨',
-        'license' => '',
-        'identity' => '',
-        'industry_id' => 0,
-        'category_id' => 0,
-        'province' => 5,
-        'city' => 5,
-        'district' => 103,
-        'group' => 0,
-        'address' => '',
-        'status' => 2,
-        'contact' => '彭',
-        'mobile' => '13929564894',
-        'email' => 'airplace1@gmail.com',
-        'shop_name' => '知性小厨',
-        'shop_logo' => '',
-        'comment' => 0,
-        'account' => ''
-    )
-);
-
 /*
 //产品分类
 $table[] = 'category';
@@ -90,7 +62,7 @@ $data[] = array(
 
 $table[] = 'payment';
 $data[] = array(
-    array('name'=>'微信支付', 'plugins'=>'wechat', 'desc'=>'微信支付', 'status'=>1)
+    array('name'=>'微信支付', 'plugins'=>'wechat', 'desc'=>'微信支付', 'status'=>1, 'device' => 'mobile')
 );
 /*
 $table[] = '初始化广告位数据';

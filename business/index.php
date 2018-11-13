@@ -7,6 +7,7 @@
  * @version 1.0.0
  */
 include 'library/init.inc.php';
+global $config, $db, $validate_config, $smarty;
 
 $template = 'index/';
 

@@ -38,9 +38,10 @@ $log = new Logs($debug_mode, $log_file);
 $get_sysconf = 'select `key`,`value` from '.$db->table('sysconf');
 global $config;
 $config_tmp = $db->fetchAll($get_sysconf);
-foreach($config_tmp as $tmp)
-{
-    $config[$tmp['key']] = $tmp['value'];
+if($config_tmp) {
+    foreach ($config_tmp as $tmp) {
+        $config[$tmp['key']] = $tmp['value'];
+    }
 }
 
 //初始化smarty对象

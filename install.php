@@ -456,7 +456,7 @@ $sql[] = 'create table if not exists '.$db->table('order_detail').' (
     `is_virtual` tinyint(1) not null default \'0\',
     `is_special` tinyint(1) not null default \'0\',
     `is_gift` tinyint(1) not null default \'0\',
-    `relate_id` bigint not null default \'\' comment \'赠品依赖产品\',
+    `relate_id` bigint not null default \'0\' comment \'赠品依赖产品\',
     `relate_remark` varchar(255) comment \'赠品依据\',
     `is_comment` tinyint(1) not null default \'0\' comment \'已评价：0 - 否，1 - 是\',
     index(`order_sn`),
@@ -780,8 +780,7 @@ $sql[] = 'create table if not exists '.$db->table('coupon').' (
     `active_time` int not null comment \'过期时间，单位：小时\',
     `member_levels` varchar(255) comment \'适用会员等级 为空则全等级通用\',
     `status` int not null default \'1\' comment \'状态：0 - 停用，1 - 启用\',
-    `channels` varchar(255)  comment \'发放渠道\',
-    index(`business_account`)
+    `channels` varchar(255)  comment \'发放渠道\'
 ) engine=InnoDB default charset=utf8;';
 
 $table[] = '优惠券适用规则';
@@ -827,7 +826,7 @@ $sql[] = 'create table if not exists '.$db->table('coupon_member_mapper').' (
     `channel` varchar(255) comment \'使用渠道\',
     `used_time` int comment \'使用时间\',
     index(`account`),
-    index(`coupon_id`),
+    index(`coupon_id`)
 ) engine=InnoDB default charset=utf8;';
 
 $table[] = '优惠券号池';

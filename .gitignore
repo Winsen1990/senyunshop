@@ -1,6 +1,5 @@
 .idea/
 *.pem
-*.log
 upload/
 *.sql
 data/
