@@ -21,6 +21,9 @@ $sql[] = 'alter table '.$db->table('order_detail').' add `relate_id` bigint not 
 $sql[] = 'alter table '.$db->table('order_detail').' add `relate_remark` varchar(255) comment \'赠品依据\'';
 $sql[] = 'alter table '.$db->table('admin').' drop `business_account`';
 $sql[] = 'alter table '.$db->table('admin').' add `openid` varchar(255) comment \'会员OpenId\'';
+$sql[] = 'alter table '.$db->table('order').' add `coupon_sn` varchar(255) comment \'优惠券号\'';
+$sql[] = 'alter table '.$db->table('order').' add `coupon_name` varchar(255) comment \'优惠名称\'';
+$sql[] = 'alter table '.$db->table('order').' add `coupon_reduce` decimal(18,3) not null default \'0\' comment \'优惠券减免金额\'';
 
 while($_sql = array_shift($sql)) {
     $db->query($_sql);

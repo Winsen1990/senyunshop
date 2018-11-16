@@ -221,6 +221,7 @@ $sql[] = 'create table if not exists '.$db->table('order').' (
     `amount` decimal(18,3) not null,
     `integral_amount` decimal(18,3) not null,
     `product_amount` decimal(18,3) not null,
+    `coupon_reduce` decimal(18, 3) not null default \'0\' comment \'优惠券减免金额\',
     `given_integral_amount` decimal(18,3) not null,
     `given_reward_amount` decimal(18,3) not null,
     `delivery_id` int not null,
@@ -250,7 +251,9 @@ $sql[] = 'create table if not exists '.$db->table('order').' (
     `integral_paid` decimal(18,2) not null default \'0\',
     `reward_paid` decimal(18,2) not null default \'0\',
     `balance_paid` decimal(18,2) not null default \'0\',
-    `is_virtual` tinyint not null default \'0\' comment \'0:实体产品订单，1:虚拟产品订单\'
+    `is_virtual` tinyint not null default \'0\' comment \'0:实体产品订单，1:虚拟产品订单\',
+    `coupon_sn` varchar(255) comment \'优惠券号\',
+    `coupon_name` varchar(255) comment \'优惠券名称\'
 ) engine=InnoDB default charset=utf8;';
 
 $table[] = '订单操作记录';
