@@ -409,9 +409,9 @@ function get_active_nav() {
 
 /**
  * 生成分页
- * @param $page 当前页
- * @param $total_page   总页数
- * @param $total    记录总数
+ * @param $page int 当前页
+ * @param $total_page int   总页数
+ * @param $total  int  记录总数
  * @author 王仁欢
  * @return void
  *
@@ -488,6 +488,73 @@ function get($url, $params = '')
 function post($url, $params = array(), $encode = true, $ssl_cert = null, $ssl_key = null)
 {
     return httpRequest($url, $params, 'post', $encode, false, $ssl_cert, $ssl_key);
+}
+
+function api_request($url, $data, $method, $encode = true, $auth_info = '') {
+    global $log;
+
+    $auth_info = empty($auth_info) ? session_id() : $auth_info;
+
+    if(is_array($data) || is_object($data)) {
+        $log->record_array($data);
+    } else {
+        $log->record($data);
+    }
+
+    $protocol = 'http';
+    if(strpos($url, '://') !== false)
+    {
+        $explode_arr = explode('://', $url);
+        $protocol = $explode_arr[0];
+    }
+    $method = strtoupper($method);
+    $data_fields = '';
+    if($encode && (is_array($data) || is_object($data)))
+    {
+        $data_fields = http_build_query($data);
+    } else {
+        $data_fields = $data;
+    }
+    if($method == 'GET' && $encode && $data_fields)
+    {
+        $url .= '?'.$data_fields;
+    }
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, ['X-AUTH:'.$auth_info]);
+
+    switch ($method){
+        case 'GET' :
+            curl_setopt($curl, CURLOPT_HTTPGET, true);
+            break;
+        case 'POST':
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_fields);
+            break;
+        case 'PATCH':
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_fields);
+            break;
+        case 'PUT':
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PUT');
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_fields);
+            break;
+        case 'DELETE':
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_fields);
+            break;
+    }
+    if($protocol == 'https')
+    {
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_SSLVERSION, 1);
+    }
+
+    $data = curl_exec($curl);
+    curl_close($curl);
+    return $data;
 }
 
 function httpRequest($url, $data, $method, $encode = true, $need_header = false, $ssl_cert = null, $ssl_key = null) {
@@ -958,4 +1025,221 @@ function is_mobile_agent()
     if($is_mac){
         return  false;
     }
+}
+
+/**
+ * 生成优惠券的 discount_reduce, $discount_detail , scope 字段
+ * @param array $coupon 优惠券
+ * @return void
+ */
+function coupon_translate(&$coupon) {
+    global $cache, $db;
+
+    $scope = [];
+    $discount_detail = '';
+    $discount_reduce = '';
+
+    //适用店铺
+    if(empty($coupon['shop_scope'])) {
+        $scope['shop_scope'] = '平台通用';
+    } else {
+        $shop_scope = explode(',', $coupon['shop_scope']);
+        $shop_scope_name = [];
+
+        while($shop_id = array_shift($shop_scope)) {
+            $shop_id = intval($shop_id);
+            if($shop_id <= 0) {
+                continue;
+            }
+
+            if(!isset($cache['shop_'.$shop_id])) {
+                $shop = $db->find('business', ['shop_name'], ['id' => $shop_id]);
+
+                if(!empty($shop)) {
+                    $cache['shop_'.$shop_id] = $shop;
+                    array_push($shop_scope_name, $shop['shop_name']);
+                }
+            } else {
+                array_push($shop_scope_name, $cache['shop_'.$shop_id]['shop_name']);
+            }
+        }
+
+        $scope['shop_scope'] = implode(',', $shop_scope_name);
+    }
+
+    //适用分类
+    if(empty($coupon['category_scope'])) {
+        $scope['category_scope'] = '全分类通用';
+    } else {
+        $category_scope = explode(',', $coupon['category_scope']);
+        $category_scope_name = [];
+
+        while($category_id = array_shift($category_scope)) {
+            $category_id = intval($category_id);
+            if($category_id <= 0) {
+                continue;
+            }
+
+            if(!isset($cache['category_'.$category_id])) {
+                $category = $db->find('category', ['name'], ['id' => $category_id]);
+
+                if(!empty($category)) {
+                    $cache['category_'.$category_id] = $category;
+                    array_push($category_scope_name, $category['name']);
+                }
+            } else {
+                array_push($category_scope_name, $cache['category_'.$category_id]['name']);
+            }
+        }
+
+        $scope['category_scope'] = implode(',', $category_scope_name);
+    }
+
+    //适用产品
+    if(empty($coupon['product_scope'])) {
+        $scope['product_scope'] = '全分类通用';
+    } else {
+        $product_scope = explode(',', $coupon['product_scope']);
+        $product_scope_name = [];
+
+        while($product_id = array_shift($product_scope)) {
+            $product_id = intval($product_id);
+            if($product_id <= 0) {
+                continue;
+            }
+
+            if(!isset($cache['product_'.$product_id])) {
+                $product = $db->find('product', ['name'], ['id' => $product_id]);
+
+                if(!empty($product)) {
+                    $cache['product_'.$product_id] = $product;
+                    array_push($product_scope_name, $product['name']);
+                }
+            } else {
+                array_push($product_scope_name, $cache['product_'.$product_id]['name']);
+            }
+        }
+
+        $scope['product_scope'] = implode(',', $product_scope_name);
+    }
+
+    //适用等级
+    if(empty($coupon['member_levels'])) {
+        $scope['member_scope'] = '全会员可领';
+    } else {
+        global $level;
+        $scope['member_scope'] = '';
+
+        $member_levels = explode(',', $coupon['member_levels']);
+        foreach($member_levels as $level_id) {
+            if($scope['member_scope'] != '') {
+                $scope['member_scope'] .= ',';
+            }
+
+            $scope['member_scope'] .= $level[$level_id];
+        }
+    }
+
+    if($coupon['min_amount'] > 0) {
+        $discount_detail = '满'.sprintf('%.2f', $coupon['min_amount']).'元可用';
+    }
+
+    switch($coupon['type']) {
+        case 1:
+            //折扣
+            if($coupon['discount']%10) {
+                $discount_reduce = sprintf('%.1f折', $coupon['discount'] / 10);
+            } else {
+                $discount_reduce = $coupon['discount']/10 .'折';
+            }
+
+            if($coupon['decrement_limit'] > 0) {
+                $discount_detail .= '，最多减免'.$coupon['decrement_limit'].'元';
+            }
+            break;
+
+        case 2:
+            //代金
+            $discount_reduce = sprintf('￥%.2f', $coupon['decrement']);
+            break;
+
+        case 3:
+            //满减
+            $discount_reduce = sprintf('￥%.2f', $coupon['decrement']);
+            break;
+    }
+
+    $coupon['discount_reduce'] = $discount_reduce;
+    $coupon['discount_detail'] = $discount_detail;
+    $coupon['scope'] = $scope;
+}
+
+/**
+ * 获取优惠券号
+ * @param int $coupon_id
+ * @return mixed
+ */
+function get_coupon_sn($coupon_id)
+{
+    global $db;
+
+    $db->begin();
+
+    $coupon_sn = $db->getColumn('coupon_sn_pool', 'coupon_sn', ['coupon_id' => $coupon_id, 'status' => 1]);
+
+    if(empty($coupon_sn)) {
+        $db->rollback();
+        return '';
+    }
+
+    $status = [
+        'status' => 0
+    ];
+
+    $db->upgrade('coupon_sn_pool', $status, ['coupon_sn' => $coupon_sn, 'status' => 1]);
+    $db->commit();
+
+    return $coupon_sn;
+}
+
+function alloc_coupon_sn($prefix, $coupon_id, $number) {
+    global $db;
+
+    $coupon_sn_list = $db->all('coupon_sn_pool', ['coupon_sn'], ['coupon_id' => $coupon_id]);
+    $coupon_sn_alloc = [];
+    $coupon_sn_old = [];
+
+    if(!empty($coupon_sn_list)) {
+        while($coupon_sn = array_shift($coupon_sn_list)) {
+            array_push($coupon_sn_old, $coupon_sn['coupon_sn']);
+        }
+    }
+
+    $max_coupon_sn = 0;
+    if(count($coupon_sn_old)) {
+        $max_coupon_sn = max($coupon_sn_old);
+    }
+
+    $max_number = str_replace($prefix, '', $max_coupon_sn);
+    $max_number++;
+
+    for($begin = $max_number; $begin < ($max_number + $number); $begin++) {
+        $coupon_sn = $begin;
+        while(strlen($coupon_sn) < COUPON_SN_LENGTH) {
+            $coupon_sn = '0'.$coupon_sn;
+        }
+        $coupon_sn = $prefix.$coupon_sn;
+
+        array_push($coupon_sn_alloc, [
+            'coupon_id' => $coupon_id,
+            'coupon_sn' => $coupon_sn,
+            'status' => 1
+        ]);
+    }
+
+    if(count($coupon_sn_alloc)) {
+        $db->autoInsert('coupon_sn_pool', $coupon_sn_alloc);
+    }
+
+    return true;
 }

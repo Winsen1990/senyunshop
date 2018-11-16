@@ -678,3 +678,49 @@ function send_customer_message($openid, $msg_type, $data) {
         return false;
     }
 }
+
+/**
+ * 小程序模板消息：订单支付通知
+ * @param $openid string 小程序openid
+ * @param $order_sn
+ * @param $prepay_id
+ * @param $amount
+ * @param $status_str
+ * @param string $notice
+ * @return bool
+ */
+function send_paid_order_message($openid, $order_sn, $prepay_id, $amount, $status_str, $notice = '您的商品很快就飞奔到您手上咯！') {
+    global $config, $log;
+
+    if(!defined('WX_PAID_ORDER_TEMPLATE_ID')) {
+        return false;
+    }
+
+    $param = [
+        'touser' => $openid,
+        'template_id' => WX_PAID_ORDER_TEMPLATE_ID,
+        'page' => '/pages/order/detail?sn='.$order_sn,
+        'form_id' => $prepay_id,
+        'data' => [
+            'keyword1' => $order_sn,
+            'keyword2' => '￥'.sprintf('%.2f', $amount).'元',
+            'keyword3' => $status_str,
+            'keyword4' => $notice
+        ],
+        'emphasis_keyword' => 'keyword1.DATA'
+    ];
+
+    $access_token = get_access_token($config['mini_appid'], $config['mini_appsecret']);
+    $url = 'https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token='.$access_token;
+
+    $response = post($url, json_encode($param), false);
+
+    $response = json_decode($response, true);
+
+    if($response['errcode'] == 0) {
+        return true;
+    } else {
+        $log->record_array($response);
+        return false;
+    }
+}

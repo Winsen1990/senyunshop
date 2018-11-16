@@ -1,0 +1,228 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="pull-right"><a class="btn btn-primary" href="?act=add">新增优惠券</a></div>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <div class="coupon-main-header">
+            <form action="" method="get" />
+            <fieldset>
+                <p>
+                <div class="pull-left">
+                    显示
+                    <select name="count" id="count" class="w75">
+                        <option value="10" {if $count eq 10}selected="selected"{/if}>10</option>
+                        <option value="25" {if $count eq 25}selected="selected"{/if}>25</option>
+                        <option value="50" {if $count eq 50}selected="selected"{/if}>50</option>
+                        <option value="100" {if $count eq 100}selected="selected"{/if}>100</option>
+                    </select>
+                    项结果
+                </div>
+                <div class="pull-right">
+                    <label>优惠券名称：</label>
+                    <input class="text-input w150" type="text" id="keyword" name="keyword" value="{$keyword|escape}">&nbsp;
+                    <label>领取时间：</label>
+                    <input class="text-input w150" type="text" id="begin_time" name="begin_time" value="{$begin_time}">&nbsp;
+                    <label> 至 </label>
+                    <input class="text-input w150" type="text" id="end_time" name="end_time" value="{$end_time}">&nbsp;
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </div>
+                </p>
+            </fieldset>
+            </form>
+            <div class="clear"></div>
+        </div>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>优惠券名称</th>
+                <th>类型</th>
+                <th>优惠额度</th>
+                <th>数量</th>
+                <th>领取时间</th>
+                <th>创建时间</th>
+                <th>适用范围</th>
+                <th>状态</th>
+                <th class="text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if $coupons}
+            {foreach from=$coupons item=coupon}
+            <tr>
+                <td>{$coupon.name|escape}</td>
+                <td>{$coupon.type_name}</td>
+                <td>
+                    {$coupon.discount_reduce}<br/>
+                    {$coupon.discount_detail}
+                </td>
+                <td>
+                    预设数量: {$coupon.number}<br/>
+                    待领取: {$coupon.remain}<br/>
+                    已使用: {$coupon.used}
+                </td>
+                <td>
+                    {$coupon.begin_time|date_format:'%Y-%m-%d %H:%M:%S'}<br/>
+                    至<br/>
+                    {$coupon.end_time|date_format:'%Y-%m-%d %H:%M:%S'}
+                </td>
+                <td>
+                    {$coupon.add_time|date_format:'%Y-%m-%d %H:%M:%S'}<br/>
+                    {if $coupon.add_time neq $coupon.last_modify}
+                    <span>最后修改: {$coupon.last_modify|date_format:'%Y-%m-%d %H:%M:%S'}</span>
+                    {/if}
+                </td>
+                <td>
+                    适用分类：{$coupon.scope.category_scope}<br/>
+                    适用产品：{$coupon.scope.product_scope}<br/>
+                    适用会员等级：{$coupon.scope.member_scope}
+                </td>
+                <td>{$coupon.status_show}</td>
+                <td class="text-right">
+                    {if $coupon.status eq 0}
+                    <a href="javascript:coupon_on_off({$coupon.id}, 1);">启用</a> |
+                    {else}
+                    <a href="javascript:coupon_on_off({$coupon.id}, 0);">停用</a> |
+                    {/if}
+                    <a href="?act=edit&id={$coupon.id}">编辑</a> |
+                    <a href="javascript:delete_coupon({$coupon.id});">删除</a>
+                </td>
+            </tr>
+            {/foreach}
+            {else}
+            <tr>
+                <td style="padding: 50px 0" colspan="9" align="center">您还没有优惠券，立即点击 “<a href="?act=add">这里</a>” 新增优惠券！</td>
+            </tr>
+            {/if}
+            <tr>
+                <td colspan="9">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>
+                            {if $go_first}
+                            <a href="?page=1&count={$count}&begin_time={$begin_time}&end_time={$end_time}&keyword={$keyword}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&count={$count}&begin_time={$begin_time}&end_time={$end_time}&keyword={$keyword}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&count={$count}&begin_time={$begin_time}&end_time={$end_time}&keyword={$keyword}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&count={$count}&begin_time={$begin_time}&end_time={$end_time}&keyword={$keyword}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&count={$count}&begin_time={$begin_time}&end_time={$end_time}&keyword={$keyword}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript">
+$(function() {
+    $('#begin_time').click(function() {
+        laydate({
+            elem: '#begin_time',
+            format: 'YYYY-MM-DD'
+        });
+    });
+
+    $('#end_time').click(function() {
+        laydate({
+            elem: '#end_time',
+            format: 'YYYY-MM-DD'
+        });
+    });
+
+    $('#count').bind('change', function() {
+       $('form').submit();
+    });
+});
+
+function coupon_on_off(id, status) {
+    layer.load(1);
+
+    $.ajax({
+        url: 'api/coupon.php?opera=status',
+        type: 'PATCH',
+        dataType: 'json',
+        data: { id: id, status: status },
+        success: function(response) {
+            if(response.error == 0) {
+                layer.msg(response.message, {
+                    icon: 1,
+                    end: function() {
+                        window.location.reload();
+                    }
+                });
+            } else {
+                layer.msg(response.message, {
+                    icon: 2
+                });
+            }
+        },
+        complete: function() {
+            layer.closeAll('loading');
+        }
+    });
+}
+
+function delete_coupon(id) {
+    var confirm_dialog = layer.confirm('确定要删除该优惠券？', function() {
+       layer.load(1);
+
+       $.ajax({
+           url: 'api/coupon.php',
+           type: 'DELETE',
+           dataType: 'json',
+           data: { id: id },
+           success: function(response) {
+               if(response.error == 0) {
+                   layer.msg(response.message, {
+                       icon: 1,
+                       end: function() {
+                           window.location.reload();
+                       }
+                   });
+               } else {
+                   layer.msg(response.message, {
+                       icon: 2,
+                       end: function() {
+                           layer.close(confirm_dialog);
+                       }
+                   });
+               }
+           },
+           complete: function() {
+               layer.closeAll('loading');
+           }
+       });
+    });
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>

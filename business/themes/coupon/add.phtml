@@ -1,0 +1,886 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">{$subTitle}</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="ad-main">
+        <form id="ad-form" name="ad-form" method="post" onsubmit="return do_submit();">
+            <fieldset>
+                <p class="clear">
+                    <label class="l-title">优惠券名称:</label>
+                    <input class="text-input w300" type="text" id="name" name="name" placeholder="请输入优惠券名称"/>
+                    <span class="error-input" id="name-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">优惠券前缀码:</label>
+                    <input class="text-input w300" type="text" id="prefix" name="prefix" placeholder="请输入优惠券前缀码"/>
+                    <span class="error-input" id="prefix-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title"></label>
+                    <span>
+                        优惠券编码将根据前缀码进行生成，如：前缀码为CBA，则生成的优惠券编码为CBA00001。
+                        不填写则系统将自动生成
+                    </span>
+                </p>
+                <p class="clear">
+                    <label for="coupon_type" class="l-title">优惠券类型:</label>
+                    <select name="coupon_type" id="coupon_type" class="w150">
+                        {foreach from=$coupon_type item=_type_name key=_type_id}
+                        <option value="{$_type_id}">{$_type_name}</option>
+                        {/foreach}
+                    </select>
+                    <span class="error-input" id="coupon_type-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">发放数量:</label>
+                    <input class="text-input w300" type="text" name="number" id="number" placeholder="请填写发放数量"/>
+                    <span class="error-input" id="number-error"></span>
+                </p>
+                <p class="clear" id="min-amount-input">
+                    <label class="l-title">最低起用金额:</label>
+                    <input class="text-input w300" type="text" name="min_amount" id="min_amount" placeholder="请填写最低起用金额，即订单金额达到多少可用"/>
+                    <span class="error-input" id="min_amount-error"></span>
+                </p>
+                <p class="clear" id="discount-input">
+                    <label class="l-title">折扣:</label>
+                    <input class="text-input w300" type="text" name="discount" id="discount" placeholder="请填写折扣，如: 九折则填写90"/>
+                    <span class="error-input" id="discount-error"></span>
+                </p>
+                <p class="clear" id="decrement-input" style="display: none;">
+                    <label class="l-title">减免金额:</label>
+                    <input class="text-input w300" type="text" name="decrement" id="decrement" placeholder="请填写减免金额"/>
+                    <span class="error-input" id="decrement-error"></span>
+                </p>
+                <p class="clear" id="decrement-limit-input">
+                    <label class="l-title">减免金额上限:</label>
+                    <input class="text-input w300" type="text" name="decrement_limit" id="decrement_limit" placeholder="请填写减免金额上限"/>
+                    <span class="error-input" id="decrement_limit-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">状态:</label>
+                    <input type="radio" name="status" value="1" checked="checked"/><em>启用</em>&nbsp;&nbsp;
+                    <input type="radio" name="status" value="0"/><em>停用</em>
+                    <span class="error-input" id="status-error"></span>
+                </p>
+                <p class="clear" style="display: none;">
+                    <label class="l-title">全店铺通用:</label>
+                    <input type="radio" name="all_shop" value="1" onclick="check_all_shop(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
+                    <input type="radio" name="all_shop" value="0" onclick="check_all_shop(0);"/><em>否</em>
+                    <span class="error-input" id="all_shop-error"></span>
+                </p>
+                <p class="clear" id="shop-scope-input" style="display: none;">
+                    <label class="l-title">选择适用店铺：</label>
+                    <button class="text-input" id="shop-scope-btn" style="cursor: pointer;">请选择适用店铺</button>
+                    <span id="shop-scope-preview"></span>
+                </p>
+                <div class="clear" id="shop-scope-input-notice">
+                    <label class="l-title"></label>
+                    <span class="error-input" id="shop_scope-error"></span>
+                    <input type="hidden" id="shop_scope" value=""/>
+                </div>
+                <p class="clear">
+                    <label class="l-title">全品类通用:</label>
+                    <input type="radio" name="ignore_all" value="1" onclick="check_ignore_all(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
+                    <input type="radio" name="ignore_all" value="0" onclick="check_ignore_all(0);"/><em>否</em>
+                    <span class="error-input" id="ignore_all-error"></span>
+                </p>
+                <p class="clear" id="category-scope-input">
+                    <label class="l-title">选择适用分类：</label>
+                    <button class="text-input" id="category-scope-btn" style="cursor: pointer;">请选择适用分类</button>
+                </p>
+                <p class="clear" id="category-scope-input-notice">
+                    <label class="l-title"></label>
+                    <span id="category-scope-preview"></span>
+                    <span class="error-input" id="category_scope-error"></span>
+                    <input type="hidden" id="category_scope" value=""/>
+                </p>
+                <p class="clear" id="product-scope-input">
+                    <label class="l-title">选择适用产品：</label>
+                    <button class="text-input" id="product-scope-btn" style="cursor: pointer;">请选择适用产品</button>
+                </p>
+                <p class="clear" id="product-scope-input-notice">
+                    <label class="l-title"></label>
+                    <span id="product-scope-preview"></span>
+                    <span class="error-input" id="product_scope-error"></span>
+                    <input type="hidden" id="product_scope" value=""/>
+                </p>
+                <p class="clear">
+                    <label class="l-title">适用会员级别:</label>
+                    <input type="checkbox" name="member_level" value="0" checked="checked"/><em>任意等级可用</em>
+                    {foreach from=$member_levels item=member_level}
+                    <input type="checkbox" name="member_level" value="{$member_level.id}"/><em>{$member_level.name|escape}</em>
+                    {/foreach}
+                    <span class="error-input" id="member_level-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">发布时间:</label>
+                    <input class="text-input" type="text" id="begin_time" name="begin_time" placeholder="请选择开始时间"/> 至
+                    <input class="text-input" type="text" id="end_time" name="end_time" placeholder="请选择结束时间"/>
+                    <span class="error-input" id="time-scope-error"></span>
+                </p>
+                <p class="clear">
+                    <label class="l-title">领券后永久有效:</label>
+                    <input type="radio" name="forever" value="1" onclick="check_forever(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
+                    <input type="radio" name="forever" value="0" onclick="check_forever(0);"/><em>否</em>
+                    <span class="error-input" id="forever-error"></span>
+                </p>
+                <p class="clear" id="expired-mode-input">
+                    <label class="l-title">有效时间:</label>
+                    <input type="radio" name="expire_mode" value="0" onclick="check_expired_mode(0);" checked="checked"/><em>设置截止时间</em>
+                    <input type="radio" name="expire_mode" value="1" onclick="check_expired_mode(1);"/><em>设置领取后有效时长</em>
+                    <span class="error-input" id="expire-type-error"></span>
+                </p>
+                <p class="clear" id="expired-time-input">
+                    <label class="l-title">截止时间:</label>
+                    <input class="text-input" type="text" id="expired_time" name="expired_time" placeholder="请选择截止时间"/>
+                    <span class="error-input" id="expired_time-error"></span>
+                </p>
+                <p class="clear" id="active-time-input">
+                    <label class="l-title">领取后有效时间:</label>
+                    <input class="text-input" type="text" id="active_time" name="active_time" placeholder="请填写领取后有效时长"/> 分钟
+                    <span class="error-input" id="active_time-error"></span>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <a class="btn btn-primary" id="submit-btn" href="javascript:;">
+                        新增<img src="images/btn_loading.gif" class="btn-loading-img"/>
+                    </a>&nbsp;
+                    <input type="hidden" name="opera" value="add"/>
+                    <a href="javascript:history.go(-1);" class="btn btn-primary">返回</a>
+                </p>                
+            </fieldset>
+        </form> 
+    </div>
+</div>
+<div id="mask"></div>
+<link rel="stylesheet" href="js/zTree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<script type="text/javascript" src="js/zTree/js/jquery.ztree.all.js"></script>
+<script type="text/javascript">
+
+$(function() {
+    $("#submit-btn").click(do_submit);
+
+    var start = {
+        elem: '#begin_time',
+        format: 'YYYY-MM-DD hh:mm:ss',
+        min: laydate.now(), //设定最小日期为当前日期
+        istime: true,
+        istoday: true,
+        choose: function(datas){
+            end.min = datas; //开始日选好后，重置结束日的最小日期
+            end.start = datas; //将结束日的初始值设定为开始日
+        }
+    };
+
+    var end = {
+        elem: '#end_time',
+        format: 'YYYY-MM-DD hh:mm:ss',
+        min: laydate.now(),
+        istime: true,
+        istoday: true,
+        choose: function(datas){
+            start.max = datas; //结束日选好后，重置开始日的最大日期
+        }
+    };
+
+    $('#begin_time').click(function() {
+        laydate(start);
+    });
+
+    $('#end_time').click(function() {
+        laydate(end);
+    });
+
+    $('#expired_time').click(function() {
+       laydate({
+           elem: '#expired_time',
+           format: 'YYYY-MM-DD hh:mm:ss',
+           min: laydate.now(),
+           istime: true,
+           istoday: true
+       });
+    });
+
+    $('#coupon_type').bind('change', switch_coupon_type);
+
+    $('input[name=member_level]').click(toggle_member_levels);
+
+    check_ignore_all(1);
+    check_forever(1);
+
+    //适用店铺
+    $('#shop-scope-btn').click(show_shop_optional);
+
+    check_all_shop(1);
+
+    //适用分类
+    $('#category-scope-btn').click(show_category_optional);
+
+    //适用产品
+    $('#product-scope-btn').click(show_product_optional);
+});
+
+//显示可用产品
+function show_product_optional(e) {
+    e.preventDefault();
+
+    layer.load(1);
+
+    var shop_scope_str = '';
+    for(var shop_id in shop_scope) {
+        if(shop_scope_str !== '') {
+            shop_scope_str += ',';
+        }
+
+        shop_scope_str += shop_id;
+    }
+
+    $.getJSON('coupon.php', { act: 'product_selector', shop_scope: shop_scope_str, category_scope: category_scope.join(',') }, function(response) {
+        layer.closeAll('loading');
+
+        product_selector(response.selection);
+    });
+}
+
+var product_scope = [];
+var product_selected = {};
+function product_selector(product_panel) {
+    $.ajaxSetup({
+        beforeSend: function() {
+            $('.product-selector-item.checked').each(function() {
+                var id = $(this).attr('data-id');
+
+                if(product_scope.indexOf(id) === -1) {
+                    product_scope.push(id);
+
+                    product_selected[id] = {
+                        id: id,
+                        name: $(this).attr('data-name'),
+                        img: $(this).attr('data-img'),
+                        price: $(this).attr('data-price')
+                    };
+                }
+            });
+        }
+    });
+
+    var selector = layer.open({
+        title: '请选择适用产品',
+        content: product_panel,
+        area: ['600px', '340px'],
+        btn: ['确认', '清空已选'],
+        yes: function() {
+            $('.product-selector-item.checked').each(function() {
+                var id = $(this).attr('data-id');
+
+                if(product_scope.indexOf(id) === -1) {
+                    product_scope.push(id);
+
+                    product_selected[id] = {
+                        id: id,
+                        name: $(this).attr('data-name'),
+                        img: $(this).attr('data-img'),
+                        price: $(this).attr('data-price')
+                    };
+                }
+            });
+            layer.close(selector);
+        },
+        btn2: function() {
+            $('.product-selector-item.checked').each(function() {
+                $(this).removeClass('checked');
+            });
+            return false;
+        },
+        end: function() {
+            $.ajaxSetup({
+                beforeSend: null
+            });
+
+            render_product();
+        }
+    });
+
+    $('.product-selector-item').each(function() {
+        var id = $(this).attr('data-id');
+        if(product_scope.indexOf(id) !== -1) {
+            $(this).addClass('checked');
+        }
+    });
+
+    $('.product-selector-item').click(function () {
+        if (!$(this).hasClass('checked')) {
+            $(this).addClass('checked');
+        } else {
+            $(this).removeClass('checked');
+        }
+    });
+}
+
+function render_product() {
+    for(var id in product_selected) {
+        if($('#product-option-selected-' + id).length) {
+            continue;
+        }
+
+        var product = product_selected[id];
+
+        var product_item = '<div class="product-optional-item" id="product-option-selected-' + id + '">';
+
+        product_item += '<img src="' + product.img + '"/>';
+        product_item += '<p class="product-name">' + product.name + '</p>';
+        product_item += '<p class="product-price">￥' + product.price + '</p>';
+        product_item += '<a href="javascript:void(0);" data-id="' + id + '" onclick="remove_selected_product(this);">删除</a>';
+        product_item += '<input type="hidden" name="product_scope" value="' + id + '"/>';
+
+        product_item += '</div>';
+
+        $('#product-scope-input-notice').append(product_item);
+    }
+}
+
+function remove_selected_product(obj) {
+    var id = $(obj).attr('data-id');
+    delete product_selected[id];
+    if(product_scope.indexOf(id) !== -1) {
+        product_scope.splice(product_scope.indexOf(id), 1);
+    }
+
+    obj.parentNode.remove();
+}
+
+//显示可用分类
+function show_category_optional(e) {
+    e.preventDefault();
+
+    layer.load(1);
+
+    var shop_scope_str = '';
+    for(var shop_id in shop_scope) {
+        if(shop_scope_str !== '') {
+            shop_scope_str += ',';
+        }
+
+        shop_scope_str += shop_id;
+    }
+
+    $.getJSON('coupon.php', { act: 'category_selector', shop_scope: shop_scope_str }, function(response) {
+        layer.closeAll('loading');
+
+        category_selector(response.category_tree);
+    });
+}
+
+var category_scope = [];
+function category_selector(tree) {
+    var tree_setting = {
+        check: {
+            enable: true
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        }
+    };
+
+    var selector = layer.open({
+        title: '请选择适用分类',
+        content: '<div id="category-tree" class="ztree"></div>',
+        area: ['600px', '280px'],
+        btn: ['确认'],
+        yes: function() {
+            category_scope = [];
+            var treeObj = $.fn.zTree.getZTreeObj("category-tree");
+            var nodes = treeObj.getCheckedNodes(true);
+            var category_scope_str = '';
+
+            for(var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+                var check_status = node.getCheckStatus();
+
+                if(check_status.checked && !check_status.half) {
+                    if(node.id > 0) {
+                        category_scope.push(node.id);
+                        if (category_scope_str !== '') {
+                            category_scope_str += ', ';
+                        }
+                        category_scope_str += node.name;
+                    }
+                }
+            }
+            $('#category-scope-preview').text(category_scope_str);
+
+            layer.close(selector);
+        }
+    });
+
+    for(var i = 0; i < tree.length; i++) {
+        var node = tree[i];
+
+        if(category_scope.indexOf(node.id) !== -1) {
+            node.checked = true;
+            node.open = true;
+        }
+    }
+
+    $.fn.zTree.init($('#category-tree'), tree_setting, tree);
+}
+
+//显示可选店铺
+function show_shop_optional(e) {
+    e.preventDefault();
+
+    layer.load(1);
+
+    $.getJSON('coupon.php', { act: 'shop_selector' }, function(response) {
+        layer.closeAll('loading');
+
+        shop_selector(response.selection);
+    });
+}
+
+var shop_scope = {};
+function shop_selector(shop_panel) {
+    $.ajaxSetup({
+       beforeSend: function() {
+           $('.shop-selector-item.checked').each(function() {
+               var id = $(this).attr('data-id');
+
+               if(!(id in shop_scope)) {
+                   shop_scope[id] = {
+                       id: id,
+                       name: $(this).attr('data-name'),
+                       logo: $(this).attr('data-logo')
+                   };
+               }
+           });
+       }
+    });
+
+    var selector = layer.open({
+        title: '请选择适用店铺',
+        content: shop_panel,
+        area: ['600px', '280px'],
+        btn: ['确认', '清空已选'],
+        yes: function() {
+            $('.shop-selector-item.checked').each(function() {
+                var id = $(this).attr('data-id');
+
+                if(!(id in shop_scope)) {
+                    shop_scope[id] = {
+                        id: id,
+                        name: $(this).attr('data-name'),
+                        logo: $(this).attr('data-logo')
+                    };
+                }
+            });
+            layer.close(selector);
+        },
+        btn2: function() {
+            $('.shop-selector-item.checked').each(function() {
+               $(this).removeClass('checked');
+            });
+            return false;
+        },
+        end: function() {
+            $.ajaxSetup({
+                beforeSend: null
+            });
+
+            render_shop();
+        }
+    });
+
+    $('.shop-selector-item').each(function() {
+       if($(this).attr('data-id') in shop_scope) {
+           $(this).addClass('checked');
+       }
+    });
+
+    $('.shop-selector-item').click(function () {
+        if (!$(this).hasClass('checked')) {
+            $(this).addClass('checked');
+        } else {
+            $(this).removeClass('checked');
+        }
+    });
+}
+
+function render_shop() {
+    for(var id in shop_scope) {
+        if($('#shop-option-selected-' + id).length) {
+            continue;
+        }
+
+        var shop = shop_scope[id];
+
+        var shop_item = '<div class="shop-optional-item" id="shop-option-selected-' + id + '">';
+
+        shop_item += '<img src="' + shop.logo + '"/>';
+        shop_item += '<p>' + shop.name + '</p>';
+        shop_item += '<a href="javascript:void(0);" data-id="' + id + '" onclick="remove_selected_shop(this);">删除</a>';
+        shop_item += '<input type="hidden" name="shop_scope" value="' + id + '"/>';
+
+        shop_item += '</div>';
+
+        $('#shop-scope-input-notice').append(shop_item);
+    }
+}
+
+function remove_selected_shop(obj) {
+    var id = $(obj).attr('data-id');
+    delete shop_scope[id];
+
+    obj.parentNode.remove();
+}
+
+//任意店铺可用
+function check_all_shop(mode) {
+    var shop_scope_input = $('#shop-scope-input');
+    var shop_scope_input_notice = $('#shop-scope-input-notice');
+
+    if(mode == 0) {
+        shop_scope_input.show();
+        shop_scope_input_notice.show();
+    } else {
+        shop_scope_input.hide();
+        shop_scope_input_notice.hide();
+    }
+}
+
+//会员等级互斥
+function toggle_member_levels() {
+    var current_id = $(this).val();
+
+    if($(this).prop('checked')) {
+        if(current_id == 0) {
+            $('input[name=member_level]').prop('checked', false);
+            $(this).prop('checked', true);
+        } else {
+            $('input[name=member_level][value=0]').prop('checked', false);
+        }
+    } else {
+        if(current_id == 0 && $('input[name=member_level]:checked').length == 0) {
+            $(this).prop('checked', true);
+        }
+    }
+}
+
+//切换有效时长
+function check_forever(mode) {
+    var expired_mode_input = $('#expired-mode-input');
+    var expired_time_input = $('#expired-time-input');
+    var active_time_input = $('#active-time-input');
+
+    if(mode == 0) {
+        expired_mode_input.show();
+
+        $('input[name=expire_mode]').each(function() {
+           if($(this).prop('checked')) {
+               check_expired_mode($(this).val());
+           }
+        });
+    } else {
+        expired_mode_input.hide();
+        expired_time_input.hide();
+        active_time_input.hide();
+    }
+}
+
+//切换有效时长模式
+function check_expired_mode(mode) {
+    var expired_time_input = $('#expired-time-input');
+    var active_time_input = $('#active-time-input');
+
+    if(mode == 0) {
+        expired_time_input.show();
+        active_time_input.hide();
+    } else {
+        expired_time_input.hide();
+        active_time_input.show();
+    }
+}
+
+//切换优惠券类型
+function switch_coupon_type() {
+    var error_notice = $('#coupon_type-error');
+    var coupon_type = $('#coupon_type').val();
+    coupon_type = parseInt(coupon_type);
+    error_notice.text('');
+
+    var decrement_limit_input = $('#decrement-limit-input');
+    var discount_input = $('#discount-input');
+    var decrement_input = $('#decrement-input');
+
+    switch(coupon_type) {
+        case 1:
+            //折扣券
+            decrement_input.hide();
+            decrement_limit_input.show();
+            discount_input.show();
+            break;
+
+        case 2:
+            //代金券
+        case 3:
+            //满减券
+            discount_input.hide();
+            decrement_limit_input.hide();
+            decrement_input.show();
+            break;
+
+        default:
+            error_notice.text('请选择优惠券类型');
+    }
+}
+
+//切换全品类通用
+function check_ignore_all(mode) {
+    var category_scope_input = $('#category-scope-input');
+    var category_scope_input_notice = $('#category-scope-input-notice');
+    var product_scope_input = $('#product-scope-input');
+    var product_scope_input_notice = $('#product-scope-input-notice');
+
+    if(mode === 0) {
+        category_scope_input.show();
+        category_scope_input_notice.show();
+        product_scope_input.show();
+        product_scope_input_notice.show();
+    } else {
+        category_scope_input.hide();
+        category_scope_input_notice.hide();
+        product_scope_input.hide();
+        product_scope_input_notice.hide();
+    }
+}
+
+function do_submit() {
+    //参数校验
+    var flag = true;
+    var data = {
+        name: $('#name').val(),
+        prefix: $('#prefix').val(),
+        type: $('#coupon_type').val(),
+        min_amount: $('#min_amount').val(),
+        decrement_limit: $('#decrement_limit').val(),
+        discount: $('#discount').val(),
+        decrement: $('#decrement').val(),
+        category_scope: [],
+        product_scope: [],
+        shop_scope: [],
+        ignore_all: true,
+        forever: true,
+        begin_time: $('#begin_time').val(),
+        end_time: $('#end_time').val(),
+        expired_time: $('#expired_time').val(),
+        active_time: $('#active_time').val(),
+        number: $('#number').val(),
+        member_levels: [],
+        status: 0,
+        all_shop: true
+    };
+
+    var errors = {};
+
+    $('input[name=ignore_all]').each(function() {
+       if($(this).prop('checked')) {
+           data.ignore_all = $(this).val() == 1;
+       }
+    });
+
+    if(!data.ignore_all) {
+        data.category_scope = category_scope;
+        data.product_scope = product_scope;
+
+        if(data.category_scope.length === 0 && data.product_scope.length === 0) {
+            errors.ignore_all = '请设置优惠券适用产品或分类';
+        } else {
+            errors.ignore_all = '';
+        }
+    }
+
+    $('input[name=forever]').each(function() {
+        if($(this).prop('checked')) {
+            data.forever = $(this).val() == 1;
+        }
+    });
+
+    if(!data.forever) {
+        var expire_mode = 0;
+        $('input[name=expire_mode]').each(function() {
+           if($(this).prop('checked')) {
+               expire_mode = $(this).val();
+           }
+        });
+
+        switch(expire_mode) {
+            case 0:
+                if(data.expired_time == '') {
+                    errors.expired_time = '请选择截止时间';
+                } else {
+                    errors.expired_time = '';
+                }
+                break;
+
+            case 1:
+                data.active_time = parseInt(data.active_time);
+                if(isNaN(data.active_time) || data.active_time <= 0) {
+                    errors.active_time = '领取后有效时长必须大于0';
+                } else {
+                    errors.active_time = '';
+                }
+                break;
+        }
+    }
+
+    $('input[name=all_shop]').each(function() {
+        if($(this).prop('checked')) {
+            data.all_shop = $(this).val() == 1;
+        }
+    });
+
+    if(!data.all_shop) {
+        for(var shop_id in shop_scope) {
+            data.shop_scope.push(shop_id);
+        }
+
+        if(data.shop_scope.length === 0) {
+            errors.shop_scope = '请选择优惠券适用店铺';
+        } else {
+            errors.shop_scope = '';
+        }
+    }
+
+    $('input[name=member_level]').each(function() {
+       if($(this).prop('checked') && $(this).val() > 0) {
+           data.member_levels.push($(this).val());
+       }
+    });
+
+    $('input[name=status]').each(function() {
+       if($(this).prop('checked')) {
+           data.status = $(this).val();
+       }
+    });
+
+    if(data.name == '') {
+        errors.name = '请填写优惠券名称';
+    } else {
+        errors.name = '';
+    }
+
+    data.min_amount = parseFloat(data.min_amount);
+    if(isNaN(data.min_amount) || data.min_amount <= 0) {
+        data.min_amount = 0;
+    }
+
+    data.number = parseInt(data.number);
+    if(isNaN(data.number) || data.number <= 0) {
+        errors.number = '发放数量必须大于0';
+    } else {
+        errors.number = '';
+    }
+
+    data.type = parseInt(data.type);
+    switch(data.type) {
+        case 1:
+            //折扣
+            data.discount = parseInt(data.discount);
+            if(isNaN(data.discount) || data.discount <= 0) {
+                errors.discount = '折扣必须为大于0的整数';
+            } else if(data.discount > 100) {
+                errors.discount = '折扣不能大于100';
+            } else {
+                errors.discount = '';
+            }
+
+            data.decrement_limit = parseFloat(data.decrement_limit);
+            if(isNaN(data.decrement_limit) || data.decrement_limit === 0) {
+                data.decrement_limit = -1;
+            }
+            break;
+
+        case 2:
+            //代金
+            data.decrement = parseFloat(data.decrement);
+
+            if(isNaN(data.decrement) || data.decrement <= 0) {
+                errors.decrement = '减免金额必须大于0';
+            } else {
+                errors.decrement = '';
+            }
+            break;
+
+        case 3:
+            //满减
+            data.decrement = parseFloat(data.decrement);
+
+            if(isNaN(data.decrement) || data.decrement <= 0) {
+                errors.decrement = '减免金额必须大于0';
+            } else if(data.decrement > data.min_amount) {
+                errors.decrement = '减免金额不能超出最低起用金额';
+            } else {
+                errors.decrement = '';
+            }
+            break;
+
+        default:
+            errors.type = '请选择优惠券类型';
+    }
+
+    for(var key in errors) {
+        if(errors[key] != '') {
+            flag = false;
+        }
+        $('#' + key + '-error').text(errors[key]);
+    }
+
+    if(flag) {
+        flag = true;
+        //启用过渡效果
+        $('.btn-loading-img').show();
+        $('#submit-btn').addClass('btn-disabled');
+        $('#mask').show();
+
+        var url = 'api/coupon.php';
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            data: data,
+            url: url,
+            success: do_response
+        });
+    }
+
+    return flag;
+}
+
+function do_response(result) {
+    //关闭过渡效果
+    $('.btn-loading-img').hide();
+    $('#submit-btn').removeClass('btn-disabled');
+    $('#mask').hide();
+    //处理返回结果
+    if(result.error == 0) {
+        layer.alert(result.message, {
+            end: function() {
+                window.location.href = 'coupon.php';
+            }
+        });
+    } else {
+        layer.alert(result.message);
+    }
+}
+</script>
+<!-- END content -->
+{include file="library/footer.lbi"}
+</body>
+</html>
