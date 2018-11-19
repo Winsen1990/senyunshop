@@ -522,7 +522,10 @@ function api_request($url, $data, $method, $encode = true, $auth_info = '') {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, ['X-AUTH:'.$auth_info]);
+
+    if(!empty($auth_info)) {
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['X-AUTH:' . $auth_info]);
+    }
 
     switch ($method){
         case 'GET' :
@@ -880,14 +883,18 @@ function is_email($email) {
 }
 
 function build_url($url) {
+    global $config;
+
     if( strpos($_SERVER['SERVER_NAME'], 'localhost') ) {  //apache无虚拟主机
         return '../../'.$url;
     } elseif( is_numeric(strpos($_SERVER['SCRIPT_NAME'], '/pc')) ) { //手机域名访问pc端
         return '../'.$url;
-    } else {    //pc端虚拟主机
-        if( $_SERVER['SERVER_NAME'] == 'www.sbx3721.com' ) {
-//            return 'http://sbx.kwanson.com/' . $url;
-            return 'http://m.sbx3721.com/'.$url;
+    } else {
+        $config_domain = str_replace('http://', '', $config['domain']);
+        $config_domain = str_replace('https://', '', $config_domain);
+
+        if( $_SERVER['SERVER_NAME'] == $config_domain ) {
+            return $config['domain'].$url;
         } else {
             return $url;
         }
@@ -1028,150 +1035,20 @@ function is_mobile_agent()
 }
 
 /**
- * 生成优惠券的 discount_reduce, $discount_detail , scope 字段
- * @param array $coupon 优惠券
- * @return void
+ * 生成随机字符串
+ * @param int $length
+ * @return string
  */
-function coupon_translate(&$coupon) {
-    global $cache, $db;
+function random_str($length = 3) {
+    $seed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
+    $str = '';
 
-    $scope = [];
-    $discount_detail = '';
-    $discount_reduce = '';
-
-    //适用店铺
-    if(empty($coupon['shop_scope'])) {
-        $scope['shop_scope'] = '平台通用';
-    } else {
-        $shop_scope = explode(',', $coupon['shop_scope']);
-        $shop_scope_name = [];
-
-        while($shop_id = array_shift($shop_scope)) {
-            $shop_id = intval($shop_id);
-            if($shop_id <= 0) {
-                continue;
-            }
-
-            if(!isset($cache['shop_'.$shop_id])) {
-                $shop = $db->find('business', ['shop_name'], ['id' => $shop_id]);
-
-                if(!empty($shop)) {
-                    $cache['shop_'.$shop_id] = $shop;
-                    array_push($shop_scope_name, $shop['shop_name']);
-                }
-            } else {
-                array_push($shop_scope_name, $cache['shop_'.$shop_id]['shop_name']);
-            }
-        }
-
-        $scope['shop_scope'] = implode(',', $shop_scope_name);
+    while($length--) {
+        $pos = rand(0, strlen($seed) - 1);
+        $str .= $seed[$pos];
     }
 
-    //适用分类
-    if(empty($coupon['category_scope'])) {
-        $scope['category_scope'] = '全分类通用';
-    } else {
-        $category_scope = explode(',', $coupon['category_scope']);
-        $category_scope_name = [];
-
-        while($category_id = array_shift($category_scope)) {
-            $category_id = intval($category_id);
-            if($category_id <= 0) {
-                continue;
-            }
-
-            if(!isset($cache['category_'.$category_id])) {
-                $category = $db->find('category', ['name'], ['id' => $category_id]);
-
-                if(!empty($category)) {
-                    $cache['category_'.$category_id] = $category;
-                    array_push($category_scope_name, $category['name']);
-                }
-            } else {
-                array_push($category_scope_name, $cache['category_'.$category_id]['name']);
-            }
-        }
-
-        $scope['category_scope'] = implode(',', $category_scope_name);
-    }
-
-    //适用产品
-    if(empty($coupon['product_scope'])) {
-        $scope['product_scope'] = '全分类通用';
-    } else {
-        $product_scope = explode(',', $coupon['product_scope']);
-        $product_scope_name = [];
-
-        while($product_id = array_shift($product_scope)) {
-            $product_id = intval($product_id);
-            if($product_id <= 0) {
-                continue;
-            }
-
-            if(!isset($cache['product_'.$product_id])) {
-                $product = $db->find('product', ['name'], ['id' => $product_id]);
-
-                if(!empty($product)) {
-                    $cache['product_'.$product_id] = $product;
-                    array_push($product_scope_name, $product['name']);
-                }
-            } else {
-                array_push($product_scope_name, $cache['product_'.$product_id]['name']);
-            }
-        }
-
-        $scope['product_scope'] = implode(',', $product_scope_name);
-    }
-
-    //适用等级
-    if(empty($coupon['member_levels'])) {
-        $scope['member_scope'] = '全会员可领';
-    } else {
-        global $level;
-        $scope['member_scope'] = '';
-
-        $member_levels = explode(',', $coupon['member_levels']);
-        foreach($member_levels as $level_id) {
-            if($scope['member_scope'] != '') {
-                $scope['member_scope'] .= ',';
-            }
-
-            $scope['member_scope'] .= $level[$level_id];
-        }
-    }
-
-    if($coupon['min_amount'] > 0) {
-        $discount_detail = '满'.sprintf('%.2f', $coupon['min_amount']).'元可用';
-    }
-
-    switch($coupon['type']) {
-        case 1:
-            //折扣
-            if($coupon['discount']%10) {
-                $discount_reduce = sprintf('%.1f折', $coupon['discount'] / 10);
-            } else {
-                $discount_reduce = $coupon['discount']/10 .'折';
-            }
-
-            if($coupon['decrement_limit'] > 0) {
-                $discount_detail .= '，最多减免'.$coupon['decrement_limit'].'元';
-            }
-            break;
-
-        case 2:
-            //代金
-            $discount_reduce = sprintf('￥%.2f', $coupon['decrement']);
-            break;
-
-        case 3:
-            //满减
-            $discount_reduce = sprintf('￥%.2f', $coupon['decrement']);
-            break;
-    }
-
-    $coupon['discount_reduce'] = $discount_reduce;
-    $coupon['discount_detail'] = $discount_detail;
-    $coupon['scope'] = $scope;
+    return $str;
 }
 
 /**
@@ -1243,3 +1120,4 @@ function alloc_coupon_sn($prefix, $coupon_id, $number) {
 
     return true;
 }
+

@@ -48,7 +48,7 @@
                 <th>数量</th>
                 <th>领取时间</th>
                 <th>创建时间</th>
-                <th>适用范围</th>
+                <th>使用条件</th>
                 <th>状态</th>
                 <th class="text-right">操作</th>
             </tr>
@@ -80,9 +80,7 @@
                     {/if}
                 </td>
                 <td>
-                    适用分类：{$coupon.scope.category_scope}<br/>
-                    适用产品：{$coupon.scope.product_scope}<br/>
-                    适用会员等级：{$coupon.scope.member_scope}
+                    {$coupon.desc|escape|nl2br}
                 </td>
                 <td>{$coupon.status_show}</td>
                 <td class="text-right">

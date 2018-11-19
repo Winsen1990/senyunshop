@@ -161,6 +161,14 @@ $purview = array(
         'pur_exam_add',
         'pur_exam_edit',
         'pur_exam_del'
+    ),
+
+    //优惠券管理
+    'pur_coupon' => array(
+        'pur_coupon_view',
+        'pur_coupon_add',
+        'pur_coupon_edit',
+        'pur_coupon_del'
     )
 );
 
@@ -280,6 +288,12 @@ $L_purview = array(
     'pur_keyword_add' => '添加关键词',
     'pur_keyword_edit' => '编辑关键词',
     'pur_keyword_del' => '删除关键词',
+
+    'pur_exam' => '问卷管理',
+    'pur_exam_view' => '查看问卷',
+    'pur_exam_add' => '创建问卷',
+    'pur_exam_edit' => '编辑问卷',
+    'pur_exam_del' => '删除问卷',
 );
 
 global $menus;
@@ -420,7 +434,13 @@ $menus = array(
         'title' => '会员管理',
         'icon' => '&#xe604;',
         'url' => 'member.php'
-    )
+    ),
+
+    'pur_exam' => array(
+        'title' => '问卷管理',
+        'icon' => '&#xe600;',
+        'url' => 'exam.php'
+    ),
 );
 
 //===========================权限与菜单 end==================================

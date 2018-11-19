@@ -30,6 +30,12 @@ $coupon_status = [
     1 => '启用',
 ];
 
+//调用位置
+$hook_list = [
+    'after_trade' => '交易完成后',
+    'manual' => '手动领取'
+];
+
 if('view' == $act) {
     if (!check_purview('pur_coupon_view', $_SESSION['business_purview'])) {
         show_system_message('权限不足', array());
@@ -97,7 +103,6 @@ if('view' == $act) {
         foreach($api_response['coupons'] as &$_coupon) {
             $_coupon['type_name'] = $coupon_types[$_coupon['type']];
             $_coupon['status_show'] = $coupon_status[$_coupon['status']];
-            coupon_translate($_coupon);
         }
     }
 
@@ -119,6 +124,7 @@ if('add' == $act)
     assign('subTitle', '新增优惠券');
     assign('coupon_type', $coupon_types);
     assign('member_levels', $member_levels);
+    assign('hook_list', $hook_list);
 }
 
 if('edit' == $act)
@@ -137,7 +143,7 @@ if('edit' == $act)
 
     $api_url = build_url('/business/api/coupon.php');
 
-    $api_response = api_request($api_url, ['id' => $id], 'get', true, $_SESSION['business_account']);
+    $api_response = api_request($api_url, ['id' => $id], 'get', true);
     $api_response = json_decode($api_response, true);
     $log->record_array($api_response);
 
@@ -147,30 +153,21 @@ if('edit' == $act)
 
     $coupon = $api_response['coupon'];
 
-    $shop_list = [];
     $category_list = [];
     $product_list = [];
-
-    if(!empty($coupon['shop_scope'])) {
-        $_shop_list = $db->all('business', ['id', 'shop_name', 'shop_logo'], ['id' => ['in', $coupon['shop_scope']]]);
-
-        if(!empty($_shop_list)) {
-            while($_shop = array_shift($_shop_list)) {
-                $shop_list[$_shop['id']] = $_shop;
-            }
-        }
-    }
 
     if(!empty($coupon['category_scope'])) {
         $category_list = $db->all('category', ['id', 'name'], ['id' => ['in', $coupon['category_scope']]]);
     }
 
     if(!empty($coupon['product_scope'])) {
-        $_product_list = $db->all('product', ['id', 'name', 'img', 'price'], ['id' => ['in', $coupon['product_scope']]]);
+        $_product_list = $db->all('product', ['id', 'name', 'img', 'price', 'product_sn'], ['id' => ['in', $coupon['product_scope']]]);
 
         if(!empty($_product_list)) {
+            $coupon['product_scope'] = [];
             while($_product = array_shift($_product_list)) {
-                $product_list[$_product['id']] = $_product;
+                $product_list[$_product['product_sn']] = $_product;
+                array_push($coupon['product_scope'], $_product['product_sn']);
             }
         }
     }
@@ -178,53 +175,12 @@ if('edit' == $act)
     $member_levels = $db->all('level', ['id', 'name'], null, null, ['id']);
 
     assign('subTitle', '编辑优惠券-'.$coupon['name']);
-    assign('shop_list', $shop_list);
     assign('category_list', $category_list);
     assign('product_list', $product_list);
     assign('coupon', $coupon);
     assign('coupon_type', $coupon_types);
     assign('member_levels', $member_levels);
-}
-
-//店铺选择器
-if('shop_selector' == $act)
-{
-    $response = [
-        'error' => -1,
-        'message' => ''
-    ];
-
-    if( !check_purview('pur_coupon_edit', $_SESSION['business_purview']) && !check_purview('pur_coupon_add', $_SESSION['business_purview']) ) {
-        throw new RestFulException('没有操作权限', 503);
-    }
-
-    $keyword = getGET('keyword');
-    $page = intval(getGET('page'));
-    $page = max(1, $page);
-    $page_size = intval(getGET('page_size'));
-    $page_size = max(10, $page_size);
-
-    $offset = ($page - 1) * $page_size;
-
-    $conditions = [];
-
-    if(!empty($keyword)) {
-        $conditions['shop_name'] = ['like', '%'.$keyword.'%'];
-    }
-
-    $total = $db->getColumn('business', 'count(*)', $conditions);
-    $shop_list = $db->all('business', ['id', 'shop_name', 'shop_logo'], $conditions, $offset.','.$page_size);
-
-    $response['error'] = 0;
-    $response['shop_list'] = $shop_list;
-    assign('shop_list', $shop_list);
-    $total_page = ceil($total/$page_size);
-    create_pager($page, $total, $total_page);
-    assign('total_page', $total_page);
-    $response['selection'] = $smarty->fetch('library/shop_selection.phtml');
-
-    echo json_encode($response);
-    exit;
+    assign('hook_list', $hook_list);
 }
 
 //分类选择器
@@ -239,37 +195,19 @@ if('category_selector' == $act)
         throw new RestFulException('没有操作权限', 503);
     }
 
-    $conditions = [
-        'business_account' => $_SESSION['business_account']
-    ];
-
-    $shop_list = $db->all('business', ['id', 'shop_name', 'business_account', 'category_id'], ['id' => $_SESSION['business_id']], null, 'id');
-
-    $categories = $db->all('category', ['id', 'name', 'parent_id', 'business_account'], $conditions);
+    $categories = $db->all('category', ['id', 'name', 'parent_id']);
     $category_tree = [];
-    foreach($shop_list as $shop) {
-        array_push($category_tree, [
-            'id' => -1 * $shop['id'],
-            'pId' => 0,
-            'name' => $shop['shop_name'],
-            'open' => true
-        ]);
 
+    if($categories) {
         foreach($categories as $category) {
-            if($category['business_account'] == $shop['business_account']) {
-                $node = [
-                    'id' => intval($category['id']),
-                    'pId' => intval($category['parent_id']),
-                    'name' => $category['name'],
-                    'open' => true
-                ];
+            $node = [
+                'id' => intval($category['id']),
+                'pId' => intval($category['parent_id']),
+                'name' => $category['name'],
+                'open' => true
+            ];
 
-                if($node['pId'] == 0 || $node['pId'] == $shop['category_id']) {
-                    $node['pId'] = -1 * $shop['id'];
-                }
-
-                array_push($category_tree, $node);
-            }
+            array_push($category_tree, $node);
         }
     }
 
@@ -299,14 +237,13 @@ if('product_selector' == $act)
     $page = intval(getGET('page'));
     $page = max(1, $page);
     $page_size = intval(getGET('page_size'));
-    $page_size = max(10, $page_size);
+    $page_size = max(6, $page_size);
 
     $offset = ($page - 1) * $page_size;
 
     $conditions = [
         'price' => ['gt', 0],
-        'status' => 4,
-        'business_account' => $_SESSION['business_account']
+        'status' => 4
     ];
 
     if(!empty($category_scope)) {
@@ -318,17 +255,26 @@ if('product_selector' == $act)
             }
         }
 
-        $conditions['shop_category_id'] = ['in', $category_scope];
+        $product_sn_list = $db->all('product_category_mapper', ['distinct(`product_sn`)'], ['category_id' => ['in', $category_scope]]);
+
+        if($product_sn_list) {
+            $product_sn_scope = [];
+            while($product_map = array_shift($product_sn_list)) {
+                array_push($product_sn_scope, $product_map['product_sn']);
+            }
+
+            $conditions['product_sn'] = ['in', $product_sn_scope];
+        }
     }
 
     $total = $db->getColumn('product', 'count(*)', $conditions);
-    $product_list = $db->all('product', ['id', 'name', 'price', 'img'], $conditions,$offset.','.$page_size);
+    $product_list = $db->all('product', ['id', 'product_sn', 'name', 'price', 'img'], $conditions,$offset.','.$page_size);
 
     $response['error'] = 0;
     $response['product_list'] = $product_list;
     assign('product_list', $product_list);
     $total_page = ceil($total/$page_size);
-    create_pager($page, $total, $total_page);
+    create_pager($page, $total_page, $total);
     assign('total_page', $total_page);
     $response['selection'] = $smarty->fetch('library/product_selection.phtml');
 

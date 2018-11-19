@@ -583,9 +583,6 @@ if('add' == $opera)
         }
         $shipping_fee -= $_cart['shipping_rule']['free'];
 
-        if($_cart['total_product_amount'] >= 300 && time() <= strtotime('2018-11-19 00:00:00')) {
-            $shipping_fee = 0;
-        }
         $_cart['total_amount'] += $shipping_fee;
         $_cart['total_delivery_fee'] = $shipping_fee;
     }

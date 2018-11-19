@@ -38,6 +38,15 @@
                     <span class="error-input" id="coupon_type-error"></span>
                 </p>
                 <p class="clear">
+                    <label for="hook" class="l-title">调用位置:</label>
+                    <select name="hook" id="hook" class="w150">
+                        {foreach from=$hook_list item=_hook key=_hook_name}
+                        <option value="{$_hook_name}">{$_hook}</option>
+                        {/foreach}
+                    </select>
+                    <span class="error-input" id="hook-error"></span>
+                </p>
+                <p class="clear">
                     <label class="l-title">发放数量:</label>
                     <input class="text-input w300" type="text" name="number" id="number" placeholder="请填写发放数量"/>
                     <span class="error-input" id="number-error"></span>
@@ -63,31 +72,32 @@
                     <span class="error-input" id="decrement_limit-error"></span>
                 </p>
                 <p class="clear">
+                    <label class="l-title">优惠券成本:</label>
+                    <input class="text-input w300" type="text" id="cost" name="cost" placeholder="请输入一张优惠券的成本"/>
+                    <span class="error-input" id="cost-error"></span>
+                </p>
+                <p class="clear">
                     <label class="l-title">状态:</label>
-                    <input type="radio" name="status" value="1" checked="checked"/><em>启用</em>&nbsp;&nbsp;
-                    <input type="radio" name="status" value="0"/><em>停用</em>
+                    <label for="status-1">
+                        <input type="radio" name="status" value="1" checked="checked" id="status-1"/>
+                        <em>启用</em>
+                    </label>
+                    <label for="status-0">
+                        <input type="radio" name="status" value="0" id="status-0"/>
+                        <em>停用</em>
+                    </label>
                     <span class="error-input" id="status-error"></span>
                 </p>
-                <p class="clear" style="display: none;">
-                    <label class="l-title">全店铺通用:</label>
-                    <input type="radio" name="all_shop" value="1" onclick="check_all_shop(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
-                    <input type="radio" name="all_shop" value="0" onclick="check_all_shop(0);"/><em>否</em>
-                    <span class="error-input" id="all_shop-error"></span>
-                </p>
-                <p class="clear" id="shop-scope-input" style="display: none;">
-                    <label class="l-title">选择适用店铺：</label>
-                    <button class="text-input" id="shop-scope-btn" style="cursor: pointer;">请选择适用店铺</button>
-                    <span id="shop-scope-preview"></span>
-                </p>
-                <div class="clear" id="shop-scope-input-notice">
-                    <label class="l-title"></label>
-                    <span class="error-input" id="shop_scope-error"></span>
-                    <input type="hidden" id="shop_scope" value=""/>
-                </div>
                 <p class="clear">
                     <label class="l-title">全品类通用:</label>
-                    <input type="radio" name="ignore_all" value="1" onclick="check_ignore_all(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
-                    <input type="radio" name="ignore_all" value="0" onclick="check_ignore_all(0);"/><em>否</em>
+                    <label for="ignore_all-true">
+                        <input type="radio" name="ignore_all" value="1" onclick="check_ignore_all(1);" id="ignore_all-true" checked="checked"/>
+                        <em>是</em>
+                    </label>
+                    <label for="ignore_all-false">
+                        <input type="radio" name="ignore_all" value="0" onclick="check_ignore_all(0);" id="ignore_all-false"/>
+                        <em>否</em>
+                    </label>
                     <span class="error-input" id="ignore_all-error"></span>
                 </p>
                 <p class="clear" id="category-scope-input">
@@ -112,9 +122,15 @@
                 </p>
                 <p class="clear">
                     <label class="l-title">适用会员级别:</label>
-                    <input type="checkbox" name="member_level" value="0" checked="checked"/><em>任意等级可用</em>
+                    <label for="member_level-0">
+                        <input type="checkbox" name="member_level" value="0" checked="checked" id="member_level-0"/>
+                        <em>任意等级可用</em>
+                    </label>
                     {foreach from=$member_levels item=member_level}
-                    <input type="checkbox" name="member_level" value="{$member_level.id}"/><em>{$member_level.name|escape}</em>
+                    <label for="member_level-{$member_level.id}">
+                        <input type="checkbox" name="member_level" value="{$member_level.id}" id="member_level-{$member_level.id}"/>
+                        <em>{$member_level.name|escape}</em>
+                    </label>
                     {/foreach}
                     <span class="error-input" id="member_level-error"></span>
                 </p>
@@ -126,14 +142,26 @@
                 </p>
                 <p class="clear">
                     <label class="l-title">领券后永久有效:</label>
-                    <input type="radio" name="forever" value="1" onclick="check_forever(1);" checked="checked"/><em>是</em>&nbsp;&nbsp;
-                    <input type="radio" name="forever" value="0" onclick="check_forever(0);"/><em>否</em>
+                    <label for="forever-1">
+                        <input type="radio" name="forever" value="1" onclick="check_forever(1);" checked="checked" id="forever-1"/>
+                        <em>是</em>
+                    </label>
+                    <label for="forever-0">
+                        <input type="radio" name="forever" value="0" onclick="check_forever(0);" id="forever-0"/>
+                        <em>否</em>
+                    </label>
                     <span class="error-input" id="forever-error"></span>
                 </p>
                 <p class="clear" id="expired-mode-input">
                     <label class="l-title">有效时间:</label>
-                    <input type="radio" name="expire_mode" value="0" onclick="check_expired_mode(0);" checked="checked"/><em>设置截止时间</em>
-                    <input type="radio" name="expire_mode" value="1" onclick="check_expired_mode(1);"/><em>设置领取后有效时长</em>
+                    <label for="expired_mode-0">
+                        <input type="radio" name="expire_mode" value="0" onclick="check_expired_mode(0);" checked="checked" id="expired_mode-0"/>
+                        <em>设置截止时间</em>
+                    </label>
+                    <label for="expired_mode-1">
+                        <input type="radio" name="expire_mode" value="1" onclick="check_expired_mode(1);" id="expired_mode-1"/>
+                        <em>设置领取后有效时长</em>
+                    </label>
                     <span class="error-input" id="expire-type-error"></span>
                 </p>
                 <p class="clear" id="expired-time-input">
@@ -145,6 +173,10 @@
                     <label class="l-title">领取后有效时间:</label>
                     <input class="text-input" type="text" id="active_time" name="active_time" placeholder="请填写领取后有效时长"/> 分钟
                     <span class="error-input" id="active_time-error"></span>
+                </p>
+                <p>
+                    <label class="l-title" for="desc">使用说明：</label>
+                    <textarea id="desc" name="desc" rows="5" cols="93"></textarea>
                 </p>
                 <p>
                     <label class="l-title"></label>
@@ -215,11 +247,6 @@ $(function() {
     check_ignore_all(1);
     check_forever(1);
 
-    //适用店铺
-    $('#shop-scope-btn').click(show_shop_optional);
-
-    check_all_shop(1);
-
     //适用分类
     $('#category-scope-btn').click(show_category_optional);
 
@@ -233,16 +260,7 @@ function show_product_optional(e) {
 
     layer.load(1);
 
-    var shop_scope_str = '';
-    for(var shop_id in shop_scope) {
-        if(shop_scope_str !== '') {
-            shop_scope_str += ',';
-        }
-
-        shop_scope_str += shop_id;
-    }
-
-    $.getJSON('coupon.php', { act: 'product_selector', shop_scope: shop_scope_str, category_scope: category_scope.join(',') }, function(response) {
+    $.getJSON('coupon.php', { act: 'product_selector', category_scope: category_scope.join(',') }, function(response) {
         layer.closeAll('loading');
 
         product_selector(response.selection);
@@ -322,6 +340,18 @@ function product_selector(product_panel) {
             $(this).removeClass('checked');
         }
     });
+
+    $('.product-selection-pagination a').click(function() {
+        var page = $(this).attr('data-page');
+
+        layer.load(1);
+
+        $.getJSON('coupon.php', { act: 'product_selector', page: page, category_scope: category_scope.join(',') }, function(response) {
+            layer.closeAll('loading');
+
+            product_selector(response.selection);
+        });
+    });
 }
 
 function render_product() {
@@ -362,16 +392,7 @@ function show_category_optional(e) {
 
     layer.load(1);
 
-    var shop_scope_str = '';
-    for(var shop_id in shop_scope) {
-        if(shop_scope_str !== '') {
-            shop_scope_str += ',';
-        }
-
-        shop_scope_str += shop_id;
-    }
-
-    $.getJSON('coupon.php', { act: 'category_selector', shop_scope: shop_scope_str }, function(response) {
+    $.getJSON('coupon.php', { act: 'category_selector' }, function(response) {
         layer.closeAll('loading');
 
         category_selector(response.category_tree);
@@ -434,141 +455,19 @@ function category_selector(tree) {
     $.fn.zTree.init($('#category-tree'), tree_setting, tree);
 }
 
-//显示可选店铺
-function show_shop_optional(e) {
-    e.preventDefault();
-
-    layer.load(1);
-
-    $.getJSON('coupon.php', { act: 'shop_selector' }, function(response) {
-        layer.closeAll('loading');
-
-        shop_selector(response.selection);
-    });
-}
-
-var shop_scope = {};
-function shop_selector(shop_panel) {
-    $.ajaxSetup({
-       beforeSend: function() {
-           $('.shop-selector-item.checked').each(function() {
-               var id = $(this).attr('data-id');
-
-               if(!(id in shop_scope)) {
-                   shop_scope[id] = {
-                       id: id,
-                       name: $(this).attr('data-name'),
-                       logo: $(this).attr('data-logo')
-                   };
-               }
-           });
-       }
-    });
-
-    var selector = layer.open({
-        title: '请选择适用店铺',
-        content: shop_panel,
-        area: ['600px', '280px'],
-        btn: ['确认', '清空已选'],
-        yes: function() {
-            $('.shop-selector-item.checked').each(function() {
-                var id = $(this).attr('data-id');
-
-                if(!(id in shop_scope)) {
-                    shop_scope[id] = {
-                        id: id,
-                        name: $(this).attr('data-name'),
-                        logo: $(this).attr('data-logo')
-                    };
-                }
-            });
-            layer.close(selector);
-        },
-        btn2: function() {
-            $('.shop-selector-item.checked').each(function() {
-               $(this).removeClass('checked');
-            });
-            return false;
-        },
-        end: function() {
-            $.ajaxSetup({
-                beforeSend: null
-            });
-
-            render_shop();
-        }
-    });
-
-    $('.shop-selector-item').each(function() {
-       if($(this).attr('data-id') in shop_scope) {
-           $(this).addClass('checked');
-       }
-    });
-
-    $('.shop-selector-item').click(function () {
-        if (!$(this).hasClass('checked')) {
-            $(this).addClass('checked');
-        } else {
-            $(this).removeClass('checked');
-        }
-    });
-}
-
-function render_shop() {
-    for(var id in shop_scope) {
-        if($('#shop-option-selected-' + id).length) {
-            continue;
-        }
-
-        var shop = shop_scope[id];
-
-        var shop_item = '<div class="shop-optional-item" id="shop-option-selected-' + id + '">';
-
-        shop_item += '<img src="' + shop.logo + '"/>';
-        shop_item += '<p>' + shop.name + '</p>';
-        shop_item += '<a href="javascript:void(0);" data-id="' + id + '" onclick="remove_selected_shop(this);">删除</a>';
-        shop_item += '<input type="hidden" name="shop_scope" value="' + id + '"/>';
-
-        shop_item += '</div>';
-
-        $('#shop-scope-input-notice').append(shop_item);
-    }
-}
-
-function remove_selected_shop(obj) {
-    var id = $(obj).attr('data-id');
-    delete shop_scope[id];
-
-    obj.parentNode.remove();
-}
-
-//任意店铺可用
-function check_all_shop(mode) {
-    var shop_scope_input = $('#shop-scope-input');
-    var shop_scope_input_notice = $('#shop-scope-input-notice');
-
-    if(mode == 0) {
-        shop_scope_input.show();
-        shop_scope_input_notice.show();
-    } else {
-        shop_scope_input.hide();
-        shop_scope_input_notice.hide();
-    }
-}
-
 //会员等级互斥
 function toggle_member_levels() {
     var current_id = $(this).val();
 
     if($(this).prop('checked')) {
-        if(current_id == 0) {
+        if(current_id === '0') {
             $('input[name=member_level]').prop('checked', false);
             $(this).prop('checked', true);
         } else {
             $('input[name=member_level][value=0]').prop('checked', false);
         }
     } else {
-        if(current_id == 0 && $('input[name=member_level]:checked').length == 0) {
+        if(current_id === '0' && $('input[name=member_level]:checked').length === 0) {
             $(this).prop('checked', true);
         }
     }
@@ -675,7 +574,7 @@ function do_submit() {
         decrement: $('#decrement').val(),
         category_scope: [],
         product_scope: [],
-        shop_scope: [],
+        cost: $('#cost').val(),
         ignore_all: true,
         forever: true,
         begin_time: $('#begin_time').val(),
@@ -683,6 +582,8 @@ function do_submit() {
         expired_time: $('#expired_time').val(),
         active_time: $('#active_time').val(),
         number: $('#number').val(),
+        hook: $('#hook').val(),
+        desc: $('#desc').val().trim(),
         member_levels: [],
         status: 0,
         all_shop: true
@@ -692,7 +593,7 @@ function do_submit() {
 
     $('input[name=ignore_all]').each(function() {
        if($(this).prop('checked')) {
-           data.ignore_all = $(this).val() == 1;
+           data.ignore_all = $(this).val() === 1;
        }
     });
 
@@ -709,7 +610,7 @@ function do_submit() {
 
     $('input[name=forever]').each(function() {
         if($(this).prop('checked')) {
-            data.forever = $(this).val() == 1;
+            data.forever = $(this).val() === '1';
         }
     });
 
@@ -723,7 +624,7 @@ function do_submit() {
 
         switch(expire_mode) {
             case 0:
-                if(data.expired_time == '') {
+                if(data.expired_time === '') {
                     errors.expired_time = '请选择截止时间';
                 } else {
                     errors.expired_time = '';
@@ -741,24 +642,6 @@ function do_submit() {
         }
     }
 
-    $('input[name=all_shop]').each(function() {
-        if($(this).prop('checked')) {
-            data.all_shop = $(this).val() == 1;
-        }
-    });
-
-    if(!data.all_shop) {
-        for(var shop_id in shop_scope) {
-            data.shop_scope.push(shop_id);
-        }
-
-        if(data.shop_scope.length === 0) {
-            errors.shop_scope = '请选择优惠券适用店铺';
-        } else {
-            errors.shop_scope = '';
-        }
-    }
-
     $('input[name=member_level]').each(function() {
        if($(this).prop('checked') && $(this).val() > 0) {
            data.member_levels.push($(this).val());
@@ -771,7 +654,7 @@ function do_submit() {
        }
     });
 
-    if(data.name == '') {
+    if(data.name === '') {
         errors.name = '请填写优惠券名称';
     } else {
         errors.name = '';
@@ -787,6 +670,13 @@ function do_submit() {
         errors.number = '发放数量必须大于0';
     } else {
         errors.number = '';
+    }
+
+    data.cost = parseFloat(data.cost);
+    if(isNaN(data.cost) || data.cost < 0) {
+        errors.cost = '请填写单张优惠券的成本';
+    } else {
+        errors.cost = '';
     }
 
     data.type = parseInt(data.type);
@@ -836,8 +726,14 @@ function do_submit() {
             errors.type = '请选择优惠券类型';
     }
 
+    if(data.desc === '') {
+        errors.desc = '请填写使用规则';
+    } else {
+        errors.desc = '';
+    }
+
     for(var key in errors) {
-        if(errors[key] != '') {
+        if(errors[key] !== '') {
             flag = false;
         }
         $('#' + key + '-error').text(errors[key]);
@@ -869,7 +765,7 @@ function do_response(result) {
     $('#submit-btn').removeClass('btn-disabled');
     $('#mask').hide();
     //处理返回结果
-    if(result.error == 0) {
+    if(result.error === 0) {
         layer.alert(result.message, {
             end: function() {
                 window.location.href = 'coupon.php';

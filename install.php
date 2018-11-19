@@ -766,14 +766,13 @@ $sql[] = 'create table if not exists '.$db->table('coupon').' (
     `decrement` decimal(18,3) not null default \'0\' comment \'减免金额\',
     `category_scope` varchar(255) comment \'适用分类\',
     `product_scope` varchar(255) comment \'适用产品\',
-    `shop_scope` varchar(255) comment \'适用店铺\',
     `ignore_all` tinyint(1) not null default \'0\' comment \'适用全品类： 0 - 否，1 - 是\',
     `forever` tinyint(1) not null default \'0\' comment \'永久有效： 0 - 否，1 - 是\',
     `begin_time` int not null comment \'开始发放时间\',
     `end_time` int not null comment \'结束发放时间\',
     `add_time` int not null comment \'添加时间\',
     `last_modify` int not null comment \'最后修改时间\',
-    `hook` varchar(255) comment \'调用位置\',
+    `hook` varchar(255) not null comment \'调用位置\',
     `cost` decimal(18,3) not null default \'0\' comment \'成本\',
     `number` int not null comment \'总量\',
     `remain` int not null comment \'剩余数量\',
@@ -783,22 +782,22 @@ $sql[] = 'create table if not exists '.$db->table('coupon').' (
     `active_time` int not null comment \'过期时间，单位：小时\',
     `member_levels` varchar(255) comment \'适用会员等级 为空则全等级通用\',
     `status` int not null default \'1\' comment \'状态：0 - 停用，1 - 启用\',
-    `channels` varchar(255)  comment \'发放渠道\'
+    `channels` varchar(255)  comment \'发放渠道\',
+    `desc` text comment \'使用规则\',
+    index(`hook`)
 ) engine=InnoDB default charset=utf8;';
 
 $table[] = '优惠券适用规则';
 $sql[] = 'create table if not exists '.$db->table('coupon_rule_mapper').' (
     `coupon_id` bigint not null comment \'优惠券ID\',
-    `shop_id` bigint not null default \'0\' comment \'店铺ID\',
     `category_id` bigint not null default \'0\' comment \'分类ID\',
     `product_id` bigint not null default \'0\' comment \'产品ID\',
     `begin_time` int not null comment \'开始发放时间\',
     `end_time` int not null comment \'结束发放时间\',
     `level_id` int not null default \'0\' comment \'会员等级\',
     `status` int not null default \'1\' comment \'状态：0 - 停用，1 - 启用\',
-    primary key(`coupon_id`,`shop_id`,`category_id`,`product_id`,`level_id`),
+    primary key(`coupon_id`,`category_id`,`product_id`,`level_id`),
     index(`coupon_id`),
-    index(`shop_id`),
     index(`category_id`),
     index(`product_id`),
     index(`level_id`)
@@ -817,7 +816,6 @@ $sql[] = 'create table if not exists '.$db->table('coupon_member_mapper').' (
     `discount` int default \'0\' comment \'折扣\',
     `category_scope` varchar(255) comment \'适用分类\',
     `product_scope` varchar(255) comment \'适用产品\',
-    `shop_scope` varchar(255) comment \'适用店铺\',
     `ignore_all` tinyint(1) not null default \'0\' comment \'适用全品类： 0 - 否，1 - 是\',
     `forever` tinyint(1) not null default \'0\' comment \'永久有效： 0 - 否，1 - 是\',
     `decrement` decimal(18,3) not null default \'0\' comment \'减免金额\',
@@ -828,6 +826,8 @@ $sql[] = 'create table if not exists '.$db->table('coupon_member_mapper').' (
     `decrement_amount` decimal(18,3) not null default \'0\' comment \'减免金额\',
     `channel` varchar(255) comment \'使用渠道\',
     `used_time` int comment \'使用时间\',
+    `desc` text comment \'使用规则\',
+    `hook` varchar(255) not null comment \'调用位置\',
     index(`account`),
     index(`coupon_id`)
 ) engine=InnoDB default charset=utf8;';

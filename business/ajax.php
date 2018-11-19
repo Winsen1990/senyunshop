@@ -18,7 +18,7 @@ if( !isset($_SESSION['business_account']) ) {
 }
 
 if( check_cross_domain() ) {
-    echo json_decode(array(
+    echo json_encode(array(
         'error' => 1,
         'message' => '请从本站提交数据',
     ));
