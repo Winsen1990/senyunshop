@@ -5,3 +5,4 @@ upload/
 data/
 !no-image.png
 logs/
+.DS_Store

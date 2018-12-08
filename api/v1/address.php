@@ -71,26 +71,24 @@ if('default' == $opera)
     $id = intval($id);
     if($id <= 0)
     {
-        $response['message'] = '-参数错误<br/>';
+        $response['message'] = '参数错误';
     }
 
     if($response['message'] == '')
     {
         //检查如果地址是默认地址，则修改默认地址到下一个地址
-        $check_default = 'select `is_default` from '.$db->table('address').' where `id`='.$id.' and `account`=\''.$current_user['account'].'\'';
-
-        $is_default = $db->fetchOne($check_default);
+        $is_default = $db->getColumn('address', 'is_default', ['id' => $id, 'account' => $current_user['account']]);
 
         if(!$is_default)
         {
-            $data = array(
+            $data = [
                 'is_default' => 0
-            );
+            ];
 
-            $db->autoUpdate('address', $data, '`account`=\''.$current_user['account'].'\'', '', 1);
+            $db->upgrade('address', $data, ['account' => $current_user['account']], 1);
 
             $data['is_default'] = 1;
-            $db->autoUpdate('address', $data, '`account`=\''.$current_user['account'].'\' and `id`='.$id, '', 1);
+            $db->upgrade('address', $data, ['account' => $current_user['account'], 'id' => $id]);
 
             $response['error'] = 0;
             $response['message'] = '设置默认收货地址成功';
@@ -108,30 +106,28 @@ if('delete' == $opera)
     $id = intval($id);
     if($id <= 0)
     {
-        $response['message'] = '-参数错误<br/>';
+        $response['message'] = '参数错误';
     }
 
     if($response['message'] == '')
     {
         //检查如果地址是默认地址，则修改默认地址到下一个地址
-        $check_default = 'select `is_default` from '.$db->table('address').' where `id`='.$id.' and `account`=\''.$current_user['account'].'\'';
+        $is_default = $db->getColumn('address', 'is_default', ['id' => $id, 'account' => $current_user['account']]);
 
-        $is_default = $db->fetchOne($check_default);
-
-        if($db->autoDelete('address', '`id`='.$id.' and `account`=\''.$current_user['account'].'\''))
+        if($db->destroy('address', ['id' => $id, 'account' => $current_user['account']]))
         {
             if($is_default)
             {
-                $data = array(
+                $data = [
                     'is_default' => 1
-                );
+                ];
 
-                $db->autoUpdate('address', $data, '`account`=\''.$current_user['account'].'\'', '', 1);
+                $db->upgrade('address', $data, ['account' => $current_user['account']], 1);
             }
             $response['error'] = 0;
             $response['message'] = '删除收货地址成功';
         } else {
-            $response['message'] = '001:系统繁忙，请稍后再试';
+            $response['message'] = '系统繁忙，请稍后再试';
         }
     }
 }
@@ -153,32 +149,35 @@ if('add' == $opera)
     $group = max(0, $group);
 
     if(empty($province) || empty($city) || empty($district) || empty($group)) {
-        $response['message'] .= '-请选择省/市/区';
+        $response['message'] .= '请选择省/市/区';
     }
 
     if($address == '') {
-        $response['message'] .= '-请填写详细地址\n';
+        $response['message'] .= '请填写详细地址';
     } else {
         $address = $db->escape($address);
     }
 
     if(!is_mobile($mobile))
     {
-        $response['message'] .= '-手机号码格式错误';
+        $response['message'] .= '手机号码格式错误';
     } else {
         $mobile = $db->escape($mobile);
     }
 
     if($response['message'] == '')
     {
+        $province_name = $db->getColumn('province', 'province_name', ['id' => $province]);
+        $city_name = $db->getColumn('city', 'city_name', ['id' => $city]);
+        $district_name = $db->getColumn('district', 'district_name', ['id' => $district]);
+        $group_name = $db->getColumn('group', 'group_name', ['id' => $group]);
+
         if($is_default)
         {
-            $db->autoUpdate('address', ['is_default' => 0], '`account`=\''.$current_user['account'].'\'');
+            $db->upgrade('address', ['is_default' => 0], ['account' => $current_user['account']]);
         } else {
             //检查用户地址如果为空则默认为默认地址
-            $check_address = 'select count(*) from '.$db->table('address').' where `account`=\''.$current_user['account'].'\'';
-
-            $address_count = intval($db->fetchOne($check_address));
+            $address_count = $db->getColumn('address', 'count(*)', ['account' => $current_user['address']]);
 
             if($address_count == 0)
             {
@@ -188,9 +187,13 @@ if('add' == $opera)
 
         $address_data = array(
             'province' => $province,
+            'province_name' => $province_name,
             'city' => $city,
+            'city_name' => $city_name,
             'district' => $district,
+            'district_name' => $district_name,
             'group' => $group,
+            'group_name' => $group_name,
             'address' => $address,
             'mobile' => $mobile,
             'consignee' => $consignee,
@@ -198,7 +201,7 @@ if('add' == $opera)
             'account' => $current_user['account']
         );
 
-        if($db->autoInsert('address', array($address_data)))
+        if($db->create('address', $address_data))
         {
             $response['error'] = 0;
             $response['message'] = '新增收货地址成功';
@@ -223,7 +226,6 @@ if('edit' == $opera)
     $district = intval(getPOST('district'));
     $group = intval(getPOST('group'));
     $address = getPOST('address');
-    $is_default = 0;
     $mobile = getPOST('mobile');
     $consignee = getPOST('consignee');
 
@@ -237,7 +239,7 @@ if('edit' == $opera)
     }
 
     if($address == '') {
-        $response['message'] .= '-请填写详细地址\n';
+        $response['message'] .= '-请填写详细地址';
     } else {
         $address = $db->escape($address);
     }
@@ -251,34 +253,26 @@ if('edit' == $opera)
 
     if($response['message'] == '')
     {
-        if($is_default)
-        {
-            $db->autoUpdate('address', array('is_default'=>0), '`account`=\''.$current_user['account'].'\'');
-        } else {
-            //检查用户地址如果为空则默认为默认地址
-            $check_address = 'select count(*) from '.$db->table('address').' where `account`=\''.$current_user['account'].'\'';
+        $province_name = $db->getColumn('province', 'province_name', ['id' => $province]);
+        $city_name = $db->getColumn('city', 'city_name', ['id' => $city]);
+        $district_name = $db->getColumn('district', 'district_name', ['id' => $district]);
+        $group_name = $db->getColumn('group', 'group_name', ['id' => $group]);
 
-            $address_count = $db->fetchOne($check_address);
-            $address_count = intval($address_count);
-
-            if($address_count == 1)
-            {
-                $is_default = 1;
-            }
-        }
-
-        $address_data = array(
+        $address_data = [
             'province' => $province,
+            'province_name' => $province_name,
             'city' => $city,
+            'city_name' => $city_name,
             'district' => $district,
+            'district_name' => $district_name,
             'group' => $group,
+            'group_name' => $group_name,
             'address' => $address,
             'mobile' => $mobile,
-            'consignee' => $consignee,
-//            'is_default' => $is_default
-        );
+            'consignee' => $consignee
+        ];
 
-        if($db->autoUpdate('address', $address_data, '`id`='.$id.' and `account`=\''.$current_user['account'].'\'') !== false)
+        if($db->upgrade('address', $address_data, ['id' => $id, 'account' => $current_user['account']]) !== false)
         {
             $response['error'] = 0;
             $response['message'] = '收货地址修改成功';
@@ -291,14 +285,21 @@ if('edit' == $opera)
 
 if('get_default' == $act)
 {
-    $get_address_detail = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
-        'a.`province`,a.`city`,a.`district`,a.`group`,'.
-        'a.`mobile`,a.`zipcode`,a.`id` from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
-        $db->table('city').' as c, '.$db->table('district').' as d where '.
-        'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
-        ' and a.`account`=\''.$current_user['account'].'\' and a.is_default = 1';
-
-    $address_info = $db->fetchRow($get_address_detail);
+    $address_info = $db->find('address', [
+        'id',
+        'province',
+        'province_name',
+        'city',
+        'city_name',
+        'district',
+        'district_name',
+        'group',
+        'group_name',
+        'address',
+        'mobile',
+        'consignee',
+        'zipcode'
+    ], ['account' => $current_user['account'], 'is_default' => 1]);
 
     if($address_info)
     {
@@ -315,7 +316,7 @@ if('get_default' == $act)
         ];
         $response['message'] = '获取默认地址成功';
     } else {
-        $response['message'] = '000:参数错误';
+        $response['message'] = '参数错误';
     }
     
 }
@@ -328,15 +329,21 @@ if('show' == $act)
         throw new RestFulException('参数错误', 401);
     }
 
-    $get_address = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
-        'a.`province`,a.`city`,a.`district`,a.`group`,'.
-        'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name'.
-        ' from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
-        $db->table('city').' as c, '.$db->table('district').' as d where '.
-        'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
-        ' and a.`account`=\''.$current_user['account'].'\' and a.id = '.$id;
-
-    $address = $db->fetchRow($get_address);
+    $address = $db->find('address', [
+        'id',
+        'province',
+        'province_name',
+        'city',
+        'city_name',
+        'district',
+        'district_name',
+        'group',
+        'group_name',
+        'address',
+        'mobile',
+        'consignee',
+        'zipcode'
+    ], ['account' => $current_user['account'], 'id' => $id]);
 
     if(!$address)
     {
@@ -369,14 +376,21 @@ if('view' == $act)
     $response['error'] = 0;
     $response['addresses'] = [];
 
-    $get_address_list = 'select a.`is_default`,p.`province_name`,c.`city_name`,d.`district_name`,a.`address`,a.`consignee`,'.
-        'a.`mobile`,a.`zipcode`,a.`id`,(select `group_name` from '.$db->table('group').' where `id`=a.`group`) as group_name '.
-        ' from '.$db->table('address').' as a, '.$db->table('province').' as p, '.
-        $db->table('city').' as c, '.$db->table('district').' as d '.
-        ' where '.
-        'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` '.
-        ' and a.`account`=\''.$current_user['account'].'\' order by `is_default` DESC';
-    $address_list = $db->fetchAll($get_address_list);
+    $address_list = $db->all('address', [
+        'id',
+        'province',
+        'province_name',
+        'city',
+        'city_name',
+        'district',
+        'district_name',
+        'group',
+        'group_name',
+        'address',
+        'mobile',
+        'consignee',
+        'zipcode'
+    ], ['account' => $current_user['account']], null, [['is_default', 'DESC']]);
 
     if($address_list)
     {

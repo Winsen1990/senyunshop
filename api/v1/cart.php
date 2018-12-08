@@ -9,7 +9,7 @@ include '../library/api.inc.php';
 global $db, $log, $config, $current_user, $levels;
 
 $operation = 'add|delete';
-$action = 'view';
+$action = 'view|count';
 
 $opera = check_action($operation, getPOST('opera'));
 $act = check_action($action, getGET('act'));
@@ -27,7 +27,7 @@ if('delete' == $opera) {
     }
 
     if($response['message'] == '') {
-        if($db->autoDelete('cart', '`id`='.$cid.' and `account`=\''.$current_user['account'].'\'')) {
+        if($db->destroy('cart', ['id' => $cid, 'account' => $current_user['account']])) {
             $response['error'] = 0;
             $response['message'] = '产品已移出购物车';
         } else {
@@ -44,13 +44,13 @@ if('add' == $opera) {
     $product_sn = '';
 
     if ($product_id <= 0) {
-        $response['message'] .= "-参数错误\n";
+        $response['message'] .= "参数错误";
     } else {
         $product_sn = $db->getColumn('product', 'product_sn', ['id' => $product_id]);
     }
 
     if($number <= 0) {
-        $response['message'] .= "-请输入购买数量\n";
+        $response['message'] .= "请输入购买数量";
     }
 
     if($response['message'] == '') {
@@ -84,11 +84,11 @@ if('add' == $opera) {
             $columns = [
                 'price',
                 'integral',
-                'business_account',
-                'is_virtual',
-                'promote_price',
-                'promote_begin',
-                'promote_end'
+                'id',
+                'product_sn',
+                'name',
+                'free_delivery',
+                'weight'
             ];
             $product = $db->find('product', $columns, ['product_sn' => $product_sn]);
             $now = time();
@@ -96,7 +96,7 @@ if('add' == $opera) {
             if($response['message'] == '') {
                 //直接购买，屏蔽其他产品
                 if($direct_buy) {
-                    $db->autoUpdate('cart', ['checked' => 0], '`account`=\''.$current_user['account'].'\'');
+                    $db->upgrade('cart', ['checked' => 0], ['account' => $current_user['account']]);
                 }
 
                 if ($cart) {
@@ -108,13 +108,11 @@ if('add' == $opera) {
                         'checked' => 1
                     );
 
-                    if ($product['promote_end'] > $now && $product['promote_begin'] <= $now) {
-                        $cart_data['price'] = $product['promote_price'];
-                    } else if($member_level) {
+                    if($member_level) {
                         $cart_data['price'] = $member_level['discount'] * $cart_data['price'] / 100;
                     }
 
-                    if ($db->autoUpdate('cart', $cart_data, '`id`=' . $cart['id']) !== false) {
+                    if ($db->upgrade('cart', $cart_data, ['id' => $cart['id']]) !== false) {
                         $response['error'] = 0;
                         $response['message'] = '加入购物车成功';
                         $response['id'] = $cart['id'];
@@ -125,26 +123,27 @@ if('add' == $opera) {
                 } else {
                     //新增记录
                     $cart_data = array(
-                        'openid' => $current_user['openid'],
                         'account' => $current_user['account'],
                         'product_sn' => $product_sn,
+                        'product_id' => $product['id'],
+                        'name' => $product['name'],
+                        'img' => $product['img'],
+                        'weight' => $product['weight'],
+                        'free_delivery' => $product['free_delivery'],
                         'number' => $buy_number,
                         'add_time' => time(),
                         'price' => $product['price'],
                         'integral' => $product['integral'],
-                        'business_account' => $product['business_account'],
                         'attributes' => $attributes,
                         'is_virtual' => $product['is_virtual'],
                         'checked' => 1
                     );
 
-                    if ($product['promote_end'] > $now && $product['promote_begin'] <= $now) {
-                        $cart_data['price'] = $product['promote_price'];
-                    } else if($member_level) {
+                    if($member_level) {
                         $cart_data['price'] = $member_level['discount'] * $cart_data['price'] / 100;
                     }
 
-                    if ($db->autoInsert('cart', [$cart_data])) {
+                    if ($db->create('cart', $cart_data)) {
                         $response['error'] = 0;
                         $response['message'] = '加入购物车成功';
                         $response['id'] = $db->get_last_id();
@@ -166,11 +165,20 @@ if('view' == $act) {
     $response['cart'] = [];
     $response['message'] = '读取购物车成功';
     //获取购物车产品
-    $get_cart_list = 'select c.`checked`,p.`img`,p.`product_type_id`,c.`id`,c.`attributes`,c.`product_sn`,c.`price`,c.`integral`,c.`number`,p.`name`,p.`id` as p_id,c.`business_account` from (' .
-        $db->table('cart') . ' as c join ' . $db->table('product') . ' as p using(`product_sn`)) ' .
-        ' where c.`account`=\'' . $current_user['account'] . '\' order by c.`business_account`';
-
-    $cart_list_tmp = $db->fetchAll($get_cart_list);
+    $cart_list_tmp = $db->all('cart', [
+        'id',
+        'product_id',
+        'img',
+        'attributes',
+        'product_sn',
+        'price',
+        'integral',
+        'number',
+        'name',
+        'weight',
+        'free_delivery',
+        'is_gift'
+    ], ['account' => $current_user['account']]);
 
     if ($cart_list_tmp) {
         foreach ($cart_list_tmp as $cart) {
@@ -180,7 +188,7 @@ if('view' == $act) {
             array_push($response['cart'], [
                 'id' => $cart['id'],
                 'img' => $cart['img'],
-                'p_id' => $cart['p_id'],
+                'p_id' => $cart['product_id'],
                 'name' => $cart['name'],
                 'count' => intval($cart['number']),
                 'price' => floatval($cart['price']),
@@ -194,6 +202,14 @@ if('view' == $act) {
     $shop['name'] = $shop['shop_name'];
     unset($shop['shop_name']);
     $response['shop'] = $shop;
+}
+
+//读取购物车数量
+if('count' == $act) {
+    $response['error'] = 0;
+
+    $cart_count = $db->getColumn('cart', 'sum(`number`)', ['account' => $current_user['account'], 'is_gift' => 0]);
+    $response['cart_count'] = $cart_count;
 }
 
 echo json_encode($response);

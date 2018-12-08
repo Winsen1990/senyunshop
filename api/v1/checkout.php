@@ -57,7 +57,9 @@ if('view' == $act) {
     $response['address'] = null;
     $response['shipping'] = [];
     $response['cart'] = [];
+    $response['coupons'] = [];
 
+    //收货地址
     $address_id = intval(getGET('address_id'));
 
     if(empty($address_id)) {
@@ -68,24 +70,38 @@ if('view' == $act) {
     $address_info = null;
     //如有地址ID则获取地址信息
     if($address_id > 0) {
-        $get_address_detail = 'select p.`province_name`,c.`city_name`,d.`district_name`,g.`group_name`,a.`address`,a.`consignee`,' .
-            'a.`province`,a.`city`,a.`district`,a.`group`,g.`group_name`,' .
-            'a.`mobile`,a.`zipcode`,a.`id` from ' . $db->table('address') . ' as a, ' . $db->table('province') . ' as p, ' .
-            $db->table('city') . ' as c, ' . $db->table('district') . ' as d, ' . $db->table('group') . ' as g where ' .
-            'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` and a.`group`=g.`id` and a.`id`=' . $address_id .
-            ' and `account`=\'' . $current_user['account'] . '\'';
-
-        $address_info = $db->fetchRow($get_address_detail);
+        $address_info = $db->find('address', [
+            'id',
+            'province',
+            'province_name',
+            'city',
+            'city_name',
+            'district',
+            'district_name',
+            'group',
+            'group_name',
+            'address',
+            'consignee',
+            'mobile',
+            'zipcode'
+        ], ['id' => $address_id, 'account' => $current_user['account']]);
 
         if(empty($address_info)) {
-            $get_address_detail = 'select p.`province_name`,c.`city_name`,d.`district_name`,g.`group_name`,a.`address`,a.`consignee`,' .
-                'a.`province`,a.`city`,a.`district`,a.`group`,g.`group_name`,' .
-                'a.`mobile`,a.`zipcode`,a.`id` from ' . $db->table('address') . ' as a, ' . $db->table('province') . ' as p, ' .
-                $db->table('city') . ' as c, ' . $db->table('district') . ' as d, ' . $db->table('group') . ' as g where ' .
-                'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` and a.`group`=g.`id` and a.`is_default`=1'.
-                ' and `account`=\'' . $current_user['account'] . '\'';
-
-            $address_info = $db->fetchRow($get_address_detail);
+            $address_info = $db->find('address', [
+                'id',
+                'province',
+                'province_name',
+                'city',
+                'city_name',
+                'district',
+                'district_name',
+                'group',
+                'group_name',
+                'address',
+                'consignee',
+                'mobile',
+                'zipcode'
+            ], ['account' => $current_user['account'], 'is_default' => 1]);
         }
 
         $response['address'] = [
@@ -97,12 +113,20 @@ if('view' == $act) {
     }
 
     //获取待购买产品
-    $get_cart_list = 'select p.`img`,c.`id`,c.`attributes`,c.`product_sn`,c.`price`,c.`integral`,c.`number`,p.`name`,p.`weight`,'.
-                     'p.`is_virtual`,p.`free_delivery`,p.`id` as p_id '.
-                    'from ('.$db->table('cart').' as c join '.$db->table('product').' as p using(`product_sn`)) '.
-                    'where c.`account`=\''.$current_user['account'].'\' and c.`checked`=1';
-
-    $cart_list_tmp = $db->fetchAll($get_cart_list);
+    $cart_list_tmp = $db->all('cart', [
+        'id',
+        'product_id',
+        'img',
+        'attributes',
+        'product_sn',
+        'price',
+        'integral',
+        'number',
+        'name',
+        'weight',
+        'free_delivery',
+        'is_gift'
+    ], ['account' => $current_user['account'], 'checked' => 1]);
 
     if(empty($cart_list_tmp)) {
         throw new RestFulException('没有可购买的产品', 500);
@@ -125,8 +149,8 @@ if('view' == $act) {
             array_push($lack_inventory, $_cart['name']);
         }
 
-        if(!$_cart['is_virtual'] && !$_cart['free_delivery']) {
-            //实物商品且不包邮
+        if(!$_cart['free_delivery'] && !$_cart['is_gift']) {
+            //非赠品且免邮
             $total_weight += $_cart['weight'] * $_cart['number'];
         }
 
@@ -139,7 +163,7 @@ if('view' == $act) {
             'name' => $_cart['name'],
             'count' => intval($_cart['number']),
             'price' => floatval($_cart['price']),
-            'p_id' => intval($_cart['p_id'])
+            'p_id' => intval($_cart['product_id'])
         ]);
     }
     $response['lack_inventory'] = $lack_inventory;
@@ -246,6 +270,11 @@ if('view' == $act) {
             $_delivery['shipping_fee'] = 0;
         }
     }
+
+    //计算优惠券
+    $coupons = $db->all('coupon', [
+
+    ], ['account' => $current_user['account']]);
 
     if($response['message'] == '') {
         $response['error'] = 0;

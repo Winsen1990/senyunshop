@@ -7,12 +7,13 @@
  * Time: 17:18
  */
 include '../library/api.inc.php';
-global $db, $log, $config;
+global $db, $log, $config, $current_user;
 
 $response = [
     'banners' => [],
     'under_banner_ads' => [],
     'before_block_ads' => [],
+    'cart_count' => 0,
     'functions' => [],
     'blocks' => [],
     'error' => 0,

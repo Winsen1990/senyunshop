@@ -334,7 +334,7 @@ if( 'edit' == $opera ) {
         exit;
     }
 
-    $product = $db->find('product', '*', ['id' => $id, 'business_account' => $_SESSION['business_account']]);
+    $product = $db->find('product', '*', ['id' => $id]);
     if( empty($product) ) {
         show_system_message('产品不存在', array());
         exit;
@@ -576,7 +576,16 @@ if( 'edit' == $opera ) {
         $db->autoReplace('product_category_mapper', $product_category_mapper);
 
         //更新购物车价格
-        $db->autoUpdate('cart', ['price' => $data['price']], '`product_sn`=\''.$product['product_sn'].'\'');
+        $db->upgrade('cart', [
+            'price' => $data['price'],
+            'img' => $data['img'],
+            'name' => $data['name'],
+            'weight' => $data['weight'],
+            'free_delivery' => $data['free_delivery']
+        ], [
+            'product_sn' => $product['product_sn'],
+            'special_price' => 0
+        ]);
 
         $links = array(
             array('link' => 'product.php', 'alt' => '产品列表'),
@@ -1677,6 +1686,8 @@ if( 'remove' == $act ) {
     if( !$db->delete($delete_inventory) ) {
         $transaction = false;
     }
+
+    $db->destroy('cart', ['product_sn' => $product_sn]);
 
     if( $transaction ) {
         $links = array(
