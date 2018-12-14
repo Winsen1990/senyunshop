@@ -90,19 +90,16 @@
             {
                 name:'交易总额',
                 type:'line',
-                stack: '总量',
                 data: {$amount_list|json_encode}
             },
             {
                 name:'总成交量',
                 type:'line',
-                stack: '总量',
                 data: {$count_list|json_encode}
             },
             {
                 name:'平均单价',
                 type:'line',
-                stack: '总量',
                 data: {$average_list|json_encode}
             }
         ]

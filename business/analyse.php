@@ -337,9 +337,9 @@ if('trade_summary' == $act) {
 
     foreach($calendar as $_date) {
         array_push($calendar_date, $_date['date']);
-        array_push($amount_list, $_date['amount']);
+        array_push($amount_list, round($_date['amount'], 2));
         array_push($count_list, $_date['count']);
-        array_push($average_list, $_date['avg']);
+        array_push($average_list, round($_date['avg'], 2));
     }
 
     if($export == 'export') {

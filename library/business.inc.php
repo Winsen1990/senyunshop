@@ -320,8 +320,6 @@ $menus = array(
         'title' => '数据中心',
         'icon' => '&#xe607;',
         'url' => 'analyse.php?act=trade_summary',
-        'children' => array(
-        )
     ),
 
 
