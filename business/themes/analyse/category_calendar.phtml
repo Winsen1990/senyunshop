@@ -1,0 +1,149 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">分类销售汇总</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="?act=category_calendar">分类销售汇总</a>
+            <a class="btn btn-primary" href="?act=sale_summary">畅销时间图表</a>
+            <a class="btn btn-primary" href="?act=product_sale_rank">销售排行榜</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="analyse.php?act=category_calendar" method="get"/>
+        <fieldset>
+            <p>
+            <div class="pull-left">
+            </div>
+            <div class="pull-right">
+                <label>一级分类：</label>
+                <select name="top_category" id="top_category" onchange="selectTopCategory">
+                    <option value="0">请选择</option>
+                </select>
+
+                <label>二级分类：</label>
+                <select name="sub_category" id="sub_category">
+                    <option value="0">请选择</option>
+                </select>
+
+                <label>起始日期：</label>
+                <input class="text-input w150" type="text" id="start_date" name="start_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#start_date'})"{/literal} value="{$start_date}">&nbsp;
+                <label>结束日期：</label>
+                <input class="text-input w150" type="text" id="end_date" name="end_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#end_date'})"{/literal} value="{$end_date}">&nbsp;
+                <input type="hidden" name="category_id" id="category_id" value="{$category_id}"/>
+                <input type="hidden" name="act" value="category_calendar"/>
+                <button type="submit" class="btn btn-default">汇总</button>
+                <button type="submit" name="export" value="export" class="btn btn-default">导出</button>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                {foreach $data_header as $head}
+                <th>{$head}</th>
+                {/foreach}
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$data_rows item=row}
+            <tr>
+                {foreach $row as $column}
+                <td>{$column}</td>
+                {/foreach}
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<!-- END 日历控件 -->
+
+<script type="text/javascript">
+    var categories = {$categories|json_encode};
+
+    $(function() {
+        var category_id = $('#category_id').val();
+        var select_top = false;
+        var top_categories = [];
+        for(var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+            if(category.parent_id == 0) {
+                if(category.id == category_id) {
+                    select_top = true;
+                }
+                var top_category_option = '<option value="' + category.id + '">' + category.name + '</option>';
+                top_categories.push(top_category_option);
+            }
+        }
+        $('#top_category').append(top_categories.join("\n"));
+        $('#top_category').change(function () {
+            selectTopCategory($(this).val());
+        });
+
+        if(select_top) {
+            selectTopCategory(category_id);
+            $('#top_category').val(category_id);
+        } else {
+            for(var j = 0; j < categories.length; j++) {
+                var _category = categories[j];
+                if(_category.id == category_id) {
+                    selectTopCategory(_category.parent_id);
+                    $('#top_category').val(_category.parent_id);
+                    $('#sub_category').val(category_id);
+                    break;
+                }
+            }
+        }
+    });
+
+    function selectTopCategory(id) {
+        var top_category_id = id;
+        var sub_categories = [
+            '<option value="0">请选择</option>'
+        ];
+
+        $('#category_id').val(top_category_id);
+        $('#sub_category').empty();
+        for(var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+
+            if(category.parent_id == top_category_id && category.parent_id > 0) {
+                var sub_category_option = '<option value="' + category.id + '">' + category.name + '</option>';
+                sub_categories.push(sub_category_option);
+            }
+        }
+        $('#sub_category').html(sub_categories.join("\n"));
+
+        $('#sub_category').change(function () {
+            selectSubCategory($(this).val());
+        });
+    }
+
+    function selectSubCategory(id) {
+        if(id > 0) {
+            $('#category_id').val(id);
+        } else {
+            $('#category_id').val($('#top_category').val());
+        }
+    }
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

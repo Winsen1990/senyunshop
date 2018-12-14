@@ -1,0 +1,120 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">交易汇总</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="?act=category_calendar">分类销售汇总</a>
+            <a class="btn btn-primary" href="?act=sale_summary">畅销时间图表</a>
+            <a class="btn btn-primary" href="?act=product_sale_rank">销售排行榜</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="analyse.php" method="get"/>
+        <fieldset>
+            <p>
+            <div class="pull-left">
+            </div>
+            <div class="pull-right">
+                <label>起始日期：</label>
+                <input class="text-input w150" type="text" id="start_date" name="start_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#start_date'})"{/literal} value="{$start_date}">&nbsp;
+                <label>结束日期：</label>
+                <input class="text-input w150" type="text" id="end_date" name="end_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#end_date'})"{/literal} value="{$end_date}">&nbsp;
+                <input type="hidden" name="act" value="trade_summary"/>
+                <button type="submit" class="btn btn-default">汇总</button>
+                <button type="submit" name="export" value="export" class="btn btn-default">导出</button>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <tbody>
+            <tr>
+            <td>交易总额: ￥{$total_amount|string_format:'%.2f'}</td>
+            <td>交易总量:  {$total_count}</td>
+            <td>平均单价:  ￥{$total_average|string_format:'%.2f'}</td>
+            </tr>
+            </tbody>
+        </table>
+        <div id="chart" style="width: 98%; height: 500px;"></div>
+    </div>
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<!-- END 日历控件 -->
+
+<script type="text/javascript">
+    var option = {
+        title: {
+            text: '交易汇总'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data:['交易总额','总成交量','平均单价']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: {$calendar_date|json_encode}
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name:'交易总额',
+                type:'line',
+                stack: '总量',
+                data: {$amount_list|json_encode}
+            },
+            {
+                name:'总成交量',
+                type:'line',
+                stack: '总量',
+                data: {$count_list|json_encode}
+            },
+            {
+                name:'平均单价',
+                type:'line',
+                stack: '总量',
+                data: {$average_list|json_encode}
+            }
+        ]
+    };
+
+
+    $(function() {
+        var chart = echarts.init(document.getElementById('chart'));
+        chart.setOption(option);
+    });
+</script>
+
+{include file="library/footer.lbi"}
+</body>
+</html>

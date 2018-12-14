@@ -140,6 +140,11 @@ $purview = array(
         'pur_block_add',
         'pur_block_edit',
         'pur_block_del',
+    ),
+
+    //数据中心
+    'pur_data' => array(
+        'pur_data_view'
     )
 );
 
@@ -253,6 +258,9 @@ $L_purview = array(
     'pur_block_add' => '添加专区',
     'pur_block_edit' => '编辑专区',
     'pur_block_del' => '删除专区',
+
+    'pur_data' => '数据中心',
+    'pur_data_view' => '查看数据',
 );
 
 global $menus;
@@ -306,6 +314,14 @@ $menus = array(
         'title' => '订单管理',
         'icon' => '&#xe609;',
         'url' => 'order.php',
+    ),
+
+    'pur_data' => array(
+        'title' => '数据中心',
+        'icon' => '&#xe607;',
+        'url' => 'analyse.php?act=trade_summary',
+        'children' => array(
+        )
     ),
 
 
