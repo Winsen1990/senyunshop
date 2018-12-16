@@ -156,6 +156,11 @@ $purview = array(
         'pur_exam_add',
         'pur_exam_edit',
         'pur_exam_del'
+    ),
+
+    //数据中心
+    'pur_data' => array(
+        'pur_data_view'
     )
 );
 
@@ -281,6 +286,9 @@ $L_purview = array(
     'pur_exam_add' => '创建问卷',
     'pur_exam_edit' => '编辑问卷',
     'pur_exam_del' => '删除问卷',
+
+    'pur_data' => '数据中心',
+    'pur_data_view' => '查看数据',
 );
 
 global $menus;
@@ -335,6 +343,12 @@ $menus = array(
         'title' => '订单管理',
         'icon' => '&#xe609;',
         'url' => 'order.php',
+    ),
+
+    'pur_data' => array(
+        'title' => '数据中心',
+        'icon' => '&#xe607;',
+        'url' => 'analyse.php?act=trade_summary',
     ),
 
 
