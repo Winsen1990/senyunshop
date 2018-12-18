@@ -1208,7 +1208,7 @@ if('order_list' == $act) {
         $conditions['pay_time'] = ['elt', $pay_ed_date];
     }
 
-    $step = 2;
+    $step = 20;
     $total_count = $db->getColumn('order', 'count(*)', $conditions);
     $total_page = ceil($total_count/$step);
     $page = min($page, $total_page);
