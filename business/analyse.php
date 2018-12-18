@@ -12,7 +12,7 @@ business_base_init();
 $template = 'analyse/';
 assign('subTitle', '数据中心');
 
-$action = 'category_calendar|trade_summary|sale_summary|product_sale_rank|order_detail';
+$action = 'category_calendar|trade_summary|sale_summary|product_sale_rank|order_detail|order_detail_summary|order_list';
 $operation = 'edit|add';
 
 $act = check_action($action, getGET('act'));
@@ -745,14 +745,21 @@ if('order_detail' == $act) {
     $end_date = trim(getGET('end_date'));
     $category_id = intval(getGET('category_id'));
 
-    $where = '1';
+    $page = intval(getGET('page'));
+    $step = 20;
+
+    $where = ' WHERE 1';
 
     if(!empty($start_date)) {
-        $start_date = strtotime($start_date);
+        $start_date = strtotime($start_date.' 00:00:00');
+    } else {
+        $start_date = strtotime('-7 days');
     }
 
     if(!empty($end_date)) {
-        $end_date = strtotime($end_date);
+        $end_date = strtotime($end_date. ' 23:59:59');
+    } else {
+        $end_date = time();
     }
 
     if($start_date > 0 && $end_date > 0) {
@@ -760,21 +767,574 @@ if('order_detail' == $act) {
             show_system_message('结束日期不能早于开始日期');
         }
 
-        $where .= ' AND od.`add_time` between '.$start_date.' and '.$end_date;
+        $where .= ' AND o.`add_time` between '.$start_date.' and '.$end_date;
+    } else if($start_date > 0) {
+        $where .= ' AND o.`add_time`>='.$start_date;
+    } else if($end_date > 0) {
+        $where .= ' AND o.`add_time`<='.$end_date;
     }
 
+    $category_ids = [];
+    $category_cache = [];
     if($category_id > 0) {
-        $category_ids = [];
-        $category = $db->all('category', ['id', 'name', 'path'], ['id' => $category_id]);
+        $category = $db->find('category', ['id', 'name', 'path'], ['id' => $category_id]);
 
         if(empty($category)) {
             show_system_message('分类不存在');
         }
 
-        $sub_categories = $db->all('category', ['id'], ['path' => ['like' => $category['path'].'%']]);
+        $category_ids[$category['id']] = $category['name'];
+        $category_cache[$category['id']] = $category['name'];
+        $sub_categories = $db->all('category', ['id', 'name'], ['path' => ['like', $category['path'].'%']]);
         if(!empty($sub_categories)) {
-
+            while($_sub_category = array_shift($sub_categories)) {
+                $category_ids[$_sub_category['id']] = $_sub_category['name'];
+                $category_cache[$_sub_category['id']] = $_sub_category['name'];
+            }
         }
+    } else {
+        $categories = $db->all('category', ['id', 'name'], null, null, ['path']);
+        if(!empty($categories)) {
+            while($_category = array_shift($categories)) {
+                $category_ids[$_category['id']] = $_category['name'];
+                $category_cache[$_category['id']] = $_category['name'];
+            }
+        }
+    }
+
+    $sql = 'select od.`product_sn`,od.`product_name`,od.`product_price`,od.`count`,o.`add_time`,o.`pay_time`,o.`payment_name`,o.`status` from '.
+        $db->table('order_detail').' as od left join '.$db->table('order').' as o using(`order_sn`) '.$where.
+        ' order by o.`add_time` DESC';
+
+    $order_details = $db->fetchAll($sql);
+
+    $product_category_mapper = [];
+    if(!empty($order_details)) {
+        foreach($order_details as $i => &$_order_detail) {
+            if(!isset($product_category_mapper[$_order_detail['product_sn']])) {
+                $product_category_assoc = $db->all('product_category_mapper', ['category_id'], ['product_sn' => $_order_detail['product_sn']]);
+                $assocs = [];
+                foreach($product_category_assoc as $_assoc) {
+                    array_push($assocs, $_assoc['category_id']);
+                }
+
+                $product_category_mapper[$_order_detail['product_sn']] = $assocs;
+            }
+
+            $flag = false;
+            $product_category_assoc = $product_category_mapper[$_order_detail['product_sn']];
+            foreach($product_category_assoc as $_category_id) {
+                if(isset($category_ids[$_category_id])) {
+                    $flag = true;
+                    break;
+                }
+            }
+
+            if($flag) {
+                $_order_detail['category_name'] = '';
+                $_order_detail['assoc_category_name'] = '';
+                while ($_category_id = array_shift($product_category_assoc)) {
+                    if(!isset($category_cache[$_category_id])) {
+                        $_category = $db->find('category', ['id', 'name'], ['id' => $_category_id]);
+                        if(!empty($_category)) {
+                            $category_cache[$_category_id] = $_category['name'];
+                        }
+                    }
+
+                    if(empty($_order_detail['category_name'])) {
+                        $_order_detail['category_name'] = $category_cache[$_category_id];
+                    } else if(empty($_order_detail['assoc_category_name'])) {
+                        $_order_detail['assoc_category_name'] = $category_cache[$_category_id];
+                    } else {
+                        $_order_detail['assoc_category_name'] .= ','.$category_cache[$_category_id];
+                    }
+                }
+            } else {
+                unset($order_details[$i]);
+            }
+        }
+    }
+
+    $total = count($order_details);
+    $total_page = ceil($total/$step);
+    $page = min($page, $total_page);
+    $page = max(1, $page);
+
+    if($total) {
+        $_order_details = array_values($order_details);
+        $order_details = [];
+        $end = $page * $step;
+        $end = min($total, $end);
+        for($i = ($page - 1) * $step; $i < $end; $i++) {
+            $od = $_order_details[$i];
+            $order_status = '';
+            switch($od['status']) {
+                case 1:
+                case 11:
+                    $order_status = '待支付';
+                    break;
+
+                case 10:
+                    $order_status = '已退款';
+                    break;
+
+                default:
+                    $order_status = '已支付';
+                    break;
+            }
+            array_push($order_details, [
+                'product_sn' => $od['product_sn'],
+                'product_name' => $od['product_name'],
+                'category_name' => $od['category_name'],
+                'assoc_category_name' => $od['assoc_category_name'],
+                'product_price' => $od['product_price'],
+                'payment_name' => $od['payment_name'],
+                'pay_status' => $order_status,
+                'count' => $od['count'],
+                'amount' => $od['count'] * $od['product_price'],
+                'pay_time' => empty($od['pay_time']) ? '-' : date('Y-m-d H:i:s', $od['pay_time']),
+                'add_time' => date('Y-m-d H:i:s', $od['add_time'])
+            ]);
+        }
+    }
+
+    $header = [
+        '产品编号', '产品名称', '产品分类', '关联分类', '交易价格', '支付方式', '支付状态', '销售数量', '销售金额', '支付时间', '创建时间'
+    ];
+
+    if('export' == $export) {
+        $file_name = date('Ymd', $start_date).'_'.date('Ymd', $end_date).'商品交易明细'.date('YmdHis').'.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="'.$file_name.'"');
+        $out = fopen('php://output', 'w');
+        fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        fputcsv($out, $header);
+        while($_order_detail = array_shift($order_details)) {
+            fputcsv($out, $_order_detail);
+        }
+        fclose($out);
+        exit;
+    }
+
+    create_pager($page, $total_page, $total);
+    assign('header', $header);
+    assign('order_details', $order_details);
+    assign('start_date', date('Y-m-d', $start_date));
+    assign('end_date', date('Y-m-d', $end_date));
+    assign('category_id', $category_id);
+
+    $categories = $db->all('category', ['id', 'name', 'parent_id']);
+    assign('categories', $categories);
+}
+
+//商品交易明细汇总
+if('order_detail_summary' == $act) {
+    if( !check_purview('pur_data_view', $_SESSION['business_purview']) ) {
+        show_system_message('没有操作权限');
+    }
+
+    $data_set = [];
+
+    $export = check_action('export|view', getGET('export'), 'view');
+    $start_date = trim(getGET('start_date'));
+    $end_date = trim(getGET('end_date'));
+    $category_id = intval(getGET('category_id'));
+
+    $where = ' WHERE 1';
+
+    if(!empty($start_date)) {
+        $start_date = strtotime($start_date.' 00:00:00');
+    } else {
+        $start_date = strtotime('-7 days');
+    }
+
+    if(!empty($end_date)) {
+        $end_date = strtotime($end_date. ' 23:59:59');
+    } else {
+        $end_date = time();
+    }
+
+    if($start_date > 0 && $end_date > 0) {
+        if($end_date < $start_date) {
+            show_system_message('结束日期不能早于开始日期');
+        }
+
+        $where .= ' AND o.`add_time` between '.$start_date.' and '.$end_date;
+    } else if($start_date > 0) {
+        $where .= ' AND o.`add_time`>='.$start_date;
+    } else if($end_date > 0) {
+        $where .= ' AND o.`add_time`<='.$end_date;
+    }
+
+    $category_ids = [];
+    $category_cache = [];
+    if($category_id > 0) {
+        $category = $db->find('category', ['id', 'name', 'path'], ['id' => $category_id]);
+
+        if(empty($category)) {
+            show_system_message('分类不存在');
+        }
+
+        $category_ids[$category['id']] = $category['name'];
+        $category_cache[$category['id']] = $category['name'];
+        $sub_categories = $db->all('category', ['id', 'name'], ['path' => ['like', $category['path'].'%']]);
+        if(!empty($sub_categories)) {
+            while($_sub_category = array_shift($sub_categories)) {
+                $category_ids[$_sub_category['id']] = $_sub_category['name'];
+                $category_cache[$_sub_category['id']] = $_sub_category['name'];
+            }
+        }
+    } else {
+        $categories = $db->all('category', ['id', 'name'], null, null, ['path']);
+        if(!empty($categories)) {
+            while($_category = array_shift($categories)) {
+                $category_ids[$_category['id']] = $_category['name'];
+                $category_cache[$_category['id']] = $_category['name'];
+            }
+        }
+    }
+
+    $sql = 'select od.`product_sn`,od.`product_name`,od.`product_price`,od.`count`,o.`payment_name`,o.`status` from '.
+        $db->table('order_detail').' as od left join '.$db->table('order').' as o using(`order_sn`) '.$where.
+        ' order by o.`add_time` DESC';
+
+    $order_details = $db->fetchAll($sql);
+
+    $order_detail_summary = [];
+    $product_category_mapper = [];
+    if(!empty($order_details)) {
+        while($_order_detail = array_shift($order_details)) {
+            if(!isset($product_category_mapper[$_order_detail['product_sn']])) {
+                $product_category_assoc = $db->all('product_category_mapper', ['category_id'], ['product_sn' => $_order_detail['product_sn']]);
+                $assocs = [];
+                foreach($product_category_assoc as $_assoc) {
+                    array_push($assocs, $_assoc['category_id']);
+                }
+
+                $product_category_mapper[$_order_detail['product_sn']] = $assocs;
+            }
+
+            $flag = false;
+            $product_category_assoc = $product_category_mapper[$_order_detail['product_sn']];
+            foreach($product_category_assoc as $_category_id) {
+                if(isset($category_ids[$_category_id])) {
+                    $flag = true;
+                    break;
+                }
+            }
+
+            if($flag) {
+                $order_status = '';
+                $order_status_mark = 0;
+                switch($_order_detail['status']) {
+                    case 1:
+                    case 11:
+                        $order_status = '待支付';
+                        $order_status_mark = 0;
+                        break;
+
+                    case 10:
+                        $order_status = '已退款';
+                        $order_status_mark = 2;
+                        break;
+
+                    default:
+                        $order_status = '已支付';
+                        $order_status_mark = 1;
+                        break;
+                }
+
+                if(!isset($order_detail_summary[$_order_detail['product_sn'].'-'.$order_status_mark.'-'.$_order_detail['product_price'].$_order_detail['payment_name']])) {
+                    $_order_detail['category_name'] = '';
+                    $_order_detail['assoc_category_name'] = '';
+                    while ($_category_id = array_shift($product_category_assoc)) {
+                        if(!isset($category_cache[$_category_id])) {
+                            $_category = $db->find('category', ['id', 'name'], ['id' => $_category_id]);
+                            if(!empty($_category)) {
+                                $category_cache[$_category_id] = $_category['name'];
+                            }
+                        }
+
+                        if(empty($_order_detail['category_name'])) {
+                            $_order_detail['category_name'] = $category_cache[$_category_id];
+                        } else if(empty($_order_detail['assoc_category_name'])) {
+                            $_order_detail['assoc_category_name'] = $category_cache[$_category_id];
+                        } else {
+                            $_order_detail['assoc_category_name'] .= ','.$category_cache[$_category_id];
+                        }
+                    }
+
+                    $order_detail_summary[$_order_detail['product_sn'].'-'.$order_status_mark.'-'.$_order_detail['product_price'].$_order_detail['payment_name']] = [
+                        'product_sn' => $_order_detail['product_sn'],
+                        'product_name' => $_order_detail['product_name'],
+                        'category_name' => $_order_detail['category_name'],
+                        'assoc_category_name' => $_order_detail['assoc_category_name'],
+                        'product_price' => $_order_detail['product_price'],
+                        'payment_name' => $_order_detail['payment_name'],
+                        'pay_status' => $order_status,
+                        'count' => 0,
+                        'amount' => 0
+                    ];
+                }
+
+                $order_detail_summary[$_order_detail['product_sn'].'-'.$order_status_mark.'-'.$_order_detail['product_price'].$_order_detail['payment_name']]['count'] += $_order_detail['count'];
+                $order_detail_summary[$_order_detail['product_sn'].'-'.$order_status_mark.'-'.$_order_detail['product_price'].$_order_detail['payment_name']]['amount'] += $_order_detail['count'] * $_order_detail['product_price'];
+            }
+        }
+    }
+
+    $header = [
+        '产品编号', '产品名称', '产品分类', '关联分类', '交易价格', '支付方式', '支付状态', '销售数量', '销售金额'
+    ];
+
+    if('export' == $export) {
+        $file_name = date('Ymd', $start_date).'_'.date('Ymd', $end_date).'商品交易明细'.date('YmdHis').'.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="'.$file_name.'"');
+        $out = fopen('php://output', 'w');
+        fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        fputcsv($out, $header);
+        while($_order_detail = array_shift($order_detail_summary)) {
+            fputcsv($out, $_order_detail);
+        }
+        fclose($out);
+        exit;
+    }
+
+    assign('header', $header);
+    assign('order_detail_summary', $order_detail_summary);
+    assign('start_date', date('Y-m-d', $start_date));
+    assign('end_date', date('Y-m-d', $end_date));
+    assign('category_id', $category_id);
+
+    $categories = $db->all('category', ['id', 'name', 'parent_id']);
+    assign('categories', $categories);
+}
+
+//订单明细
+if('order_list' == $act) {
+    if( !check_purview('pur_data_view', $_SESSION['business_purview']) ) {
+        show_system_message('没有操作权限');
+    }
+
+    $data_set = [];
+
+    $export = check_action('export|view', getGET('export'), 'view');
+    $start_date = trim(getGET('start_date'));
+    $end_date = trim(getGET('end_date'));
+    $delivery_st_date = trim(getGET('delivery_st_date'));
+    $delivery_ed_date = trim(getGET('delivery_ed_date'));
+    $pay_st_date = trim(getGET('pay_st_date'));
+    $pay_ed_date = trim(getGET('pay_ed_date'));
+    $category_id = intval(getGET('category_id'));
+    $status = intval(getGET('status'));
+    $page = intval(getGET('page'));
+    $page = max($page, 1);
+    $order_sn = trim(getGET('order_sn'));
+
+    $conditions = [];
+
+    if(!array_key_exists($status, $order_status)) {
+        $status = 0;
+    } else {
+        $conditions['status'] = $status;
+    }
+
+    if(!empty($order_sn)) {
+        $conditions['order_sn'] = $order_sn;
+    }
+
+    if(!empty($start_date)) {
+        $start_date = strtotime($start_date.' 00:00:00');
+    } else {
+        $start_date = strtotime('-7 days');
+    }
+
+    if(!empty($end_date)) {
+        $end_date = strtotime($end_date. ' 23:59:59');
+    } else {
+        $end_date = time();
+    }
+
+    if($start_date > 0 && $end_date > 0) {
+        if($end_date < $start_date) {
+            show_system_message('结束日期不能早于开始日期');
+        }
+
+        $conditions['add_time'] = ['between', [$start_date, $end_date]];
+    } else if($start_date > 0) {
+        $conditions['add_time'] = ['egt', $start_date];
+    } else if($end_date > 0) {
+        $conditions['add_time'] = ['elt', $end_date];
+    }
+
+    if(!empty($delivery_st_date)) {
+        $delivery_st_date = strtotime($delivery_st_date.' 00:00:00');
+    }
+
+    if(!empty($delivery_ed_date)) {
+        $delivery_ed_date = strtotime($delivery_ed_date.' 23:59:59');
+    }
+
+    if($delivery_ed_date > 0 && $delivery_st_date > 0) {
+        if($delivery_ed_date < $delivery_st_date) {
+            show_system_message('发货日期结束日期不能早于开始日期');
+        }
+
+        $conditions['delivery_time'] = ['between', [$delivery_st_date, $delivery_ed_date]];
+    } else if($delivery_st_date > 0) {
+        $conditions['delivery_time'] = ['egt', $delivery_st_date];
+    } else if($delivery_ed_date > 0) {
+        $conditions['delivery_time'] = ['elt', $delivery_ed_date];
+    }
+
+    if(!empty($pay_st_date)) {
+        $pay_st_date = strtotime($pay_st_date.' 00:00:00');
+    }
+
+    if(!empty($pay_ed_date)) {
+        $pay_ed_date = strtotime($pay_ed_date.' 23:59:59');
+    }
+
+    if($pay_ed_date > 0 && $pay_st_date > 0) {
+        if($pay_ed_date < $pay_st_date) {
+            show_system_message('发货日期结束日期不能早于开始日期');
+        }
+
+        $conditions['pay_time'] = ['between', [$pay_st_date, $pay_ed_date]];
+    } else if($pay_st_date > 0) {
+        $conditions['pay_time'] = ['egt', $pay_st_date];
+    } else if($pay_ed_date > 0) {
+        $conditions['pay_time'] = ['elt', $pay_ed_date];
+    }
+
+    $step = 2;
+    $total_count = $db->getColumn('order', 'count(*)', $conditions);
+    $total_page = ceil($total_count/$step);
+    $page = min($page, $total_page);
+    $limit = ($page - 1) * $step;
+    $limit .= ','.$step;
+
+    if('export' == $export) {
+        $limit = null;
+    }
+
+    $columns = [
+        'order_sn', 'add_time', 'pay_time', 'delivery_time', 'receive_time', 'province', 'city', 'district', 'group',
+        'address', 'consignee', 'mobile', 'status', 'delivery_name', 'express_sn', 'express_id', 'amount', 'consignee',
+        '(select count(*) from '.$db->table('order_detail').' as od where od.`order_sn`='.$db->table('order').'.`order_sn`) as count'
+    ];
+
+    $order_list = $db->all('order', $columns, $conditions, $limit, [['add_time', 'DESC']]);
+
+    $province_cache = [];
+    $city_cache = [];
+    $district_cache = [];
+    $group_cache = [];
+    $express_cache = [];
+
+    $orders = [];
+    while($order = array_shift($order_list)) {
+        if(!isset($province_cache[$order['province']])) {
+            $province_cache[$order['province']] = $db->find('province', ['id', 'province_name'], ['id' => $order['province']]);
+        }
+
+        if(!isset($city_cache[$order['city']])) {
+            $city_cache[$order['city']] = $db->find('city', ['id', 'city_name'], ['id' => $order['city']]);
+        }
+
+        if(!isset($district_cache[$order['district']])) {
+            $district_cache[$order['district']] = $db->find('district', ['id', 'district_name'], ['id' => $order['district']]);
+        }
+
+        if(!isset($group_cache[$order['group']])) {
+            $group_cache[$order['group']] = $db->find('group', ['id', 'group_name'], ['id' => $order['group']]);
+        }
+
+        if($order['express_id'] > 0 && !isset($express_cache[$order['express_id']])) {
+            $express = $db->find('express', ['id', 'name'], ['id' => $order['express_id']]);
+
+            if(!empty($express)) {
+                $express_cache[$order['express_id']] = $express['name'];
+            } else {
+                $express_cache[$order['express_id']] = '';
+            }
+        }
+
+        $address = $province_cache[$order['province']]['province_name'].' '.$city_cache[$order['city']]['city_name'].' '.$district_cache[$order['district']]['district_name'].
+            ' '.$group_cache[$order['group']]['group_name'].' '.$order['address'];
+
+        array_push($orders, [
+            'order_sn' => $order['order_sn'],
+            'add_time' => date('Y-m-d H:i:s', $order['add_time']),
+            'pay_time' => !empty($order['pay_time']) ? date('Y-m-d H:i:s', $order['pay_time']) : '',
+            'delivery_time' => !empty($order['delivery_time']) ? date('Y-m-d H:i:s', $order['delivery_time']) : '',
+            'receive_time' => !empty($order['receive_time']) ? date('Y-m-d H:i:s', $order['receive_time']) : '',
+            'address' => $address,
+            'consignee' => $order['consignee'],
+            'mobile' => $order['mobile'],
+            'status' => $order_status[$order['status']],
+            'delivery_name' => $order['delivery_name'],
+            'express_name' => $order['express_id'] ? $express_cache[$order['express_id']] : '',
+            'express_sn' => $order['express_sn'],
+            'count' => $order['count'],
+            'amount' => $order['amount']
+
+        ]);
+    }
+
+    $header = [
+        '订单编号', '下单时间', '支付时间', '发货时间', '确认收货时间', '收货地址', '收货人', '联系方式', '订单状态', '配送方式', '物流公司', '快递单号', '商品数量', '订单金额'
+    ];
+
+    if('export' == $export) {
+        $file_name = date('Ymd', $start_date).'_'.date('Ymd', $end_date).'订单明细'.date('YmdHis').'.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="'.$file_name.'"');
+        $out = fopen('php://output', 'w');
+        fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        fputcsv($out, $header);
+        while($_order = array_shift($orders)) {
+            $_order['order_sn'] = "\t".$_order['order_sn'];
+            $_order['mobile'] = "\t".$_order['mobile'];
+            $_order['express_sn'] = "\t".$_order['express_sn'];
+            fputcsv($out, $_order);
+        }
+        fclose($out);
+        exit;
+    }
+
+    create_pager($page, $total_page, $total_count);
+    assign('header', $header);
+    assign('order_list', $orders);
+    assign('order_sn', $order_sn);
+    assign('order_status', $order_status);
+    assign('status', $status);
+    assign('start_date', date('Y-m-d', $start_date));
+    assign('end_date', date('Y-m-d', $end_date));
+
+    if($delivery_st_date > 0) {
+        assign('delivery_st_date', date('Y-m-d', $delivery_st_date));
+    } else {
+        assign('delivery_st_date', '');
+    }
+
+    if($delivery_ed_date > 0) {
+        assign('delivery_ed_date', date('Y-m-d', $delivery_ed_date));
+    } else {
+        assign('delivery_ed_date', '');
+    }
+
+    if($pay_st_date > 0) {
+        assign('pay_st_date', date('Y-m-d', $pay_st_date));
+    } else {
+        assign('pay_st_date', '');
+    }
+
+    if($pay_ed_date > 0) {
+        assign('pay_ed_date', date('Y-m-d', $pay_ed_date));
+    } else {
+        assign('pay_ed_date', '');
     }
 }
 

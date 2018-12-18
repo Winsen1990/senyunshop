@@ -8,16 +8,20 @@
 <!-- content -->
 <div id="content">
     <div class="content-title">
-        <h5 class="pull-left">分类销售汇总</h5>
+        <h5 class="pull-left">商品交易明细</h5>
         <div class="pull-right">
+            <a class="btn btn-primary" href="?act=trade_summary">交易汇总</a>
+            <a class="btn btn-primary" href="?act=order_list">订单交易明细</a>
             <a class="btn btn-primary" href="?act=category_calendar">分类销售汇总</a>
             <a class="btn btn-primary" href="?act=sale_summary">畅销时间图表</a>
             <a class="btn btn-primary" href="?act=product_sale_rank">销售排行榜</a>
+            <a class="btn btn-primary" href="?act=order_detail">商品交易明细</a>
+            <a class="btn btn-primary" href="?act=order_detail_summary">商品交易明细汇总</a>
         </div>
         <div class="clear"></div>
     </div>
     <div class="article-main-header">
-        <form action="analyse.php?act=category_calendar" method="get"/>
+        <form action="analyse.php" method="get"/>
         <fieldset>
             <p>
             <div class="pull-left">
@@ -38,7 +42,7 @@
                 <label>结束日期：</label>
                 <input class="text-input w150" type="text" id="end_date" name="end_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#end_date'})"{/literal} value="{$end_date}">&nbsp;
                 <input type="hidden" name="category_id" id="category_id" value="{$category_id}"/>
-                <input type="hidden" name="act" value="category_calendar"/>
+                <input type="hidden" name="act" value="order_detail"/>
                 <button type="submit" class="btn btn-default">汇总</button>
                 <button type="submit" name="export" value="export" class="btn btn-default">导出</button>
             </div>
@@ -52,19 +56,61 @@
         <table class="table">
             <thead>
             <tr>
-                {foreach $data_header as $head}
+                {foreach $header as $head}
                 <th>{$head}</th>
                 {/foreach}
             </tr>
             </thead>
             <tbody>
-            {foreach from=$data_rows item=row}
+            {foreach from=$order_details item=od}
             <tr>
-                {foreach $row as $column}
-                <td>{$column}</td>
-                {/foreach}
+                <td>{$od.product_sn}</td>
+                <td>{$od.product_name}</td>
+                <td>{$od.category_name}</td>
+                <td>{$od.assoc_category_name}</td>
+                <td>{$od.product_price}</td>
+                <td>{$od.payment_name}</td>
+                <td>{$od.pay_status}</td>
+                <td>{$od.count}</td>
+                <td>{$od.amount}</td>
+                <td>{$od.pay_time}</td>
+                <td>{$od.add_time}</td>
             </tr>
             {/foreach}
+            <tr>
+                <td colspan="11">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页</span>
+                            {if $go_first}
+                            <a href="?page=1&category_id={$category_id}&start_date={$start_date}&end_date={$end_date}&act=order_detail">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&category_id={$category_id}&start_date={$start_date}&end_date={$end_date}&act=order_detail">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&category_id={$category_id}&start_date={$start_date}&end_date={$end_date}&act=order_detail">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&category_id={$category_id}&start_date={$start_date}&end_date={$end_date}&act=order_detail">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&category_id={$category_id}&start_date={$start_date}&end_date={$end_date}&act=order_detail">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>

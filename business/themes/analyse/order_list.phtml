@@ -1,0 +1,135 @@
+{include file="library/header.lbi"}
+<body>
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">订单交易明细</h5>
+        <div class="pull-right">
+            <a class="btn btn-primary" href="?act=trade_summary">交易汇总</a>
+            <a class="btn btn-primary" href="?act=order_list">订单交易明细</a>
+            <a class="btn btn-primary" href="?act=category_calendar">分类销售汇总</a>
+            <a class="btn btn-primary" href="?act=sale_summary">畅销时间图表</a>
+            <a class="btn btn-primary" href="?act=product_sale_rank">销售排行榜</a>
+            <a class="btn btn-primary" href="?act=order_detail">商品交易明细</a>
+            <a class="btn btn-primary" href="?act=order_detail_summary">商品交易明细汇总</a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="article-main-header">
+        <form action="analyse.php" method="get"/>
+        <fieldset>
+            <p>
+            <div class="pull-left">
+            </div>
+            <div class="pull-right">
+                <label>订单编号</label>
+                <input class="text-input w150" type="text" id="order_sn" name="order_sn" value="{$order_sn}">&nbsp;
+                <label>订单状态</label>
+                <select name="status" id="status">
+                    <option value="0">请选择</option>
+                    {foreach from=$order_status key=_status item=_status_str}
+                    <option value="{$_status}" {if $_status eq $status}selected="selected"{/if}>{$_status_str}</option>
+                    {/foreach}
+                </select>&nbsp;
+                <label>下单日期：</label>
+                <input class="text-input w150" type="text" id="start_date" name="start_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#start_date'})"{/literal} value="{$start_date}">&nbsp;
+                <label> - </label>
+                <input class="text-input w150" type="text" id="end_date" name="end_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#end_date'})"{/literal} value="{$end_date}">&nbsp;
+                <br/><br/>
+                <label>支付日期：</label>
+                <input class="text-input w150" type="text" id="pay_st_date" name="pay_st_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#pay_st_date'})"{/literal} value="{$pay_st_date}">&nbsp;
+                <label> - </label>
+                <input class="text-input w150" type="text" id="pay_ed_date" name="pay_ed_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#pay_ed_date'})"{/literal} value="{$pay_ed_date}">&nbsp;
+                <label>发货日期：</label>
+                <input class="text-input w150" type="text" id="delivery_st_date" name="delivery_st_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#delivery_st_date'})"{/literal} value="{$delivery_st_date}">&nbsp;
+                <label> - </label>
+                <input class="text-input w150" type="text" id="delivery_ed_date" name="delivery_ed_date" {literal}onClick="laydate({istime: false, format: 'YYYY-MM-DD', elem: '#delivery_ed_date'})"{/literal} value="{$delivery_ed_date}">&nbsp;
+                <input type="hidden" name="act" value="order_list"/>
+                <button type="submit" class="btn btn-default">汇总</button>
+                <button type="submit" name="export" value="export" class="btn btn-default">导出</button>
+            </div>
+            </p>
+        </fieldset>
+        </form>
+        <div class="clear"></div>
+    </div>
+
+    <div class="article-main">
+        <table class="table">
+            <thead>
+            <tr>
+                {foreach $header as $head}
+                <th>{$head}</th>
+                {/foreach}
+            </tr>
+            </thead>
+            <tbody>
+            {foreach from=$order_list item=order}
+            <tr>
+                <td>{$order.order_sn}</td>
+                <td>{$order.add_time}</td>
+                <td>{$order.pay_time}</td>
+                <td>{$order.delivery_time}</td>
+                <td>{$order.receive_time}</td>
+                <td>{$order.address}</td>
+                <td>{$order.consignee}</td>
+                <td>{$order.mobile}</td>
+                <td>{$order.status}</td>
+                <td>{$order.delivery_name}</td>
+                <td>{$order.express_name}</td>
+                <td>{$order.express_sn}</td>
+                <td>{$order.count}</td>
+                <td>{$order.amount}</td>
+            </tr>
+            {/foreach}
+            <tr>
+                <td colspan="{count($header)}">
+                    <div class="pull-right">
+                        <div class="pages">
+                            <span>共有{$total}条，{$totalPage}页</span>
+                            {if $go_first}
+                            <a href="?page=1&start_date={$start_date}&end_date={$end_date}&act=order_list&pay_st_date={$pay_st_date}&pay_ed_date={$pay_ed_date}&delivery_st_date={$delivery_st_date}&delivery_ed_date={$delivery_ed_date}&status={$status}&order_sn={$order_sn}">首页</a>
+                            {/if}
+                            {if $has_prev}
+                            <a href="?page={$page - 1}&start_date={$start_date}&end_date={$end_date}&act=order_list&pay_st_date={$pay_st_date}&pay_ed_date={$pay_ed_date}&delivery_st_date={$delivery_st_date}&delivery_ed_date={$delivery_ed_date}&status={$status}&order_sn={$order_sn}">上一页</a>
+                            {/if}
+                            {if $has_many_prev}
+                            ...
+                            {/if}
+                            {foreach from=$show_page item=pageNum}
+                            {if $pageNum eq $page}
+                            <b>{$page}</b>
+                            {else}
+                            <a href="?page={$pageNum}&start_date={$start_date}&end_date={$end_date}&act=order_list&pay_st_date={$pay_st_date}&pay_ed_date={$pay_ed_date}&delivery_st_date={$delivery_st_date}&delivery_ed_date={$delivery_ed_date}&status={$status}&order_sn={$order_sn}">{$pageNum}</a>
+                            {/if}
+                            {/foreach}
+                            {if $has_many_next}
+                            ...
+                            {/if}
+                            {if $go_last}
+                            <a href="?page={$totalPage}&start_date={$start_date}&end_date={$end_date}&act=order_list&pay_st_date={$pay_st_date}&pay_ed_date={$pay_ed_date}&delivery_st_date={$delivery_st_date}&delivery_ed_date={$delivery_ed_date}&status={$status}&order_sn={$order_sn}">末页</a>
+                            {/if}
+                            {if $has_next}
+                            <a href="?page={$page + 1}&start_date={$start_date}&end_date={$end_date}&act=order_list&pay_st_date={$pay_st_date}&pay_ed_date={$pay_ed_date}&delivery_st_date={$delivery_st_date}&delivery_ed_date={$delivery_ed_date}&status={$status}&order_sn={$order_sn}">下一页</a>
+                            {/if}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- END content -->
+<!-- 日历控件 -->
+<script type="text/javascript" src="laydate/laydate.js"></script>
+<!-- END 日历控件 -->
+
+{include file="library/footer.lbi"}
+</body>
+</html>

@@ -356,6 +356,9 @@ class MySQL
             }
 
             if(count($express_columns)) {
+                if(count($columns)) {
+                    $sql .= ',';
+                }
                 $sql .= implode(',', $express_columns);
             }
         }
