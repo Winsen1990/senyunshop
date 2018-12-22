@@ -23,11 +23,14 @@ $act = ( $act == '' ) ? 'view' : $act;
 
 $opera = check_action($operation, getPOST('opera'));
 
-$level_str = array(
-    0 => '普通会员',
-    1 => '商业会员',
-    2 => '招商会员',
-);
+$levels = $db->all('level', ['id', 'name']);
+if($levels) {
+    $_levels = $levels;
+    $levels = [];
+    foreach ($_levels as $_level) {
+        $levels[$_level['id']] = $_level['name'];
+    }
+}
 
 //===========================================================================
 //刷新微信信息

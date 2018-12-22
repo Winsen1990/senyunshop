@@ -179,6 +179,7 @@ if('category_calendar' == $act) {
     foreach($data_set as $_data) {
         $row = [$_data['name']];
         foreach($_data['calendar'] as $_date_record) {
+            $_date_record['amount'] = round($_date_record['amount'], 2);
             array_push($row, $_date_record['amount']);
         }
 
@@ -520,6 +521,7 @@ if('sale_summary' == $act) {
         $category_name = $_data['name'];
         $category_id = $_data['id'];
         foreach($_data['calendar'] as $_date_record) {
+            $_date_record['amount'] = round($_date_record['amount'], 2);
             array_push($amount_list, $_date_record['amount']);
             array_push($count_list, $_date_record['count']);
         }
@@ -687,6 +689,7 @@ if('product_sale_rank' == $act) {
 
     for($i = 0; $i < $top; $i++) {
         $_rank = $rank[$i];
+        $_rank['amount'] = round($_rank['amount'], 2);
         array_push($rank_header, $_rank['name']);
         array_push($rank_rows, $_rank['amount']);
 
