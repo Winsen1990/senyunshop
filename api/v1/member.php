@@ -44,8 +44,20 @@ if('show' == $act) {
         'integral',
         'balance',
         'headimg',
-        'level_id'
+        'level_id',
+        'experience'
     ];
+
+    $levels = $db->all('level', ['id', 'experience', 'experience_type', 'expired', 'birthday_integral_rate',
+        'birthday_given_integral', 'is_special', 'name', 'recharge_discount', 'discount'], null, [['experience', 'DESC']]);
+
+    if($levels) {
+        $_levels = $levels;
+        $levels = [];
+        while($_level = array_shift($_levels)) {
+            $levels[$_level['id']] = $_level;
+        }
+    }
 
     $member = $db->find('member', $columns, ['account' => $current_user['account']]);
 
@@ -57,9 +69,12 @@ if('show' == $act) {
             'mobile' => $member['mobile'],
             'integral' => floatval($member['integral']),
             'balance' => floatval($member['balance']),
+            'experience' => floatval($member['experience']),
             'avatar' => $member['headimg'],
-            'level_name' => isset($levels[$member['level_id']]) ? $levels[$member['level_id']]['name'] : ''
+            'level_name' => isset($levels[$member['level_id']]) ? $levels[$member['level_id']]['name'] : '',
+            'level_id' => $member['level_id']
         ];
+        $response['levels'] = $levels;
     } else {
         throw new RestFulException('请先登录', 503);
     }

@@ -31,8 +31,19 @@
                     项结果
                 </div>
                 <div class="pull-right">
+                    <label>一级分类：</label>
+                    <select name="top_category" id="top_category" onchange="selectTopCategory">
+                        <option value="0">请选择</option>
+                    </select>
+
+                    <label>二级分类：</label>
+                    <select name="sub_category" id="sub_category">
+                        <option value="0">请选择</option>
+                    </select>
+
                     <label>搜索：</label>
                     <input class="text-input w150" type="text" id="small-input" name="keyword" value="{$keyword}">&nbsp;
+                    <input type="hidden" name="category_id" id="category_id" value="{$category_id}"/>
                     {if $status}<input type="hidden" name="status" value="{$status}"/>{/if}
                     <button type="submit" class="btn btn-default">搜索</button>
                 </div>
@@ -45,7 +56,7 @@
             <thead>
             <tr>
                 <th>产品编号</th>
-                <th>产品名称</th>
+                <th width="18%">产品名称</th>
                 <th>封面</th>
                 <th>分类</th>
                 <th>市场价</th>
@@ -87,6 +98,8 @@
                     <a href="?act=edit&sn={$product.product_sn}">编辑</a>|
                     {/if}
                     <a href="?act=gallery&sn={$product.product_sn}">上传图片</a>
+                    | <a href="?act=comment&sn={$product.product_sn}">新增评论</a>
+                    | <a href="?act=sale_count&sn={$product.product_sn}">修改销量</a>
                     | <a href="?act=inventory&sn={$product.product_sn}">修改库存</a>
                     | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&&sn={$product.product_sn}">删除</a>
                 </td>
@@ -162,6 +175,76 @@
                     window.location.href = url;
                 });
             });
+</script>
+
+<script type="text/javascript">
+    var categories = {$categories|json_encode};
+
+    $(function() {
+        var category_id = $('#category_id').val();
+        var select_top = false;
+        var top_categories = [];
+        for(var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+            if(category.parent_id == 0) {
+                if(category.id == category_id) {
+                    select_top = true;
+                }
+                var top_category_option = '<option value="' + category.id + '">' + category.name + '</option>';
+                top_categories.push(top_category_option);
+            }
+        }
+        $('#top_category').append(top_categories.join("\n"));
+        $('#top_category').change(function () {
+            selectTopCategory($(this).val());
+        });
+
+        if(select_top) {
+            selectTopCategory(category_id);
+            $('#top_category').val(category_id);
+        } else {
+            for(var j = 0; j < categories.length; j++) {
+                var _category = categories[j];
+                if(_category.id == category_id) {
+                    selectTopCategory(_category.parent_id);
+                    $('#top_category').val(_category.parent_id);
+                    $('#sub_category').val(category_id);
+                    break;
+                }
+            }
+        }
+    });
+
+    function selectTopCategory(id) {
+        var top_category_id = id;
+        var sub_categories = [
+            '<option value="0">请选择</option>'
+        ];
+
+        $('#category_id').val(top_category_id);
+        $('#sub_category').empty();
+        for(var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+
+            if(category.parent_id == top_category_id && category.parent_id > 0) {
+                var sub_category_option = '<option value="' + category.id + '">' + category.name + '</option>';
+                sub_categories.push(sub_category_option);
+            }
+        }
+        $('#sub_category').html(sub_categories.join("\n"));
+
+        $('#sub_category').change(function () {
+            selectSubCategory($(this).val());
+        });
+    }
+
+    function selectSubCategory(id) {
+        if(id > 0) {
+            $('#category_id').val(id);
+        } else {
+            $('#category_id').val($('#top_category').val());
+        }
+    }
 </script>
 
 {include file="library/footer.lbi"}

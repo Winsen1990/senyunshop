@@ -134,44 +134,91 @@ if($data)
                         $db->autoUpdate('order', $order_data, '`order_sn`=\''.$sn.'\' and `status`<>4');
                     }
 
-                    //如果会员购买了activity=1的产品且店铺已通过审核，则升级
-                    $check_can_levelup = 'select am.`activity_id` from '.$db->table('activity_mapper').' as am left join '.
-                                          $db->table('order_detail').' using (`product_sn`) where `order_sn`=\''.$sn.'\' and `activity_id`=1';
+                    //更新用户升级经验
+                    $db->upgrade('member', ['experience' => ['exp', '`experience`+'.$order['amount']]], ['account' => $order['account']]);
 
-                    $user_info = $db->fetchRow('select `level_id`,`nickname`,`headimg`,`openid` from '.$db->table('member').' where `account`=\''.$order['account'].'\'');
+                    $levels = $db->all('level', ['id', 'experience', 'experience_type', 'expired', 'birthday_integral_rate',
+                        'birthday_given_integral', 'is_special'], null, [['experience', 'DESC']]);
 
-                    if($db->fetchOne($check_can_levelup) && $user_info && $user_info['level_id'] <= 0)
+
+                    $user_info = $db->find('member', ['account', 'openid', 'level_id', 'nickname', 'level_id',
+                        'experience', 'level_expired', 'birthday'], ['account' => $order['account']]);
+
+                    $member_level = null;
+                    if($levels) {
+                        foreach($levels as $i => $_level) {
+                            if($_level['id'] == $user_info['level_id']) {
+                                $member_level = $_level;
+                            }
+
+                            if($_level['is_special'] == 1) {
+                                unset($levels[$i]);
+                            }
+                        }
+                    }
+
+                    //消费多少钱就获得多少积分
+                    $given_integral_amount = $order['amount'];
+                    $integral_remark = $sn.'赠送积分';
+                    //有生日则需要计算赠送积分倍数
+                    if(!empty($user_info['birthday'])) {
+                        $user_info['birthday'] = new DateTime($user_info['birthday']);
+                        $user_info['birthday'] = $user_info['birthday']->format('m-d');
+                        if($user_info['birthday'] == date('m-d') && $member_level) {
+                            $given_integral_amount *= $member_level['birthday_integral_rate'];
+                            $integral_remark = $sn.'生日当天'.$member_level['birthday_integral_rate'].'倍赠送积分';
+                        }
+                    }
+
+                    add_memeber_exchange_log($order['account'], 0, 0, 0, $given_integral_amount, 0, 'settle', $integral_remark);
+                    add_member_reward($order['account'], 0, $given_integral_amount, $order['order_sn']);
+
+                    //非特殊等级考虑升级
+                    if($levels && (empty($member_level) || $member_level['is_special'] == 0))
                     {
-                        $member_data = array(
-                            'level_id' => 1
-                        );
+                        $current_level = $user_info['level_id'];
+                        $member_data = [
+                            'level_id' => $current_level
+                        ];
+                        $prev_experience = empty($member_level) ? 0 : $member_level['experience'];
+                        $level_up = false;
+                        while($level = array_shift($levels)) {
+                            switch($level['experience_type']) {
+                                case 1:
+                                    //单次消费
+                                    if($order['amount'] >= $level['experience'] && $current_level < $level['id']) {
+                                        $level_up = true;
+                                        $member_data['level_id'] = $level['id'];
+                                        $member_data['level_expired'] = $level['expired'];
+                                        $member_data['experience'] = abs($level['experience']);
+                                        break;
+                                    }
+                                    break;
 
-                        $db->autoUpdate('member', $member_data, '`account`=\''.$order['account'].'\'');
-
-                        $member_shop = $db->fetchRow('select `id` from '.$db->table('member_shop').' where `account`=\''.$order['account'].'\'');
-
-                        if(empty($member_shop)) {
-                            /**
-                             * 创建会员店铺
-                             */
-                            $member_shop_data = array(
-                                'account' => $order['account'],
-                                'name' => $user_info['nickname'].'的店铺',
-                                'logo' => $user_info['headimg'],
-                                'add_time' => time()
-                            );
-
-                            $db->autoInsert('member_shop', array($member_shop_data));
+                                case 2:
+                                    //累计消费
+                                    $total_experience = $user_info['experience'] + $prev_experience;
+                                    if($total_experience >= $level['experience'] && $current_level < $level['id']) {
+                                        $level_up = true;
+                                        $member_data['level_id'] = $level['id'];
+                                        $member_data['level_expired'] = $level['expired'];
+                                        $member_data['experience'] = abs($level['experience'] - $prev_experience);
+                                        break;
+                                    }
+                                    break;
+                            }
                         }
 
-                        if($user_info['openid'] != '') {
-                            notify_member($user_info['openid'], '您的商业会员申请已通过审核');
+                        if($level_up) {
+                            if($member_data['level_expired'] != -1) {
+                                $member_data['level_expired'] = date('Y-m-d H:i:s', time() + $member_data['level_expired']);
+                            } else {
+                                $member_data['level_expired'] = '9999-12-31 23:59:59';
+                            }
+                            $member_data['experience'] = ['exp', '`experience`-'.$member_data['experience']];
+                            $db->upgrade('member', $member_data, ['account' => $order['account']]);
+                            $log->record($order['account'].'升级:'.$current_level.'=>'.$member_data['level_id']);
                         }
-
-                        $order_data = array(
-                            'type' => 1,
-                        );
-                        $db->autoUpdate('order', $order_data, '`order_sn`=\''.$sn.'\'');
                     }
                 }
             } else {

@@ -77,17 +77,6 @@ if('view' == $act) {
 
         $address_info = $db->fetchRow($get_address_detail);
 
-        if(empty($address_info)) {
-            $get_address_detail = 'select p.`province_name`,c.`city_name`,d.`district_name`,g.`group_name`,a.`address`,a.`consignee`,' .
-                'a.`province`,a.`city`,a.`district`,a.`group`,g.`group_name`,' .
-                'a.`mobile`,a.`zipcode`,a.`id` from ' . $db->table('address') . ' as a, ' . $db->table('province') . ' as p, ' .
-                $db->table('city') . ' as c, ' . $db->table('district') . ' as d, ' . $db->table('group') . ' as g where ' .
-                'a.`province`=p.`id` and a.`city`=c.`id` and a.`district`=d.`id` and a.`group`=g.`id` and a.`is_default`=1'.
-                ' and `account`=\'' . $current_user['account'] . '\'';
-
-            $address_info = $db->fetchRow($get_address_detail);
-        }
-
         $response['address'] = [
             'id' => $address_info['id'],
             'consignee' => $address_info['consignee'],
@@ -245,10 +234,6 @@ if('view' == $act) {
         if(!isset($_delivery['shipping_fee'])) {
             $_delivery['shipping_fee'] = 0;
         }
-
-        if($total_amount >= 300 && time() <= strtotime('2018-11-19 00:00:00')) {
-            $_delivery['shipping_fee'] = 0;
-        }
     }
 
     if($response['message'] == '') {
@@ -256,14 +241,7 @@ if('view' == $act) {
     }
     $response['total_amount'] = $total_amount;
     $response['total_integral'] = $total_integral;
-
     $response['shipping'] = array_values($delivery_list);
-
-    //商家信息
-    $shop = $db->find('business', ['id', 'shop_name'], ['id' => 1]);
-    $shop['name'] = $shop['shop_name'];
-    unset($shop['shop_name']);
-    $response['shop'] = $shop;
 }
 
 echo json_encode($response);

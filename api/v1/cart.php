@@ -9,7 +9,7 @@ include '../library/api.inc.php';
 global $db, $log, $config, $current_user, $levels;
 
 $operation = 'add|delete';
-$action = 'view';
+$action = 'view|count';
 
 $opera = check_action($operation, getPOST('opera'));
 $act = check_action($action, getGET('act'));
@@ -105,13 +105,18 @@ if('add' == $opera) {
                         'number' => $buy_number,
                         'price' => $product['price'],
                         'integral' => $product['integral'],
-                        'checked' => 1
+                        'checked' => 1,
+                        'discount' => 100,
+                        'discount_reduce' => 0
                     );
 
                     if ($product['promote_end'] > $now && $product['promote_begin'] <= $now) {
                         $cart_data['price'] = $product['promote_price'];
                     } else if($member_level) {
-                        $cart_data['price'] = $member_level['discount'] * $cart_data['price'] / 100;
+                        $original_price = $cart_data['price'];
+                        $cart_data['price'] = round($member_level['discount'] * $cart_data['price'] / 100, 2);
+                        $cart_data['discount'] = $member_level['discount'];
+                        $cart_data['discount_reduce'] = $original_price - $cart_data['price'];
                     }
 
                     if ($db->autoUpdate('cart', $cart_data, '`id`=' . $cart['id']) !== false) {
@@ -135,13 +140,18 @@ if('add' == $opera) {
                         'business_account' => $product['business_account'],
                         'attributes' => $attributes,
                         'is_virtual' => $product['is_virtual'],
-                        'checked' => 1
+                        'checked' => 1,
+                        'discount' => 100,
+                        'discount_reduce' => 0
                     );
 
                     if ($product['promote_end'] > $now && $product['promote_begin'] <= $now) {
                         $cart_data['price'] = $product['promote_price'];
                     } else if($member_level) {
+                        $original_price = $cart_data['price'];
                         $cart_data['price'] = $member_level['discount'] * $cart_data['price'] / 100;
+                        $cart_data['discount'] = $member_level['discount'];
+                        $cart_data['discount_reduce'] = $original_price - $cart_data['price'];
                     }
 
                     if ($db->autoInsert('cart', [$cart_data])) {
@@ -160,7 +170,6 @@ if('add' == $opera) {
     }
 }
 
-//读取购物车信息
 if('view' == $act) {
     $response['error'] = 0;
     $response['cart'] = [];
@@ -189,11 +198,20 @@ if('view' == $act) {
             ]);
         }
     }
+}
 
-    $shop = $db->find('business', ['id', 'shop_name'], ['id' => 1]);
-    $shop['name'] = $shop['shop_name'];
-    unset($shop['shop_name']);
-    $response['shop'] = $shop;
+if('count' == $act) {
+    $response['error'] = 0;
+    $response['cart_count'] = 0;
+    $response['message'] = '读取购物车成功';
+    //获取购物车产品
+    $cart = $db->all('cart', ['number'], ['account' => $current_user['account']]);
+
+    if($cart) {
+        while($_cart = array_shift($cart)) {
+            $response['cart_count'] += $_cart['number'];
+        }
+    }
 }
 
 echo json_encode($response);

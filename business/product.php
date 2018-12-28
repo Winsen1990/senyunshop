@@ -14,8 +14,8 @@ global $db, $log, $config, $smarty;
 business_base_init();
 $template = 'product/';
 
-$action = 'view|add|edit|delete|cycle|revoke|remove|sale|release|gallery|del-gallery|inventory';
-$operation = 'add|edit|gallery|inventory|check_inventory|add_attr';
+$action = 'view|add|edit|delete|cycle|revoke|remove|sale|release|gallery|del-gallery|inventory|comment|sale_count';
+$operation = 'add|edit|gallery|inventory|check_inventory|add_attr|comment|sale_count';
 $act = check_action($action, getGET('act'));
 $opera = check_action($operation, getPOST('opera'));
 $act = ( $act == '' ) ? 'view' : $act;
@@ -23,6 +23,92 @@ $act = ( $act == '' ) ? 'view' : $act;
 $business = $db->find('business', '*', ['business_account' => $_SESSION['business_account']]);
 assign('business', $business);
 //===============================================================================
+if('sale_count' == $opera) {
+    if( !check_purview('pur_product_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+        exit;
+    }
+
+    $product_sn = trim(getPOST('product_sn'));
+    $data = [
+        'sale_count' => intval(getPOST('sale_count'))
+    ];
+
+    if(empty($product_sn)) {
+        show_system_message('参数错误');
+    }
+
+    $product = $db->find('product', ['product_sn'], ['product_sn' => $product_sn]);
+    if(empty($product)) {
+        show_system_message('产品不存在');
+    }
+
+    $data['sale_count'] = max(0, $data['sale_count']);
+
+    if($db->upgrade('product', $data, ['product_sn' => $product['product_sn']])) {
+        show_system_message('修改销量成功');
+    } else {
+        show_system_message('系统繁忙，请稍后再试');
+    }
+}
+
+if('comment' == $opera) {
+    if( !check_purview('pur_product_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+        exit;
+    }
+
+    $data = [
+        'product_sn' => trim(getPOST('product_sn')),
+        'star' => intval(getPOST('star')),
+        'nickname' => trim(getPOST('nickname')),
+        'avatar' => trim(getPOST('avatar')),
+        'comment' => trim(getPOST('comment')),
+        'parent_id' => 0,
+        'account' => '',
+        'add_time' => time()
+    ];
+
+    if(empty($data['product_sn'])) {
+        show_system_message('参数错误');
+    }
+
+    $product = $db->find('product', ['product_sn'], ['product_sn' => $data['product_sn']]);
+    if(empty($product)) {
+        show_system_message('产品不存在');
+    }
+
+    $data['star'] = min(5, $data['star']);
+    $data['star'] = max(1, $data['star']);
+
+    if(empty($data['comment'])) {
+        show_system_message('请填写评论内容');
+    }
+
+    if(empty($data['nickname'])) {
+        show_system_message('请填写用户昵称');
+    }
+
+    if($db->create('comment', $data)) {
+        $id = $db->get_last_id();
+
+        $comment_data = array('path'=>$id.',');
+
+        $db->autoUpdate('comment', $comment_data, '`id`='.$id);
+
+        //获取评论数量和星级
+        $get_comment_info = 'select count(*) as c, sum(`star`) as star from '.$db->table('comment').' where `product_sn`=\''.$product['product_sn'].'\'';
+        $comment_info = $db->fetchRow($get_comment_info);
+        $product_data = array('star'=>$comment_info['star']/$comment_info['c']);
+
+        $db->autoUpdate('product', $product_data, '`product_sn`=\''.$product['product_sn'].'\'');
+
+        show_system_message('评论成功');
+    } else {
+        show_system_message('系统繁忙，请稍后再试');
+    }
+}
+
 if( 'add' == $opera ) {
     if( !check_purview('pur_product_add', $_SESSION['business_purview']) ) {
         show_system_message('权限不足', array());
@@ -947,10 +1033,33 @@ if( 'view' == $act ) {
     }
     assign('status', $status);
 
+    $category_id = intval(getGET('category_id'));
     $keyword = trim(getGET('keyword'));
     if( '' != $keyword ) {
         $keyword = $db->escape($keyword);
-        $and_where .= ' and name like \'%'.$keyword.'%\' || `product_sn like` \'%'.$keyword.'%\'';
+        $and_where .= ' and (`name` like \'%'.$keyword.'%\' or `product_sn` like \'%'.$keyword.'%\')';
+    }
+
+    if($category_id > 0) {
+        $categories = [];
+
+        $category = $db->find('category', ['id', 'path', 'parent_id'], ['id' => $category_id]);
+        if (!empty($category)) {
+            array_push($categories, $category['id']);
+            if($category['parent_id'] == 0) {
+                $sub_categories = $db->all('category', ['id'], ['path' => ['like', $category['path'].'%']], null, ['path']);
+                if(!empty($sub_categories)) {
+                    while($sub_category = array_shift($sub_categories)) {
+                        array_push($categories, $sub_category['id']);
+                    }
+                }
+            }
+        }
+
+        if(count($categories)) {
+            $and_where .= ' and exists (select m.`id` from '.$db->table('product_category_mapper').' as m where m.`product_sn`='.
+                        $db->table('product').'.`product_sn` and m.`category_id` in ('.implode(',', $categories).'))';
+        }
     }
     $count = intval(getGET('count'));
     $count_array = array(10, 25, 50 , 100);
@@ -970,6 +1079,7 @@ if( 'view' == $act ) {
     create_pager($page, $total_page, $total);
     assign('count', $count);
     assign('keyword', $keyword);
+    assign('category_id', $category_id);
 
     $offset = ($page - 1) * $count;
 
@@ -1027,6 +1137,8 @@ if( 'view' == $act ) {
     }
     assign('product_list', $product_list);
 
+    $categories = $db->all('category', ['id', 'name', 'parent_id']);
+    assign('categories', $categories);
 }
 
 if( 'add' == $act ) {
@@ -1756,6 +1868,24 @@ if( 'inventory' == $act ) {
     assign('product', $product);
 }
 
+if('comment' == $act || 'sale_count' == $act) {
+    if( !check_purview('pur_product_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+        exit;
+    }
+    $product_sn = trim(getGET('sn'));
+    if( '' == $product_sn ) {
+        show_system_message('参数错误', array());
+        exit;
+    }
+    $product = $db->find('product', ['product_sn', 'name', 'sale_count'], ['product_sn' => $product_sn]);
+
+    if(empty($product)) {
+        show_system_message('产品不存在');
+    }
+
+    assign('product', $product);
+}
 
 $template .= $act.'.phtml';
 $smarty->display($template);

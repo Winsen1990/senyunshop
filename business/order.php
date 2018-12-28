@@ -15,7 +15,7 @@ global $log, $db, $config, $smarty, $loader;
 business_base_init();
 $template = 'order/';
 
-$action = 'view|deliver|prepare|agree|refund|delete|detail|export|pay|preview';
+$action = 'view|deliver|prepare|agree|refund|delete|detail|export|pay|preview|disagree';
 $operation = 'deliver|express_info';
 
 $act = check_action($action, getGET('act'));
@@ -173,6 +173,21 @@ if( 'view' == $act ) {
     $et = trim(getGET('et'));
     $start_time = strtotime($st);
     $end_time = strtotime($et);
+    $order_sn = trim(getGET('order_sn'));
+    $consignee = trim(getGET('consignee'));
+    $mobile = trim(getGET('mobile'));
+
+    if(!empty($mobile)) {
+        $and_where .= ' and `mobile`=\''.intval($mobile).'\'';
+    }
+
+    if(!empty($consignee)) {
+        $and_where .= ' and `consignee`=\''.$db->escape($consignee).'\'';
+    }
+
+    if(!empty($order_sn)) {
+        $and_where .= ' and `order_sn`=\''.$db->escape($order_sn).'\'';
+    }
 
     $pattern = '#[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}#';
     if( $st ) {
@@ -242,6 +257,9 @@ if( 'view' == $act ) {
     assign('count', $count);
     assign('st', $st);
     assign('et', $et);
+    assign('order_sn', $order_sn);
+    assign('consignee', $consignee);
+    assign('mobile', $mobile);
 }
 
 //配货
@@ -401,6 +419,53 @@ if( 'agree' == $act ) {
             array('alt' => '退单中订单列表', 'link' => 'order.php?status=9'),
         );
         show_system_message('您已同意退单', $links);
+        exit;
+    } else {
+        $db->rollback();
+        show_system_message('系统繁忙，请稍后重试', array());
+        exit;
+    }
+}
+
+//不同意退单
+if( 'disagree' == $act ) {
+    if( !check_purview('pur_order_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+        exit;
+    }
+    $order_sn = trim(getGET('sn'));
+    if( '' == $order_sn ) {
+        show_system_message('参数错误', array());
+        exit;
+    }
+    $order_sn = $db->escape($order_sn);
+
+    $get_order = 'select * from '.$db->table('order');
+    $get_order .= ' where 1';
+    $get_order .= ' and order_sn = \''.$order_sn.'\' limit 1';
+
+    $order = $db->fetchRow($get_order);
+
+    if( empty($order) ) {
+        show_system_message('订单不存在', array());
+        exit;
+    }
+
+    $last_status = $db->all('order_log', ['status'], [
+        'order_sn' => $order_sn,
+        'status' => ['neq', 8]
+    ], '1', [['add_time', 'DESC']])[0]['status'];
+
+    $db->begin();
+
+    $transaction = $db->upgrade('order', ['status' => $last_status], ['order_sn' => $order_sn, 'status' => 8]);
+    if( $transaction ) {
+        $db->commit();
+        add_order_log($order_sn, $_SESSION['business_account'], $last_status, '驳回用户退单');
+        $links = array(
+            array('alt' => '订单列表', 'link' => 'order.php'),
+        );
+        show_system_message('您已驳回退单', $links);
         exit;
     } else {
         $db->rollback();
@@ -653,33 +718,6 @@ if( 'detail' == $act ) {
     $order['pay_time_str'] = $order['pay_time'] ? date('Y-m-d H:i:s', $order['pay_time']) : '未支付';
     $order['status_str'] = $status_str[$order['status']];
 
-    if($order['serve_type'] >= 1) {
-        switch($order['serve_type']) {
-            case 1:
-                $order['serve_type_str'] = '申请退款';
-                break;
-
-            case 2:
-                $order['serve_type_str'] = '退款退货';
-                break;
-
-            case 3:
-                $order['serve_type_str'] = '申请换货';
-                break;
-
-            case 4:
-                $order['serve_type_str'] = '申请补发';
-                break;
-        }
-    }
-    /**
-     * serve_type
-     * 1: 退款
-     * 2: 退款退货
-     * 3: 换货
-     * 4: 补货
-     */
-
     $get_order_detail = 'select o.*, p.img from '. $db->table('order_detail').' as o';
     $get_order_detail .= ' left join '.$db->table('product').' as p on o.product_sn = p.product_sn';
     $get_order_detail .= ' where 1';
@@ -690,6 +728,7 @@ if( 'detail' == $act ) {
     assign('order', $order);
     assign('order_detail', $order_detail);
 }
+
 //导出数据
 if( 'export' == $act ) {
     if( !check_purview('pur_order_view', $_SESSION['business_purview']) ) {

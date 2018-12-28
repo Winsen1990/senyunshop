@@ -8,56 +8,13 @@
 include '../library/api.inc.php';
 global $db, $log, $config, $current_user;
 
-$operation = 'collection';
-$opera = check_action($operation, getPOST('opera'));
-
 $action = 'view|show';
-$act = check_action($action, getGET('act'));
+$act = check_action($action, getGET('act'), 'view');
 
 $response = [
     'error' => -1,
     'message' => ''
 ];
-
-//====================== 产品收藏 =================================
-if('collection' == $opera) {
-    $product_sn = trim(getPOST('product_sn'));
-
-
-    if(empty($product_sn)) {
-        $response['message'] = '参数错误';
-    } else {
-        $product = $db->find('product', ['id'], ['product_sn' => $product_sn]);
-
-        if(empty($product)) {
-            $response['message'] = '产品不存在';
-        } else {
-            $collection = $db->find('collection', ['product_sn'], ['product_sn' => $product_sn, 'account' => $current_user['account']]);
-
-            if(empty($collection)) {
-                $data = [
-                    'product_sn' => $product_sn,
-                    'account' => $current_user['account'],
-                    'add_time' => time()
-                ];
-
-                if($db->create('collection', $data)) {
-                    $response['error'] = 0;
-                    $response['message'] = '收藏成功';
-                } else {
-                    $response['message'] = '收藏失败';
-                }
-            } else {
-                if($db->destroy('collection', ['product_sn' => $product_sn, 'account' => $current_user['account']])) {
-                    $response['error'] = 0;
-                    $response['message'] = '取消收藏成功';
-                } else {
-                    $response['message'] = '取消收藏失败';
-                }
-            }
-        }
-    }
-}
 
 //====================== 产品列表 =================================
 if('view' == $act) {
@@ -85,7 +42,9 @@ if('view' == $act) {
         $where .= ' and p.`name` like \'%'.$keyword.'%\'';
     }
 
+    $response['category_name'] = '';
     if($category_id > 0) {
+        $response['category_name'] = $db->getColumn('category', 'name', ['id' => $category_id]);
         $categories = [$category_id];
 
         //获取子分类
@@ -174,9 +133,7 @@ if('show' == $act) {
         'star',
         'sale_count',
         'order_view',
-        'business_account',
-        'free_delivery',
-        'desc'
+        'business_account'
     ];
 
     $product = $db->find('product', $columns, ['id' => $id, 'status' => 4]);
@@ -194,10 +151,9 @@ if('show' == $act) {
         'sale_count' => intval($product['sale_count']),
         'img' => $product['img'],
         'gallery' => [$product['img']],
-        'desc' => $product['desc'],
         'detail' => $product['detail'],
         'star' => intval($product['star']),
-        'collection' => false,
+        'favorite' => false,
         'comments' => [
             'count' => 0,
             'good' => 0,
@@ -206,9 +162,6 @@ if('show' == $act) {
             'list' => []
         ],
         'inventory' => 0,
-        'shipping_free' => $product['free_delivery'] ? true : false,
-        'specification' => [], //规格参数
-        'after_sale' => '' //售后
     ];
 
     $product_sn = $product['product_sn'];
@@ -227,21 +180,27 @@ if('show' == $act) {
     //获取收藏
     if (!empty($current_user)) {
         $has_collection = $db->getColumn('collection', 'product_sn', ['product_sn' => $product_sn, 'account' => $current_user['account']]);
-        $response['product']['collection'] = !empty($has_collection);
+        $response['product']['favorite'] = !empty($has_collection);
     }
 
     //获取评论
-    $get_comments = 'select c.`id`,c.`comment`,c.`star`,c.`add_time`,m.`headimg`,m.`nickname`,c.`img`,c.`account` from ' . $db->table('comment') . ' as c' .
+    $get_comments = 'select c.`id`,c.`comment`,c.`star`,c.`add_time`,m.`headimg`,c.`avatar`,if(c.`nickname` is not null, c.`nickname`,m.`nickname`) as nickname,c.`img`,c.`account` from ' . $db->table('comment') . ' as c' .
         ' join ' . $db->table('member') . ' as m using(`account`) where c.`parent_id`=0 and `product_sn`=\'' . $product_sn . '\' order by c.`add_time` DESC limit 10';
     $comments = $db->fetchAll($get_comments);
 
     //获取评论分类统计
-    /*
-    $get_comment_summary = 'select `star`,count(*) as c from '.$db->table('comment').' where `product_sn`=\''.$product_sn.'\' group by `star`';
+    $get_comment_summary = 'select `star`,count(*) as c from '.$db->table('comment').' where `product_sn`=\''.$product_sn.'\' and `parent_id`=0 group by `star`';
     $comment_summary = $db->fetchAll($get_comment_summary);
 
     if ($comments) {
         while ($comment = array_shift($comments)) {
+            $replies = $db->all('comment', ['id', 'comment', 'add_time'], ['parent_id' => $comment['id']]);
+            if($replies) {
+                foreach($replies as &$_reply) {
+                    $_reply['add_time'] = date('Y-m-d', $_reply['add_time']);
+                }
+            }
+
             array_push($response['product']['comments']['list'], [
                 'id' => $comment['id'],
                 'content' => $comment['comment'],
@@ -250,7 +209,8 @@ if('show' == $act) {
                 'account' => $comment['account'],
                 'add_time' => date('Y-m-d', $comment['add_time']),
                 'nickname' => $comment['nickname'],
-                'avatar' => $comment['headimg']
+                'avatar' => !empty($comment['avatar']) ? $comment['avatar'] : (empty($comment['headimg']) ? '/assets/images/user-unlogin.png' : $comment['headimg']),
+                'reply' => $replies
             ]);
         }
     }
@@ -267,17 +227,15 @@ if('show' == $act) {
             }
         }
     }
-    */
 
     //商户信息
-    $shop = $db->find('business', ['shop_name', 'shop_logo', 'id', 'mobile'], ['business_account' => $product['business_account']]);
+    $shop = $db->find('business', ['shop_name', 'shop_logo', 'id'], ['business_account' => $product['business_account']]);
     if($shop) {
         $shop['id'] = intval($shop['id']);
     }
     $response['shop'] = [
         'name' => $shop['shop_name'],
-        'logo' => $shop['shop_logo'],
-        'service' => $shop['mobile']
+        'logo' => $shop['shop_logo']
     ];
     $response['member'] = null;
     $response['cart_count'] = 0;

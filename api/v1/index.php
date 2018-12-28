@@ -10,62 +10,48 @@ include '../library/api.inc.php';
 global $db, $log, $config;
 
 $response = [
-    'banners' => [],
-    'under_banner_ads' => [],
-    'before_block_ads' => [],
-    'functions' => [],
-    'blocks' => [],
+    'shop' => [],
+    'categories' => [],
+    'recommend' => [],
+    'hot' => [],
     'error' => 0,
     'message' => ''
 ];
 
+//商户信息
+$get_shop = 'select `shop_name` as name,`shop_logo` as logo from '.$db->table('business').' where `id`=1';
+$shop = $db->fetchRow($get_shop);
+if($shop) {
+    $response['shop'] = $shop;
+}
+
+//顶级分类
+$get_categories = 'select `name`,`id` from '.$db->table('category').' where `parent_id`=0 and `id`<>43';
+$categories = $db->fetchAll($get_categories);
+if($categories) {
+    foreach($categories as &$_category) {
+        $_category['id'] = intval($_category['id']);
+    }
+
+    $response['categories'] = $categories;
+}
+
 //首页轮播广告
-$banners = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 1], ['order_view']);
+//$ads = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 1], ['order_view']);
+//
+//if(!empty($ads)) {
+//    while($ad = array_shift($ads)) {
+//        array_push($response['ads'], [
+//            'url' => $ad['img'],
+//            'link' => $ad['url'],
+//            'alt' => $ad['alt'],
+//            'sort' => $ad['order_view']
+//        ]);
+//    }
+//}
 
-if(!empty($banners)) {
-    while($banner = array_shift($banners)) {
-        array_push($response['banners'], [
-            'img' => $banner['img'],
-            'url' => $banner['url']
-        ]);
-    }
-}
-
-//首页第二屏广告
-$banners = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 2], ['order_view']);
-
-if(!empty($banners)) {
-    while($banner = array_shift($banners)) {
-        array_push($response['under_banner_ads'], [
-            'img' => $banner['img'],
-            'url' => $banner['url']
-        ]);
-    }
-}
-
-//功能区
-$functions = $db->all('category', ['id', 'icon', 'name'], ['parent_id' => 15], ['order_view']);
-if(!empty($functions)) {
-    foreach($functions as &$_function) {
-        $_function['id'] = intval($_function['id']);
-        array_push($response['functions'], $_function);
-    }
-}
-
-//专区前广告
-$banners = $db->all('ad', ['url', 'img', 'alt', 'order_view'], ['ad_pos_id' => 3], ['order_view']);
-
-if(!empty($banners)) {
-    while($banner = array_shift($banners)) {
-        array_push($response['before_block_ads'], [
-            'img' => $banner['img'],
-            'url' => $banner['url']
-        ]);
-    }
-}
-
-//产品专区
-$blocks = $db->all('blocks', ['id', 'name', 'cover', 'url'], ['status' => 1], null, ['sort']);
+//推荐产品
+$blocks = $db->all('blocks', ['id', 'name', 'cover'], ['status' => 1], null, ['sort']);
 if($blocks) {
     foreach($blocks as $block) {
         $get_assoc_products = 'select p.`id`,p.`product_sn`,p.`name`,p.`price`,p.`img`,m.`sort`,p.`shop_price` as market_price,'.
@@ -91,10 +77,17 @@ if($blocks) {
         $response['blocks'][] = [
             'cover' => $block['cover'],
             'name' => $block['name'],
-            'url' => $block['url'],
             'products' => $products
         ];
     }
+}
+
+if(count($response['blocks'])) {
+    $response['recommend'] = $response['blocks'][0]['products'];
+}
+
+if(count($response['blocks']) >= 2) {
+    $response['hot'] = $response['blocks'][1]['products'];
 }
 
 echo json_encode($response);

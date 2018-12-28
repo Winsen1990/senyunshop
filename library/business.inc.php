@@ -142,22 +142,6 @@ $purview = array(
         'pur_block_del',
     ),
 
-    //关键词管理
-    'pur_keyword' => array(
-        'pur_keyword_view',
-        'pur_keyword_add',
-        'pur_keyword_edit',
-        'pur_keyword_del',
-    ),
-
-    //问卷管理
-    'pur_exam' => array(
-        'pur_exam_view',
-        'pur_exam_add',
-        'pur_exam_edit',
-        'pur_exam_del'
-    ),
-
     //数据中心
     'pur_data' => array(
         'pur_data_view'
@@ -275,18 +259,6 @@ $L_purview = array(
     'pur_block_edit' => '编辑专区',
     'pur_block_del' => '删除专区',
 
-    'pur_keyword' => '关键词管理',
-    'pur_keyword_view' => '查看关键词',
-    'pur_keyword_add' => '添加关键词',
-    'pur_keyword_edit' => '编辑关键词',
-    'pur_keyword_del' => '删除关键词',
-
-    'pur_exam' => '问卷管理',
-    'pur_exam_view' => '查看问卷',
-    'pur_exam_add' => '创建问卷',
-    'pur_exam_edit' => '编辑问卷',
-    'pur_exam_del' => '删除问卷',
-
     'pur_data' => '数据中心',
     'pur_data_view' => '查看数据',
 );
@@ -301,7 +273,6 @@ $menus = array(
             'pur_business_base' => array('url' => 'business.php', 'title' => '基本信息'),
 //            'pur_business_auth' => array('url' => 'business.php?act=auth', 'title' => '认证信息'),
             'pur_block_view' => array('url' => 'block.php', 'title' => '专区管理'),
-            'pur_keyword_view' => array('url' => 'keywords.php', 'title' => '关键词管理')
         )
     ),
     'pur_category' => array(
@@ -435,13 +406,7 @@ $menus = array(
         'title' => '会员管理',
         'icon' => '&#xe604;',
         'url' => 'member.php'
-    ),
-
-    'pur_exam' => array(
-        'title' => '问卷管理',
-        'icon' => '&#xe600;',
-        'url' => 'exam.php'
-    ),
+    )
 );
 
 //===========================权限与菜单 end==================================

@@ -26,10 +26,6 @@ if($categories) {
         if($sub_categories) {
             foreach($sub_categories as &$_sub_category) {
                 $_sub_category['id'] = intval($_sub_category['id']);
-                $get_sub_category_products = 'select p.`id`,p.`img`,p.`name`,p.`desc` from '.$db->table('product').' as p where exists ('.
-                    'select m.`product_sn` from '.$db->table('product_category_mapper').' as m where m.`product_sn`=p.`product_sn` and m.`category_id`='.$_sub_category['id'].
-                    ')';
-                $_sub_category['products'] = $db->fetchAll($get_sub_category_products);
             }
 
             $_category['sub_categories'] = $sub_categories;

@@ -43,11 +43,11 @@ if('view' == $act) {
             break;
 
         case 'normal':
-            $where .= ' and c.`start`>=2 and c.`start`<=3';
+            $where .= ' and c.`star`>=2 and c.`star`<=3';
             break;
 
         case 'bad':
-            $where .= ' and c.`start`<=1';
+            $where .= ' and c.`star`<=1';
             break;
     }
 
@@ -57,13 +57,21 @@ if('view' == $act) {
     $product_sn = $db->escape($product_sn);
 
     //获取评论
-    $get_comments = 'select c.`id`,c.`comment`,c.`star`,c.`add_time`,m.`headimg`,m.`nickname`,c.`img`,c.`account` from ' . $db->table('comment') . ' as c' .
-        ' join ' . $db->table('member') . ' as m using(`account`) where c.`parent_id`=0 and `product_sn`=\'' . $product_sn . '\' '.$where.
+    $get_comments = 'select c.`id`,c.`comment`,c.`star`,c.`add_time`,c.`avatar`,m.`headimg`,if(c.`nickname` is not null, c.`nickname`, m.`nickname`) as nickname,c.`img`,c.`account` from ' . $db->table('comment') . ' as c' .
+        ' left join ' . $db->table('member') . ' as m using(`account`) where c.`parent_id`=0 and `product_sn`=\'' . $product_sn . '\' '.$where.
         ' order by c.`add_time` DESC limit '.(($page - 1) * $page_size).','.$page_size;
+
     $comments = $db->fetchAll($get_comments);
 
     if ($comments) {
         while ($comment = array_shift($comments)) {
+            $replies = $db->all('comment', ['id', 'comment', 'add_time'], ['parent_id' => $comment['id']]);
+            if($replies) {
+                foreach($replies as &$_reply) {
+                    $_reply['add_time'] = date('Y-m-d', $_reply['add_time']);
+                }
+            }
+
             array_push($response['comments'], [
                 'id' => $comment['id'],
                 'content' => $comment['comment'],
@@ -72,7 +80,8 @@ if('view' == $act) {
                 'account' => $comment['account'],
                 'add_time' => date('Y-m-d', $comment['add_time']),
                 'nickname' => $comment['nickname'],
-                'avatar' => $comment['headimg']
+                'avatar' => !empty($comment['avatar']) ? $comment['avatar'] : (empty($comment['headimg']) ? '/assets/images/user-unlogin.png' : $comment['headimg']),
+                'reply' => $replies
             ]);
         }
     }

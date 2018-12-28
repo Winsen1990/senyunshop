@@ -48,9 +48,12 @@ if( 'response' == $opera ) {
     }
     $response = $db->escape($response);
 
+    /*
     $check_response = 'select * from '.$db->table('comment');
     $check_response .= ' where parent_id = '.$id.' limit 1';
     $response_exists = $db->fetchRow($check_response);
+    */
+    $response_exists = false;
     if( $response_exists ) {    //更新
 
         $data = array(
@@ -109,7 +112,7 @@ if( 'view' == $act ) {
     $group = trim(getGET('group'));
     $order = intval(getGET('order'));
 
-    $order = ( $order == 0 ) ? 'asc' : 'desc';
+    $order = ( $order == 0 ) ? 'desc' : 'asc';
     $order_num = ( $order == 0 ) ? 0 : 1;
 
     switch($group) {
@@ -137,7 +140,6 @@ if( 'view' == $act ) {
     $count = intval(getGET('count'));
     //获取总数
     $get_total = 'select count(*) from '.$db->table('comment').' as a';
-    $get_total .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
     $get_total .= ' where a.parent_id = 0 ';
     $total = $db->fetchOne($get_total);
 
@@ -150,17 +152,23 @@ if( 'view' == $act ) {
     create_pager($page, $total_page, $total);
     assign('count', $count);
 
-    $get_comment_list = 'select a.*,d.comment as response from '.$db->table('comment').'as a';
+    $get_comment_list = 'select a.*,b.`name` as product_name from '.$db->table('comment').'as a';
     $get_comment_list .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
-    $get_comment_list .= ' left join '.$db->table('comment').' as d on a.id = d.parent_id';
     $get_comment_list .= ' where a.parent_id = 0 ';
     $get_comment_list .= $order_by;
     $get_comment_list .= ' limit '.$offset.','.$count;
     $comment_list = $db->fetchAll($get_comment_list);
     if( $comment_list ) {
-        foreach( $comment_list as $key => $comment ) {
-            $comment_list[$key]['add_time_str'] = date('Y-m-d H:i:s', $comment['add_time']);
-            $comment_list[$key]['responsed'] = ( $comment['response']) ? '是' : '否';
+        $member_cache = [];
+        foreach( $comment_list as &$_comment ) {
+            if(!isset($_comment['nickname']) && !isset($member_cache[$_comment['account']])) {
+                $member_cache[$_comment['account']] = $db->getColumn('member', 'nickname', ['account' => $_comment['account']]);
+            }
+
+            $_comment['add_time_str'] = date('Y-m-d H:i:s', $_comment['add_time']);
+            $_comment['nickname'] = isset($_comment['nickname']) ? $_comment['nickname'] : $member_cache[$_comment['account']];
+
+            $_comment['replies'] = $db->all('comment', ['id', 'add_time', 'comment'], ['parent_id' => $_comment['id']]);
         }
     }
     assign('comment_list', $comment_list);
@@ -178,9 +186,8 @@ if( 'response' == $act ) {
         exit();
     }
 
-    $get_comment = 'select a.*,d.comment as response from '.$db->table('comment').' as a';
+    $get_comment = 'select a.*,b.`name` as product_name from '.$db->table('comment').' as a';
     $get_comment .= ' left join '.$db->table('product').' as b on a.product_sn = b.product_sn';
-    $get_comment .= ' left join '.$db->table('comment').' as d on a.id = d.parent_id';
     $get_comment .= ' where 1';
     $get_comment .= ' and a.id = \''.$id.'\' and a.parent_id = 0 limit 1';
     $comment = $db->fetchRow($get_comment);

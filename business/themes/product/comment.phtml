@@ -1,0 +1,126 @@
+{include file="library/header.lbi"}
+<body>
+{include file="library/navbar.lbi"}
+{include file="library/sidebar.lbi"}
+<style>
+{literal}
+    .select-image {
+        cursor: pointer;
+    }
+{/literal}
+</style>
+
+<script src="js/jquery.modal.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="css/jquery.modal.css" type="text/css" media="screen" />
+<!-- content -->
+<div id="content">
+    <div class="content-title">
+        <h5 class="pull-left">添加评论</h5>
+        <div class="clear"></div>
+    </div>
+    <div class="adminUser-main">
+        <form id="productAddForm" name="productAddForm" method="post">
+            <fieldset>
+                <p>
+                    <label class="l-title">产品：</label>
+                    <span class="text-input w300">{$product.name|escape}</span>
+                </p>
+                <p>
+                    <label class="l-title">用户头像：</label>
+                    <input type="hidden" name="avatar" id="avatar" placeholder="">
+                    <img class="select-image" alt="" src="../upload/image/no-image.png" height="150px">&nbsp;
+                    <br/>
+                    <label class="l-title"></label>
+                    建议尺寸 300x300像素
+                </p>
+                <p>
+                    <label class="l-title">用户昵称：</label>
+                    <input class="text-input w300" type="text" placeholder="请填写用户昵称" name="nickname" id="nickname"/>
+                </p>
+                <p class="clear">
+                    <label class="l-title">星级:</label>
+                    <label for="status-1">
+                        <input id="status-1" type="radio" name="star" value="1"/>
+                        <em>1星</em>
+                    </label>
+                    <label for="status-2">
+                        <input id="status-2" type="radio" name="star" value="2"/>
+                        <em>2星</em>
+                    </label>
+                    <label for="status-3">
+                        <input id="status-3" type="radio" name="star" value="3"/>
+                        <em>3星</em>
+                    </label>
+                    <label for="status-4">
+                        <input id="status-4" type="radio" name="star" value="4"/>
+                        <em>4星</em>
+                    </label>
+                    <label for="status-5">
+                        <input id="status-5" type="radio" checked="checked" name="star" value="5"/>
+                        <em>5星</em>
+                    </label>
+                </p>
+                <p>
+                    <label class="l-title">评论内容：</label>
+                    <textarea name="comment" rows="5" cols="93" id="comment"></textarea>
+                </p>
+                <p>
+                    <label class="l-title"></label>
+                    <input type="hidden" name="opera" value="comment" />
+                    <input type="hidden" name="product_sn" value="{$product.product_sn}" />
+                    <button class="btn btn-primary" type="button" onclick="do_submit();">添加</button> &nbsp;
+                </p>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<!-- END content -->
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/plugins/code/prettify.css"/>
+<link rel="stylesheet" type="text/css" href="../plugins/kindeditor/themes/default/default.css"/>
+<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript">
+    KindEditor.ready(function(K) {
+        var editor = K.editor({
+            allowFileManager: true,
+            uploadJson: '../plugins/kindeditor/upload_json.php',
+            fileManagerJson: '../plugins/kindeditor/file_manager_json.php'
+        });
+
+        K('.select-image').click(function() {
+            editor.loadPlugin('fileupload', function() {
+                editor.plugin.imageDialog({
+                    imageUrl : '',
+                    clickFn : function(url, title, width, height, border, align) {
+                        if( !width ) {
+                            width = 200 + 'px';
+                        }
+                        if( !height ) {
+                            height = 200 + 'px';
+                        }
+
+                        K('#avatar').val(url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('.select-image').attr('src', url.replace("{$smarty.const.BASE_DIR}", "{$config.domain}/"));
+                        K('.select-image').css('display', 'block');
+                        K('.select-image').attr('width', width);
+                        K('.select-image').attr('height', height);
+                        editor.hideDialog();
+                    }
+                });
+            });
+            var action = $('form.ke-upload-area').attr('action');
+            $('form.ke-upload-area').attr('action', action + '&width=300&height=300');
+        });
+    });
+</script>
+<script type="text/javascript">
+$(function() {
+});
+
+function do_submit() {
+    document.getElementById('productAddForm').submit();
+}
+</script>
+{include file="library/footer.lbi"}
+</body>
+</html>

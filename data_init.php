@@ -106,11 +106,9 @@ $sql[] = 'insert into '.$db->table('ad_position').' (`id`, `pos_name`, `width`, 
 
 $table[] = 'level';
 $data[] = [
-    [1, '普通会员', 0, 2, 0, 0, 100, ''],
-    [2, '白银会员', 1001, 2, 0, 0, 90, ''],
-    [3, '黄金会员', 2001, 2, 0, 0, 80, ''],
-    [4, '铂金会员', 3001, 2, 0, 0, 70, ''],
-    [5, '钻石会员', 5001, 2, 0, 0, 50, ''],
+    ['id' => 1, 'name' => '普卡', 'experience' => 0, 'experience_type' => 2, 'recommend_count' => 0, 'is_special' => 0, 'discount' => 95, 'remark' => '', 'expired' => -1, 'birthday_integral_rate' => 5, 'recharge_discount' => 100, 'birthday_given_integral' => 50],
+    ['id' => 2, 'name' => '金卡', 'experience' => 30000, 'experience_type' => 2, 'recommend_count' => 0, 'is_special' => 0, 'discount' => 90, 'remark' => '', 'expired' => 86400*365, 'birthday_integral_rate' => 8, 'recharge_discount' => 98, 'birthday_given_integral' => 100],
+    ['id' => 3, 'name' => '钻卡', 'experience' => 50000, 'experience_type' => 2, 'recommend_count' => 0, 'is_special' => 0, 'discount' => 80, 'remark' => '', 'expired' => 86400*365, 'birthday_integral_rate' => 10, 'recharge_discount' => 95, 'birthday_given_integral' => 200],
 ];
 
 echo '初始化数据:<br/>';

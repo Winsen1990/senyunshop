@@ -346,7 +346,8 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
  * @return bool
  */
  function add_order_detail($product_sn, $product_name, $product_attributes, $attributes, $product_price, $integral,
-                           $integral_given, $given_integral, $reward, $count, $business_account, $order_sn, $is_virtual = 0)
+                           $integral_given, $given_integral, $reward, $count, $business_account, $order_sn, $is_virtual = 0,
+                            $discount_reduce = 0, $discount = 100)
  {
     global $db;
 
@@ -363,7 +364,9 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
         'count' => $count,
         'business_account' => $business_account,
         'order_sn' => $order_sn,
-        'is_virtual' => $is_virtual
+        'is_virtual' => $is_virtual,
+        'discount' => $discount,
+        'discount_reduce' => $discount_reduce
     );
 
     if($db->autoInsert('order_detail', array($order_detail_data)))
@@ -396,7 +399,7 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
  */
  function add_order($integral_amount, $product_amount, $delivery_fee, $delivery_id, $business_account, $integral_given_amount, $given_integral_amount,
                     $payment_id, $address_id, $reward_amount, $account, $integral_paid = 0.0, $reward_paid = 0.0, $balance_paid = 0.0,
-                    $status = 1, $self_delivery = 0, $remark = '', $is_virtual = 0, $message_notice = 0)
+                    $status = 1, $self_delivery = 0, $remark = '', $is_virtual = 0, $discount_reduce = 0, $discount = 100)
  {
     global $db;
     global $config;
@@ -426,7 +429,8 @@ function add_order_log($order_sn, $operator, $status, $remark = '')
         'add_time' => time(),
         'remark' => $remark,
         'is_virtual' => $is_virtual,
-        'message_notice' => $message_notice
+        'discount' => $discount,
+        'discount_reduce' => $discount_reduce
     );
 
     //获取地址信息

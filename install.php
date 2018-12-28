@@ -795,6 +795,7 @@ $sql[] = 'create table if not exists '.$db->table('level').'(
     `experience_type` int not null default \'1\' comment \'经验值类型：1 - 单次消费额，2 - 累计消费额，3 - 累计推广积分\',
     `recommend_count` int not null default \'0\' comment \'推荐人数\',
     `is_special` tinyint(1) not null default \'0\' comment \'特殊等级：0 - 否，1 - 是\',
+    `discount` int not null default \'100\' comment \'享受折扣\',
     `remark` varchar(255) comment \'备注\'
 ) engine=InnoDB default charset=utf8;';
 

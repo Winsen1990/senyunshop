@@ -33,6 +33,9 @@
             <thead>
             <tr>
                 <th>产品编号</th>
+                <th width="15%">产品名称</th>
+                <th>客户帐号</th>
+                <th>客户昵称</th>
                 <th>
                     <a href="eval.php?group=time{if $group eq 'time' && $order eq 'asc'}&order=1{/if}">
                         评论时间
@@ -59,9 +62,8 @@
                         {/if}
                     </a>
                 </th>
-                <th>已回复</th>
-                <th>晒图</th>
-                <th>客户帐号</th>
+                <th width="25%">评论内容</th>
+<!--                <th>晒图</th>-->
                 <th class="text-right">操作</th>
             </tr>
             </thead>
@@ -70,6 +72,9 @@
             {foreach from=$comment_list item=comment}
             <tr>
                 <td>{$comment.product_sn}</td>
+                <td>{$comment.product_name}</td>
+                <td>{$comment.account}</td>
+                <td>{$comment.nickname|escape}</td>
                 <td>{$comment.add_time_str}</td>
                 <td>
                     <div class="star" data-value="{$comment.star}">
@@ -84,7 +89,8 @@
                         <p></p>
                     </div>
                 </td>
-                <td>{$comment.responsed}</td>
+                <td>{$comment.comment|escape}</td>
+                <!--
                 <td>
                     {if $comment.img neq ''}
                     <img width="80" height="60" src="{$comment.img}" alt=""/>
@@ -92,31 +98,34 @@
                     <img width="80" height="60" src="../upload/image/no-image.png" alt=""/>
                     {/if}
                 </td>
-                <td>{$comment.account}</td>
+                -->
                 <td class="text-right">
-                    <a href="?act=response&id={$comment.id}">回复</a>
-                    | <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$comment.id}">删除</a></td>
+                    <a href="?act=response&id={$comment.id}">回复</a> |
+                    <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$comment.id}">删除</a></td>
                 </td>
             </tr>
-            <tr style="">
-                <td>评论：</td>
-                <td colspan="6">{$comment.comment}</td>
+            {if $comment.replies}
+            {foreach $comment.replies as $reply}
+            <tr>
+                <td>回复:</td>
+                <td colspan="6">
+                    {$reply.comment|escape}
+                </td>
+                <td class="text-right">
+                    <a onclick="javascript:if(confirm('确认要删除？')) return true; else return false;" href="?act=delete&id={$reply.id}">删除</a></td>
+                </td>
             </tr>
-            {if $comment.response}
-            <tr style="" class="comment-response">
-                <td>回复：</td>
-                <td colspan="6">{$comment.response}</td>
-            </tr>
+            {/foreach}
             {/if}
             {/foreach}
             {else}
             <tr>
-                <td style="padding: 50px 0" colspan="7" align="center">暂无顾客反馈</td>
+                <td style="padding: 50px 0" colspan="8" align="center">暂无顾客反馈</td>
             </tr>
             {/if}
 
             <tr>
-                <td colspan="7">
+                <td colspan="8">
                     <div class="pull-right">
                         <div class="pages">
                             <span>共有{$total}条，{$totalPage}页，每页显示：{$count}条</span>

@@ -9,14 +9,22 @@
         <div class="clear"></div>
     </div>
     <div class="basicInfo-main">
-        <form id="withdrawForm" method="post" action="" onsubmit="return luhmCheck($('#bank_card').val())">
+        <form id="withdrawForm" method="post" action="">
             <fieldset>
                 <p>
-                    <label class="l-title">评论：</label>
+                    <label class="l-title">产品：</label>
+                    <span class="input">{$comment.product_name}</span>
+                </p>
+                <p>
+                    <label class="l-title">评价星级：</label>
+                    <span class="input">{$comment.star}星</span>
+                </p>
+                <p>
+                    <label class="l-title">用户评论：</label>
                     <textarea name="comment" cols="100" rows="6" disabled="disabled">{$comment.comment}</textarea>
                 </p>
                     <label class="l-title">回复：</label>
-                    <textarea cols="100" rows="6" name="response">{$comment.response}</textarea>
+                    <textarea cols="100" rows="6" name="response"></textarea>
                 </p>
                 <p>
                     <label class="l-title"></label>
@@ -29,23 +37,6 @@
     </div>
 
 </div>
-<!-- END content -->
-<script type="text/javascript" src="../plugins/kindeditor/kindeditor-all-min.js"></script>
-<link rel="stylesheet" href="../plugins/kindeditor/themes/default/default.css" />
-<script charset="utf-8" src="../plugins/kindeditor/lang/zh_CN.js"></script>
-<script>
-    var editor;
-    KindEditor.ready(function(K) {
-        editor = K.create('textarea[name="response"]', {
-            resizeType : 1,
-            allowPreviewEmoticons : false,
-            width:"64%",
-            items : [
-                'emoticons', 'link']
-        });
-    });
-</script>
-
 
 {include file="library/footer.lbi"}
 </body>

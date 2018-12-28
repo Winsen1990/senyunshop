@@ -36,12 +36,6 @@
             <label class="l-title">订单状态：</label>
             <em style="width: 132px;">{$order.status_str}</em>
         </p>
-        {if $order.serve_type >= 1}
-        <p style="display: inline-block" class="clear">
-            <label class="l-title">退单请求：</label>
-            <em style="width: 132px;">{$order.serve_type_str}</em>
-        </p>
-        {/if}
         <table class="table">
             <thead>
                 <tr>
