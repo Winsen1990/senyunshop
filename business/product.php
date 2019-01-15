@@ -14,7 +14,7 @@ global $db, $log, $config, $smarty;
 business_base_init();
 $template = 'product/';
 
-$action = 'view|add|edit|delete|cycle|revoke|remove|sale|release|gallery|del-gallery|inventory';
+$action = 'view|add|edit|delete|cycle|revoke|remove|sale|release|gallery|del-gallery|inventory|mini_qr_code';
 $operation = 'add|edit|gallery|inventory|check_inventory|add_attr';
 $act = check_action($action, getGET('act'));
 $opera = check_action($operation, getPOST('opera'));
@@ -1767,6 +1767,28 @@ if( 'inventory' == $act ) {
     assign('product', $product);
 }
 
+if('mini_qr_code' == $act) {
+    if( !check_purview('pur_product_edit', $_SESSION['business_purview']) ) {
+        show_system_message('权限不足', array());
+        exit;
+    }
+    $product_sn = trim(getGET('sn'));
+    if( '' == $product_sn ) {
+        show_system_message('参数错误', array());
+        exit;
+    }
+    $product_sn = $db->escape($product_sn);
+
+    $product = $db->find('product', ['id'], ['product_sn' => $product_sn]);
+
+    if($product) {
+        header('Content-type:image/png');
+        echo get_min_program_qrcode('product_id='.$product['id'], 'pages/product/detail');
+        exit;
+    } else {
+        exit;
+    }
+}
 
 $template .= $act.'.phtml';
 $smarty->display($template);

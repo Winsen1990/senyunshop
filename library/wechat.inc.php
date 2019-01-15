@@ -724,3 +724,27 @@ function send_paid_order_message($openid, $order_sn, $prepay_id, $amount, $statu
         return false;
     }
 }
+
+function get_min_program_qrcode($scene, $page) {
+    global $config, $log;
+
+    $param = [
+        'scene' => $scene,
+        'page' => $page
+    ];
+
+    $access_token = get_access_token($config['mini_appid'], $config['mini_appsecret']);
+    $url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token='.$access_token;
+
+    $response = post($url, json_encode($param), false);
+
+    $raw_response = $response;
+    $response = json_decode($response, true);
+
+    if($response) {
+        $log->record_array($response);
+        return false;
+    } else {
+        return $raw_response;
+    }
+}

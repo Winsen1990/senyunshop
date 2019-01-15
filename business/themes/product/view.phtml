@@ -85,6 +85,7 @@
                     {/if}
                     {if $product.status neq 2}
                     <a href="?act=edit&sn={$product.product_sn}">编辑</a>|
+                    <a target="_blank" href="?act=mini_qr_code&sn={$product.product_sn}">小程序二维码</a>|
                     {/if}
                     <a href="?act=gallery&sn={$product.product_sn}">上传图片</a>
                     | <a href="?act=inventory&sn={$product.product_sn}">修改库存</a>
